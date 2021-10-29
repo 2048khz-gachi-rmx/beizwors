@@ -517,6 +517,7 @@ function DarkHUD.CreateVitals()
 		DarkHUD:Emit("VitalsEconomyPainted", w, h)
 	end]]
 
+	hook.Run("DarkHUD_CreatedVitals", f)
 end
 
 local used = DarkHUD.Used

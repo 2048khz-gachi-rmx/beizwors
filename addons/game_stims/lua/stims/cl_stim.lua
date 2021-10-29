@@ -2,7 +2,8 @@ local function stim(ply)
 	return Stims.Active[ply]
 end
 
-Stims.Bind:On("Activate", "BeginStim", function(self, ply)
+function Stims.UseStim()
+	local ply = LocalPlayer()
 	if not ply:Alive() or ply:Health() >= ply:GetMaxHealth() then return end
 	if hook.Run("CanUseStimpak", ply) == false then return end
 
@@ -38,9 +39,19 @@ Stims.Bind:On("Activate", "BeginStim", function(self, ply)
 	ply:EmitSound(Stims.Sound("adrenaline_deploy_1"), 75)
 	ply:Timer("stim_cap_off", 0, 1, ply.EmitSound,
 		Stims.Sound("needle_open"), 80)
+end
+
+
+hook.Add("Offhand_GenerateActionSelection", "ShowStim", function(wheel)
+	local stim = Offhand.AddChoice(Stims.ActionName,
+		"Stimpack", "Heal 75HP over 1.5s.",
+		Icon("https://i.imgur.com/1aEZv3d.png", "adrenaline_shot128.png"):
+			SetSize(64, 64))
+
+	stim:On("Select", function()
+		print("idunno stim up?")
+	end)
 end)
-
-
 
 hook.Add("VManipPlaySegment", "Stims", function()
 	if VManip:GetCurrentSegment() == "stim_inject_end" then
@@ -57,8 +68,6 @@ hook.Add("VManipThink", "Stims", function()
 			VManip._PlayedStim = true
 			ply:EmitSound(Stims.Sound("thud_01"), 75)
 		end
-	elseif name == "stim_inject_end" then
-
 	end
 end)
 
