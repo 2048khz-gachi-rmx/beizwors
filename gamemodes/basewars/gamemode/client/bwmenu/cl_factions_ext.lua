@@ -131,8 +131,10 @@ local function createOwnFactionActions(f, fac, canv)
 
 			-- not == 1 because you can click it rapidly and easing won't make it reach 1
 			-- do i care? Yes.
-			if shk > 0.99 then
+			if shk > 0.99 and not self.Wait0 then
 				self:FullShake()
+			elseif shk < 0.5 and self.Wait0 then
+				self.Wait0 = nil
 			end
 		end
 	end
@@ -168,24 +170,33 @@ local function createOwnFactionActions(f, fac, canv)
 
 		self.NoShake = true
 		self.drawColor:Set(leavingProgressRed)
-		self:Disappear()
 
-		createFactionActions(f, fac, canv)
-		local pw, join = canv.PasswordEntry, canv.JoinBtn
+		local prom = Factions.RequestLeave()
 
-		if IsValid(pw) then
-			local pwY = pw.Y
-			pw.Y = canv.Main:GetTall() + 4
-			pw:To("Y", pwY, 0.3, 0.3, 0.2)
-		end
+		prom:Then(function()
+			self:Disappear()
 
-		if IsValid(join) then
-			local jnY = join.Y
-			join.Y = canv.Main:GetTall() + 4
-			join:To("Y", jnY, 0.3, pw and 0.4 or 0.3, 0.2)
-		end
+			createFactionActions(f, fac, canv)
+			local pw, join = canv.PasswordEntry, canv.JoinBtn
 
-		Factions.RequestLeave()
+			if IsValid(pw) then
+				local pwY = pw.Y
+				pw.Y = canv.Main:GetTall() + 4
+				pw:To("Y", pwY, 0.3, 0.3, 0.2)
+			end
+
+			if IsValid(join) then
+				local jnY = join.Y
+				join.Y = canv.Main:GetTall() + 4
+				join:To("Y", jnY, 0.3, pw and 0.4 or 0.3, 0.2)
+			end
+		end, function(_, err)
+			chat.AddText(Colors.Error, "Couldn't leave faction!\n", tostring(err))
+			if not IsValid(self) then return end
+			self.NoShake = false
+			self.Wait0 = true
+			self.drawColor:Set(Color(180, 60, 60))
+		end)
 	end
 
 end
@@ -430,6 +441,7 @@ function createFactionActions(f, fac, canv)
 		join:SetSize(128, 36)
 		join:SetPos(canv.Main:GetWide() / 2 - join:GetWide() / 2, plyList.FoldedY - join:GetTall() - 8)
 		join:SetLabel("Join")
+		join:SetColor(good)
 		canv.JoinBtn = join
 
 		if oldCanv then join:PopIn(nil, 0.1) end
@@ -449,8 +461,7 @@ function createFactionActions(f, fac, canv)
 
 		function join:Think()
 			local can = canJoin(self, lp, fac)
-
-			if not can then self:SetColor(bad) else self:SetColor(good) end
+			self:SetEnabled(can)
 		end
 
 		function join:Disappear()
@@ -478,7 +489,7 @@ function createFactionActions(f, fac, canv)
 				canv.LeaveBtn:Show()
 				canv.LeaveBtn.Y = plyList.FoldedY + 8
 				canv.LeaveBtn:To("Y", prev, 0.3, 0.2, 0.3)
-			end, function(err)
+			end, function(_, err)
 				chat.AddText(Color(180, 90, 90), "Something went wrong!\n", tostring(err))
 			end)
 

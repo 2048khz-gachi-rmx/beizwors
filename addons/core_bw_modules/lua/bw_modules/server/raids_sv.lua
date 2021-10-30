@@ -664,6 +664,8 @@ function doRaidNotify(rd)
 	local rders = {}
 
 	for k,v in pairs(rd:GetParticipants()) do
+		if IsPlayer(k) and k:IsBot() then return end -- dont notify debug raids
+
 		if string.IsSteamID(k) and rd:IsRaided(k) then
 			if sidToDiscord[k] then
 				table.insert(rded, "<@" .. sidToDiscord[k] .. ">")

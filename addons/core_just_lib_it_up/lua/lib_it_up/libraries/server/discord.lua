@@ -180,16 +180,14 @@ Embed.__call = Embed.new
 setmetatable(Embed, Embed)
 
 
+local db
 
-local db = mysqloo and mysqloo.GetDB()
-discord.DB = discord.DB or db
-
-hook.Add("OnMySQLReady", "Discord", function()
-	db = mysqloo.GetDB()
-	discord.DB = discord.DB or db
-end)
-
-
+if mysqloo then
+	mysqloo.UseLiveDB():Then(function(self, db2)
+		db = db2
+		discord.DB = db2
+	end)
+end
 
 function discord.GetChannels(mode, cb)
 	local q = "SELECT whook_url FROM `relays` WHERE json_search(`modes`, 'one', '%s') IS NOT NULL"

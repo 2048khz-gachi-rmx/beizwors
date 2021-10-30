@@ -56,17 +56,21 @@ local function makeErr(s)
 	return err[err_id - 1]
 end
 
-Factions.Errors.Generic 		= 	makeErr("Something went wrong.")
-Factions.Errors.BadPassword 	= 	makeErr("Incorrect password!")
-Factions.Errors.NamelessFac 	= 	makeErr("Can't create a faction without a name!")
-Factions.Errors.AlreadyIn 		= 	makeErr("Can't create a new faction while in one!")
-Factions.Errors.NameLength 		= 	makeErr("Faction names must be 5-32 characters long.")
-Factions.Errors.PasswordLength 	= 	makeErr("Faction passwords must be 5-32 characters long.")
-Factions.Errors.NameExists 		= 	makeErr("A faction with this name already exists.")
-Factions.Errors.NoFac 			= 	makeErr("No such factions exist!")
-Factions.Errors.JoinInRaid 		= 	makeErr("Can't join a faction while being raided!")
-Factions.Errors.JoinInFac 		= 	makeErr("Can't join a faction while already in one!")
-Factions.Errors.JoinWithBase	=	makeErr("Can't join a faction while owning a base!")
+local errs = Factions.Errors
+
+errs.Generic 			= 	makeErr("Something went wrong.")
+errs.BadPassword 		= 	makeErr("Incorrect password!")
+errs.NamelessFac 		= 	makeErr("Can't create a faction without a name!")
+errs.AlreadyIn 			= 	makeErr("Can't create a new faction while in one!")
+errs.NameLength 		= 	makeErr("Faction names must be 5-32 characters long.")
+errs.PasswordLength 	= 	makeErr("Faction passwords must be 5-32 characters long.")
+errs.NameExists 		= 	makeErr("A faction with this name already exists.")
+errs.NoFac 				= 	makeErr("No such factions exist!")
+errs.JoinInRaid 		= 	makeErr("Can't join a faction while being raided!")
+errs.JoinInFac 			= 	makeErr("Can't join a faction while already in one!")
+errs.JoinWithBase		=	makeErr("Can't join a faction while owning a base!")
+errs.CreateInRaid		=	makeErr("Can't create a faction while in a raid!")
+errs.LeaveInRaid		=	makeErr("Can't leave a faction while in a raid!")
 
 function LibItUp.PlayerInfo:GetFaction()
 	local fac = self._Faction
@@ -178,6 +182,10 @@ function Factions.CanCreate(name, pw, col, ply)
 		return false, Factions.Errors.AlreadyIn
 	end
 
+	if ply:InRaid() then
+		return false, Factions.Errors.CreateInRaid
+	end
+
 	if nmLen < 5 or nmLen > 32 then
 		return false, Factions.Errors.NameLength
 	end
@@ -188,6 +196,18 @@ function Factions.CanCreate(name, pw, col, ply)
 
 	if Factions.Factions[name] then
 		return false, Factions.Errors.NameExists
+	end
+
+	return true
+end
+
+function Factions.CanLeave(ply)
+	if not ply:GetFaction() then
+		return false, Factions.Errors.Generic
+	end
+
+	if ply:InRaid() then
+		return false, Factions.Errors.LeaveInRaid
 	end
 
 	return true

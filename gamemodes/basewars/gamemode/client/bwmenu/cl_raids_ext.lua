@@ -87,51 +87,53 @@ local function createRaidActions(pnl, fac, canv)
 	function raid:Think()
 		local ic
 
-		local can, why = BaseWars.Raid.CanGenerallyRaid(LocalPlayer(), false)
-		if can then
-			can, why = BaseWars.Raid.CanRaidFaction(LocalPlayer(), fac)
-		end
+		local curRd = LocalPlayer():InRaid()
 
-		if why then
-			if self:IsHovered() then
-				local cl, new = self:AddCloud("err")
+		if curRd and curRd:IsRaider(LocalPlayer()) then
+			self.Label = "Concede Raid"
+			ic = self:SetIcon(flagIcon)
+			self:SetColor(Colors.Raid)
+			self:SetEnabled(true)
+		else
+			local can, why = BaseWars.Raid.CanGenerallyRaid(LocalPlayer(), false)
 
-				if cl and new then
-					cl.Font = "OS20"
-					cl.MaxW = 250
-					cl.AlignLabel = 1
-
-					cl:SetTextColor(bad_red)
-					cl:SetRelPos(self:GetWide() / 2)
-					cl.ToY = -32
-
-					cl.DisappearTime = 0.2
-					cl.DisappearEase = 2.3
-
-					cl:SetText(why)
-				end
-			else
-				self:RemoveCloud("err")
+			if can then
+				can, why = BaseWars.Raid.CanRaidFaction(LocalPlayer(), fac)
 			end
 
 			self.Label = "Start raid!"
 			ic = self:SetIcon(startIcon)
-			self:SetEnabled(false)
-		else
-			self:SetEnabled(true)
-			self:RemoveCloud("err")
+			self:SetColor(Colors.Golden)
 
-			local curRd = LocalPlayer():InRaid()
-			if curRd and curRd:IsRaider(LocalPlayer()) then
-				self.Label = "Concede Raid"
-				ic = self:SetIcon(flagIcon)
-				self:SetColor(Colors.Raid)
-			else
+			if why then
+				if self:IsHovered() then
+					local cl, new = self:AddCloud("err")
+
+					if cl and new then
+						cl.Font = "OS20"
+						cl.MaxW = 250
+						cl.AlignLabel = 1
+
+						cl:SetTextColor(bad_red)
+						cl:SetRelPos(self:GetWide() / 2)
+						cl.ToY = -32
+
+						cl.DisappearTime = 0.2
+						cl.DisappearEase = 2.3
+
+						cl:SetText(why)
+					end
+				else
+					self:RemoveCloud("err")
+				end
+
 				self.Label = "Start raid!"
 				ic = self:SetIcon(startIcon)
-				self:SetColor(Colors.Golden)
+				self:SetEnabled(false)
+			else
+				self:SetEnabled(true)
+				self:RemoveCloud("err")
 			end
-
 		end
 
 		surface.SetFont(self:GetFont())

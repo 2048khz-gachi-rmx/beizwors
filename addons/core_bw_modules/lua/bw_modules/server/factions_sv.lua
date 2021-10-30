@@ -544,9 +544,17 @@ net.Receive("Factions", function(_, ply)
 		Factions.CreateFac(ply, name, pw, col)
 		throwSuccess(ply, reqID)
 	elseif mode == Factions.LEAVE then
+		reqID = net.ReadUInt(8)
+
 		-- Leaving a faction
+		local can, err = facs.CanLeave(ply)
+		if not can then
+			throwError(ply, reqID, err)
+			return
+		end
 
 		Factions.LeaveFac(ply)
+		throwSuccess(ply, reqID)
 
 	elseif mode == Factions.JOIN then
 		-- Joining a faction

@@ -314,9 +314,14 @@ function Factions.RequestKick(whomst)
 end
 
 function Factions.RequestLeave()
+	local prom, uid = promise()
+
 	net.Start("Factions")
 		net.WriteUInt(Factions.LEAVE, 4)
+		net.WriteUInt(uid, 8)
 	net.SendToServer()
+
+	return prom
 end
 
 function Factions.RequestJoin(fac, pw)
