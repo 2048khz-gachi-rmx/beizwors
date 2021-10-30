@@ -49,8 +49,7 @@ end)
 	end)
 
 CUM.AddCommand({"reboot", "restart"}, function(ply, time)
-	print("time is", time)
-	local time = math.max(tonumber(time) or 20, 1)
+	time = math.max(tonumber(time) or 20, 1)
 
 	aowl.CountDown(time, "RESTARTING SERVER" .. (reason and reason ~= "" and Format(" (%s)", reason) or ""), function()
 		game.ConsoleCommand("changelevel " .. game.GetMap() .. "\n")

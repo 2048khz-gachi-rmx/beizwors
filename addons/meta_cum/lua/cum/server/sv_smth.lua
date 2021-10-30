@@ -510,7 +510,7 @@ function CUM.ParseArgs(str)
 		args[#args+1] = s
 	end
 
-	if #str > 1 then
+	if #str > 0 then
 		args[#args + 1] = str
 	end
 
@@ -552,7 +552,6 @@ function CUM.HasPermissions(ply, to)
 end
 
 function CUM.Run(ply, cmd, argstr)
-
 	argstr = argstr or ""
 
 	local cmdtbl = CUM.cmds[cmd]
