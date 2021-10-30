@@ -89,7 +89,7 @@ local hl2_recs = {
 
 function DarkHUD.Ammo_GetRecoil(wep)
 	if wep.ArcCW then
-		local rec = wep.Recoil * wep:GetBuff_Mult("Mult_Recoil") * 6
+		local rec = wep.Recoil * wep:GetBuff_Mult("Mult_Recoil") * 3
 		return rec
 	end
 
