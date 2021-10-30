@@ -63,16 +63,16 @@ function Offhand.CreateBinds(n)
 		bind.ActionNum = i
 		Offhand.Binds[i] = bind
 
-		local key = cookie.GetNumber("offhand_key_" .. i)
+		--local key = cookie.GetNumber("offhand_key_" .. i)
 		local act = cookie.GetString("offhand_action_" .. i)
 
 		Offhand.CurrentActions[i] = act
 
-		if Bind.IsValidKey(key) then
+		--[[if Bind.IsValidKey(key) then
 			bind:SetKey(key)
 		else
 			cookie.Set("offhand_key_" .. i, keys[i])
-		end
+		end]]
 
 		fillBind(bind)
 	end
