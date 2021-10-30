@@ -5,8 +5,17 @@ Stims = Stims or {}
 Stims.Active = {}	   						-- stores [ply] = { activeStimStats }
 Stims.PlayerStims = Stims.PlayerStims or {} -- stores [ply] = { stimStats }
 Stims.ActionName = "Stim"
+Stims.OffhandTable = Stims.OffhandTable or {
+	Use = function() Stims.UseStim() end
+}
 
-Offhand.Register(Stims.ActionName, CLIENT and function() Stims.UseStim() end)
+if CLIENT then
+	Offhand.Register(Stims.ActionName, Stims.OffhandTable)
+
+	LibItUp.OnLoaded("darkhud.lua", function()
+		include("stims/cl_stim_darkhud_ext.lua")
+	end)
+end
 
 local blank_tbl = {}
 

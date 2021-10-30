@@ -134,7 +134,7 @@ function todo.Print()
 end
 
 function todo.Addendum(id, s2)
-	local res = sql.Check("SELECT str, adds FROM todo WHERE id ==" .. id, true)
+	--[[local res = sql.Check("SELECT str, adds FROM todo WHERE id ==" .. id, true)
 	if not res then return end
 
 	local str = res[1].str
@@ -149,5 +149,5 @@ function todo.Addendum(id, s2)
 	local em = Embed()
 	em:SetText("```\n" .. str .. "```"):SetTitle("Todo addendum:"):SetColor(200, 200, 70)
 
-	discord.SendEmbed("todo", "To-do Tracker", em)
+	discord.SendEmbed("todo", "To-do Tracker", em)]]
 end

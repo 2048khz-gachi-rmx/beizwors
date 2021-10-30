@@ -39,8 +39,11 @@ function META:Timer(name, sec, reps, func, ...)
 end
 
 function META:RemoveTimer(name)
-	if not name then error("Nice ID") return end
+	if not name then error("Nice ID") return false end
+	local ex = timer.Exists("__Timerified:" .. hex(self) .. ":" .. name)
 	timer.Remove("__Timerified:" .. hex(self) .. ":" .. name)
+
+	return ex
 end
 
 local metas = {

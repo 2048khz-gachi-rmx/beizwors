@@ -64,6 +64,11 @@ function util.gary()
 	error("gary")
 end
 
+function ChainValid(what)
+	if IsValid(what) then return what end
+	return false
+end
+
 local errorers = {}
 
 -- nohalt run: will throw an ErrorNoHalt

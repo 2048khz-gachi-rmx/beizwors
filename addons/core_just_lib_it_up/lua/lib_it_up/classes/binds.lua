@@ -113,6 +113,7 @@ Bind = LibItUp.Bind
 function Bind:Initialize(id)
 
 	self.ID = id
+	self:SetValid(true)
 
 	-- if an existing object for this ID already exists, just give that
 	if Binds.Objects[id] then return Binds.Objects[id] end
@@ -130,8 +131,57 @@ function Bind:Initialize(id)
 	Binds.Data[id] = bindData:new()
 end
 
+function Bind:Remove()
+	Binds.Data[self.ID] = nil
+	if Binds.Objects[self.ID] == self then
+		Binds.Objects[self.ID] = nil
+	end
+
+	local t = Binds.Keys[self.Key]
+	if not t then return end
+
+
+	for i=#t, 1, -1 do
+		if t[i] == self then
+			table.remove(t, i)
+		end
+	end
+
+	self:SetValid(false)
+end
+
+ChainAccessor(Bind, "_Valid", "Valid")
+Bind:AliasMethod(Bind.GetValid, "IsValid")
+
 function Bind:GetData()
 	return Binds.Data[self.ID]
+end
+
+function Bind.IsValidKey(key, arg2)
+	if istable(key) then key = arg2 end
+	if not arg2 then return false end
+
+	local name = input.GetKeyName(key)
+	if not name then return false end
+
+	if #name == 1 then return true end 				-- 1-letter binds are fine
+	if name:match("^MWHEEL") then return false end 	-- mousewheel cant be a bind
+
+	local mkey = tonumber(name:match("MOUSE(%d+)"))
+	if mkey and mkey > 2 then return true end -- lmb/rmb cant be binds
+
+	local fkey = tonumber(name:match("F(%d+)"))
+	if fkey and fkey <= 4 then return false end -- F1-F4 cant be binds
+
+	if key >= 64 and key <= 71 then
+		return false -- control keys: enter, space, caps/scroll locks, etc.
+	end
+
+	if key >= 104 and key <= 106 then
+		return false -- caps/scroll/num toggles
+	end
+
+	return true
 end
 
 -- exclusive means that bind and ONLY that bind will proc for this key
@@ -172,7 +222,7 @@ function Bind:SetKey(k)
 		cleanID(Binds.Keys[prev], self.ID)
 	end
 
-	if Binds.Keys[k] then
+	if k and Binds.Keys[k] then
 		cleanID(Binds.Keys[k], self.ID)
 
 		if self.Exclusive then
@@ -256,10 +306,26 @@ end
 ChainAccessor(Bind, "__State", "Active")			-- the "custom" button state; can be influenced by addons (eg Bind:SetHeld(true))
 ChainAccessor(Bind, "__BtnState", "ButtonState") 	-- the REAL button state, the player's input representing this bind currently
 
+function Bind:Deactivate(ply)
+	local newState = not self.__State
+	if newState ~= false then return end
+
+	self:SetActive(newState)
+	self:Emit("Deactivate", ply)
+end
+
+function Bind:Activate(ply)
+	local newState = not self.__State
+	if newState ~= true then return end
+
+	self:SetActive(newState)
+	self:Emit("Activate", ply)
+end
+
 function Bind:_Fire(down, ply)
 
 	if self.Method == BINDS_HOLD then
-		if down and self:GetActive() then return end 	-- you can't re-activate a holdable bind
+		if down == self:GetActive() then return end 	-- you can't re-activate a holdable bind
 		if not down and self:GetHeld() then return end 	-- if the bind is forced to be held, don't deactivate it
 
 		self:SetActive(down)

@@ -15,20 +15,27 @@ end
 
 function sql.DumpInfo(tblname)
 	local t = sql.Check("SELECT * FROM " .. tblname, true)
-	if istable(t) then PrintTable(t) else print('No info!') end
+	if istable(t) then
+		PrintTable(t)
+	else
+		print("No info!")
+	end
 end
 
 function sql.Check(query, expectres)
 	local res = sql.Query(query)
 
-	if res==nil and expectres then
+	if res == nil and expectres then
 		if sql.Debugging then
-			print('SQL Error(?): expected a result, got nil instead.\nQuery: '..query)
+			printf("SQL Error(?): expected a result, got nil instead.\nQuery: %s", query)
 		end
 		return false, false
 	end
 
-	if res==false then print('SQL Error: \nQuery: ' .. query .. ' \n Error: ' .. sql.LastError()) return false, true end
+	if res == false then
+		print("SQL Error: \nQuery: %s \n Error: %s", query, sql.LastError())
+		return false, true
+	end
 
 	if expectres then return res end
 end

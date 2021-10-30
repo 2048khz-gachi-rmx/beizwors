@@ -42,14 +42,25 @@ function Stims.UseStim()
 end
 
 
-hook.Add("Offhand_GenerateActionSelection", "ShowStim", function(wheel)
+hook.Add("Offhand_GenerateSelection", "ShowStim", function(bind, wheel)
 	local stim = Offhand.AddChoice(Stims.ActionName,
 		"Stimpack", "Heal 75HP over 1.5s.",
 		Icon("https://i.imgur.com/1aEZv3d.png", "adrenaline_shot128.png"):
 			SetSize(64, 64))
 
 	stim:On("Select", function()
-		print("idunno stim up?")
+		Offhand.SetBindAction(bind, Stims.ActionName)
+	end)
+end)
+
+hook.Add("Offhand_GenerateSelection", "ShowNothing", function(bind, wheel)
+	local stim = Offhand.AddChoice("fucking nothing",
+		"nothing", "lole",
+		Icon("https://i.imgur.com/6se0gFC.png", "none64_gray.png"):
+			SetSize(64, 64))
+
+	stim:On("Select", function()
+		Offhand.SetBindAction(bind, "fucking nothing")
 	end)
 end)
 

@@ -85,7 +85,7 @@ local function GetOrDownload(url, name, flags, cb)
 		if cb then cb(mat.mat, true) end
 	end
 
-	return mat
+	return mat, not mat.failed and mat.mat
 end
 
 draw.GetMaterial = GetOrDownload

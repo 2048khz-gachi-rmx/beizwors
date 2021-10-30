@@ -130,6 +130,11 @@ function wheel:_PaintPanel(wheel, w, h)
 end
 
 function wheel:_OnMousePressed(wheel, mouse)
+	if mouse == MOUSE_RIGHT then
+		local proceed = wheel:Emit("RightClick", self)
+		if proceed ~= true then return end -- right clicks not registered as clicks by default
+	end
+
 	local curhov = self._CurHovered
 	if curhov then
 		for k, opt in ipairs(wheel.Options) do
@@ -397,7 +402,7 @@ function wheel:Hide(delay)
 		end, 2)
 
 		self.Panel:SetMouseInputEnabled(false)
-		self.Panel:SetKeyBoardInputEnabled(false)
+		self.Panel:SetKeyboardInputEnabled(false)
 	end
 
 	local options = self.Options
@@ -406,6 +411,8 @@ function wheel:Hide(delay)
 		local opt = options[i]
 		opt:_Hide()
 	end
+
+	self:Emit("Hide", delay)
 end
 
 LibItUp.InteractWheelOption = LibItUp.InteractWheelOption or Emitter:extend()
