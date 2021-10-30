@@ -545,7 +545,7 @@ function CUM.HasPermissions(ply, to)
 	local perms = istable(to) and to or {to}
 
 	for k,v in ipairs(perms) do
-		return CAMI.UsergroupInherits(ug, v)
+		if CAMI.UsergroupInherits(ug, v) then return true end
 	end
 
 	return BaseWars.IsDev(ply)

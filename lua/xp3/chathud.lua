@@ -71,13 +71,13 @@ local function rescale()
 
 	surface.CreateFont("CH_Text", {
 		font = "Roboto",
-		size = math.max(22, math.Multiple(26 * DarkHUD.Scale, 4, true, true)),
+		size = math.max(22, math.Multiple(22 * DarkHUD.Scale, 4, true, true)),
 		weight = 400,
 	})
 
 	surface.CreateFont("CH_TextShadow", {
 		font = "Roboto",
-		size = math.max(22, math.Multiple(26 * DarkHUD.Scale, 4, true, true)),
+		size = math.max(22, math.Multiple(22 * DarkHUD.Scale, 4, true, true)),
 		weight = 400,
 		blursize = 2,
 	})
@@ -87,7 +87,7 @@ hook.Add("DarkHUD_CreatedVitals", "ChatHUD", rescale)
 hook.Add("DarkHUD_Rescaled", "ChatHUD", rescale)
 
 rescale()
-
+timer.Simple(30, rescale) -- idfk
 
 
 local blacklist = {

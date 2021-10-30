@@ -10,7 +10,7 @@ CUM.AddCommand({"uptime", "time", "ut"}, function(ply)
 	if CurTime() - lastReq < 15 then return false end
 	lastReq = CurTime()
 end)
-	:SetPerms("admin")
+	:SetPerms("user")
 	:SetSilent(true)
 
 	:SetReportFunc(function(self, rply, caller, time)
