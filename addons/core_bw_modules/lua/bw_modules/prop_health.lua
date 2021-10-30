@@ -34,7 +34,7 @@ end
 function BaseWars.DealDamage(ent, dmg)
 	if isDMG(dmg) then dmg = dmg:GetDamage() end
 
-	if ent:GetClass() == "prop_physics" then
+	if BaseWars.ShouldUseHealth(ent) then
 		local hp = ent:Health()
 		if hp - dmg < 0 then
 			ent:Remove()
@@ -44,6 +44,7 @@ function BaseWars.DealDamage(ent, dmg)
 		local fr = (hp - dmg) / ent:GetMaxHealth()
 		ent:SetNWFloat("LastDamage", CurTime())
 	else
+		print("!!! Unhandled DealDamage call on", ent)
 		-- ??
 	end
 end
