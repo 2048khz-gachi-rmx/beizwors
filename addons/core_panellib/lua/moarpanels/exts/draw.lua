@@ -762,3 +762,31 @@ function draw.SimpleText2( text, font, x, y, colour, xalign, yalign )
 	return w, h
 
 end
+
+local active = Color(60, 100, 175)
+local deactive = Color(75, 75, 75)
+
+local knobactive = Color(110, 170, 245)
+local knobdeactive = Color(50, 50, 50)
+
+local cur = Color(0, 0, 0)
+local knobcur = Color(0, 0, 0)
+
+function draw.OnOffSlider(fr, x, y, w, h)
+	fr = math.Clamp(fr, 0, 1)
+
+	draw.LerpColor(1 - fr, cur, deactive, active)
+	draw.LerpColor(1 - fr, knobcur, knobdeactive, knobactive)
+
+	local rnd = math.floor(math.min(h, w) / 2)
+	local knob = math.min(h, w)
+
+	local x1 = x + w * 0.05
+	local x2 = x + w * 0.95 - knob
+	local kx = Lerp(fr, x1, x2) + knob / 2
+
+	draw.RoundedBox(rnd, x + knob / 2, y + math.floor(h / 4), w - knob, h / 2, cur)
+
+	surface.SetDrawColor(knobcur)
+	draw.DrawMaterialCircle(kx, y + math.ceil(h / 2), knob)
+end
