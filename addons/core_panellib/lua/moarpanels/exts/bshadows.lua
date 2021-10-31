@@ -98,14 +98,18 @@ function handle:SetGenerator(fn)
 	self._Generator = fn
 end
 
+
 function handle:Paint(x, y, w, h)
 	if self._NeedRegen and self._LastArgs then
 		self:CacheShadow(unpack(self._LastArgs))
 		self._NeedRegen = nil
 	end
 
+	surface.SetDrawColor(255, 255, 255)
 	surface.SetMaterial(self.Mat)
+
 	local ratW, ratH = w / self.W, h / self.H
+
 	surface.DrawTexturedRect(x - spreadSize * ratW, y - spreadSize * ratH,
 		w + spreadSize * 2 * ratW, h + spreadSize * 2 * ratH)
 end
@@ -121,6 +125,7 @@ function handle:CacheShadow(int, spr, blur, color, color2)
 	self._LastArgs = {int, spr, blur, color, color2}
 
 	self:_Begin()
+	print("CacheShadow called")
 		xpcall(self._Generator, err, self, self.W, self.H)
 	self:_End(int, spr, blur, color, color2)
 end

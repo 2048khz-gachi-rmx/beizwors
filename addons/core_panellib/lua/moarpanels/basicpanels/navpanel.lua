@@ -589,7 +589,7 @@ function NavPanel:SetActivePanel(pnl, nopopout, noanim) --nil is acceptable as p
 		self.ActivePnl.__popOut = self.ActivePnl:PopOut(nil, nil, function(_, self)
 			self:SetVisible(false)
 		end)
-		self.ActivePnl.__move = self.ActivePnl:MoveBy(0, 24, 0.1, 0, 0.2)
+		self.ActivePnl.__move = self.ActivePnl:MoveBy(0, 24, 0.1, 0, 0.3)
 	end
 
 	self.ActivePnl = pnl

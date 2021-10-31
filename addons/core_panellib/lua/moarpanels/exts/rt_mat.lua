@@ -1,4 +1,4 @@
-local RTs = MoarPanelsRTs or {}
+local RTs = MoarPanelsRTs or muldim:new()
 MoarPanelsRTs = RTs
 
 local mats = MoarPanelsRTMats or {}
@@ -19,35 +19,18 @@ local function CreateRT(name, w, h)
 
 end
 
+local fmt = "%s_%d_%d"
 function draw.GetRT(name, w, h)
 	local rt
 	if not w or not h then error("error #2 or #3: expected width and height, received nothin'") return end
 
+	name = fmt:format(name, w, h)
+
 	if not RTs[name] then
-
-		rt = CreateRT(name .. w .. h, w, h)
-
-		local m = muldim()
-		RTs[name] = m
-
-		m:Set(rt, w, h)
-		m:Set(1, "Number")
-
+		rt = CreateRT(name, w, h)
+		RTs[name] = rt
 	else
-		local rtm = RTs[name]
-		local cached = rtm:Get(w, h)
-
-		if cached then
-			rt = cached
-		else --new W and H aren't equal, so recreate the RT
-
-			local id = rtm:Get("Number")
-			rtm:Set(id + 1, "Number")
-
-			rt = CreateRT(name .. w .. h .. id, w, h)
-			rtm:Set(rt, w, h)
-		end
-
+		rt = RTs[name]
 	end
 
 	return rt
@@ -55,7 +38,8 @@ end
 
 function draw.GetRTMat(name, w, h, shader)
 	local rt = draw.GetRT(name, w, h)
-	name = name .. ("%dx%d"):format(w, h)
+	name = fmt:format(name, w, h)
+
 	local mat = mats[name]
 	if not mat then
 

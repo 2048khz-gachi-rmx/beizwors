@@ -74,7 +74,7 @@ local families = {
 
 	["Montserrat"] = "MR",
 	["Montserrat Medium"] = "MRM",
-	["Montserrat-Bold"] = "MRB",
+	["Montserrat Bold"] = "MRB",
 
 	["SnareDrum Zero NBP"] = "SDZ",
 	["SnareDrum Two NBP"] = "SDT",

@@ -124,11 +124,8 @@ if CLIENT then
 		end
 
 		wh:On("Hide", "HideChoice", function()
-			bind.Wheel = nil
-
-			-- select callback executed, action changed, wheel gone
-			-- now deactivate the bind to proc the new action
 			bind:Deactivate()
+			bind.Wheel = nil
 		end)
 
 		wh:On("RightClick", "Hide", function()
