@@ -3,7 +3,6 @@ local sin = hud.StructureInfo
 local anim = sin.Anims
 
 function sin:PaintCustom(cury)
-	local scale = DarkHUD.Scale
 	local ent = self:GetEntity():IsValid() and self:GetEntity()
 	local w, h = self:GetSize()
 

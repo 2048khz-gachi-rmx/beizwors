@@ -23,7 +23,7 @@ function sin:PaintLevel(cury)
 
 	if not self.EntLevel then return end
 
-	local offy = cury + 4 * scale
+	local offy = cury
 
 	local lvText = Language("Level", self.EntLevel, self.EntMaxLevel)
 	local lvFont = Fonts.PickFont("BSB", lvText, w,

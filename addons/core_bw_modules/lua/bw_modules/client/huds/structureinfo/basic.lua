@@ -91,12 +91,14 @@ function sin:PaintName(cury)
 
 	txt.Text = tx
 
+
 	DarkHUD.PaintBar(rounding, barX, offy, barW, barH, hpFr,
 		HPBG, hpBorderCol, hpCol, txt)
 
-	offy = offy + barH
+	offy = offy + barH + 4
 
 	self:SizeTo(math.max(self:GetWide(), tw), -1, 0.3, 0, 0.3)
+
 	return offy - cury
 end
 

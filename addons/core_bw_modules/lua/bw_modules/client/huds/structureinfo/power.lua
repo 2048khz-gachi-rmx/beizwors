@@ -27,6 +27,7 @@ function sin:PaintPower(cury)
 	local szTo = 0
 
 	if pwFr > 0 then
+		offy = offy - draw.GetFontHeight("OSB20") * 0.125 * pwFr -- wtf
 		surface.SetDrawColor(255, 255, 255)
 		draw.BeginMask(surface.DrawRect, 0, 0, w, h)
 		draw.DrawOp()
@@ -37,6 +38,7 @@ function sin:PaintPower(cury)
 		local _, th = draw.SimpleText("No power!", "OSB20",
 			w / 2, offy, col, 1, 5)
 
+		--th = th + 4
 		offy = offy + math.ceil(th * pwFr)
 		szTo = th * noPwTo
 

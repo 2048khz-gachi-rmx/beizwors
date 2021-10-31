@@ -71,7 +71,7 @@ function ENT:PaintStructureInfo(w, y)
 	surface.SetTextPos(w/2 - totalW/2 + icSz + tw, y + th * 0.875 - th2 * 0.875)
 	surface.DrawText(tx2)
 
-	return 24
+	return math.max(icSz, draw.GetFontHeight(smallFont)) + 4
 end
 
 function ENT:CLInit()

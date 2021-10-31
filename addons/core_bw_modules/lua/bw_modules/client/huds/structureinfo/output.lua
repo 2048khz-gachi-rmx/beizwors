@@ -39,7 +39,7 @@ ic:SetSize(24, 24)
 function sin:PaintPrinterOutput(ent, cury)
 	local scale = DarkHUD.Scale
 	local w, h = self:GetSize()
-	local offy = cury + 8 * scale
+	local offy = cury
 
 	local amt = ent and ent:GetPrintAmount() or self._PrintAmt or 0
 	self._PrintAmt = self._PrintAmt or amt
