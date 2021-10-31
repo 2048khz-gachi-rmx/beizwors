@@ -80,6 +80,31 @@ end
 
 DarkHUD.ReScale(true)
 
+--[==================================[
+			Settings setup
+--]==================================]
+
+local 	st = Settings.Create("darkhud_drawframe", "bool")
+			:SetDefaultValue(true)
+			:SetCategory("HUD")
+			:SetName("Draw HUD background")
+
+DarkHUD.SettingFrame = st
+
+
+		st = Settings.Create("darkhud_3d", "bool")
+			:SetDefaultValue(true)
+			:SetCategory("HUD")
+			:SetName("Use 3D")
+
+DarkHUD.Setting3D = st
+
+
+
+
+--[==================================[
+				Util
+--]==================================]
 local tex_corner8	= surface.GetTextureID( "gui/corner8" )
 local tex_corner16	= surface.GetTextureID( "gui/corner16" )
 local tex_corner32	= surface.GetTextureID( "gui/corner32" )
@@ -134,12 +159,12 @@ local function RoundedBoxCorneredSize(bordersize, x, y, w, h, color, btl, btr, b
 		surface.DrawRect( x + w - RbordW, y + btr, RbordW, h - btr - bbr )
 	end
 
-	-- goroz fill
+	-- horiz fill
 
 	surface.DrawRect(x + btl, y, w - btl - btr, TbordH)
 	surface.DrawRect(x + bbl, y + h - BbordH, w - bbl - bbr, BbordH)
 
-	surface.DrawRect( x, y + btr, RbordW, h - (y + btr) - bbr ) -- draw right
+	--surface.DrawRect( x, y + btr, RbordW, h - (y + btr) - bbr ) -- draw right
 
 	local tex
 	local fn = surface.SetTexture
@@ -269,3 +294,4 @@ DarkHUD.HideHUDs = DarkHUD.HideHUDs or {}
 hook.Add("HUDShouldDraw", "DarkHUD_Hide", function(name)
 	if DarkHUD.HideHUDs[name] then return false end
 end)
+

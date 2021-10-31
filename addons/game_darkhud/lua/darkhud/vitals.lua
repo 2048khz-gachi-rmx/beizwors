@@ -17,6 +17,11 @@ fonts.FactionFont = "Open Sans"
 fonts.MoneyFont = "Open Sans"
 fonts.VitalsNumberFont = "Open Sans"
 
+local st = DarkHUD.SettingFrame or Settings.Create("darkhud_drawframe", "bool")
+st:SetDefaultValue(true)
+	:SetCategory("HUD")
+
+DarkHUD.SettingFrame = st
 
 local scale = DarkHUD.Scale
 
@@ -312,6 +317,8 @@ function DarkHUD.CreateVitals()
 
 			local boxY, boxH = -mf * 36, 32
 
+			local am = surface.GetAlphaMultiplier()
+			surface.SetAlphaMultiplier(surface.GetAlphaMultiplier() * mf)
 			DisableClipping(true)
 				draw.RoundedBox(8, 12, boxY, mw + 8 + 24 + 6 + 8, boxH, boxcol)
 
@@ -322,6 +329,8 @@ function DarkHUD.CreateVitals()
 				surface.SetTextPos(12 + 8 + 24 + 6, boxY + boxH / 2 - mh / 2)
 				surface.DrawText(mtxt)
 			DisableClipping(false)
+
+			surface.SetAlphaMultiplier(am)
 			--draw.SimpleText(mtxt, "OSB28", 48, boxY + boxH / 2, col, 0, 1)
 		end
 	end
@@ -561,7 +570,10 @@ hook.Add("HUDPaint", "DarkHUD_Vitals", function()
 	local f = DarkHUD.Vitals
 	if not IsValid(f) then return end
 
+	DarkHUD:Emit("PrePaintVitals", f)
+	f.NoDraw = not DarkHUD.SettingFrame:GetValue()
 	f:PaintManual()
+	DarkHUD:Emit("PostPaintVitals", f)
 end)
 
 local wasvalid = false

@@ -199,6 +199,7 @@ function DarkHUD.CreateAmmo()
 			end
 
 			self.Gone = false
+			self.GoingAway = false
 
 			if self.Y ~= fY and self.Recoil == 0 then
 				local anim, new = self:To("Y", fY, 0.4, 0, 0.3)
@@ -208,9 +209,11 @@ function DarkHUD.CreateAmmo()
 			end
 		else
 			local anim, new = self:To("Y", ScrH() - 1, 0.15, 0, 4)
+			self.GoingAway = true
 			if new then
 				anim:Then(function()
 					self.Gone = true
+					self.GoingAway = false
 					self.WasGone = true
 				end)
 			end
@@ -221,6 +224,10 @@ function DarkHUD.CreateAmmo()
 	function f:MaskHeader(w, h)
 		--render.SetStencilCompareFunction(STENCIL_ALWAYS)
 		draw.RoundedStencilBox(rad, 0, 0, w, self.HeaderSize, color_white, true, true, false, false)
+	end
+
+	function f:PrePaint(w, h)
+		self.NoDraw = self.Gone
 	end
 
 	function f:PostPaint(w, h)
@@ -478,7 +485,10 @@ hook.Add("HUDPaint", "DarkHUD_Ammo", function()
 	local f = DarkHUD.Ammo
 	if not IsValid(f) then return end
 
+	DarkHUD:Emit("PrePaintAmmo", f)
+	f.NoDraw = not DarkHUD.SettingFrame:GetValue()
 	f:PaintManual()
+	DarkHUD:Emit("PostPaintAmmo", f)
 end)
 
 DarkHUD:On("Ready", "CreateAmmo", DarkHUD.CreateAmmo)

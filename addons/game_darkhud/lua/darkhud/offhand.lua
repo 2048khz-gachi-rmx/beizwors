@@ -73,17 +73,21 @@ dh:On("Rescale", "OffhandFonts", function(_, sc)
 	DarkHUD.OffhandKeyFontSize = math.ceil(sc * 28)
 end)
 
-dh:On("AmmoPainted", "PaintOffhand", function(_, pnl, w, h)
-	local x = 8
+dh:On("AmmoPainted", "PaintOffhand", function(_, pnl, fw, h)
+	local x = pnl.OffhandX or 8
 	local w = math.max(48, 48 * DarkHUD.Scale)
-	local y = -w - DarkHUD.OffhandYPad
+	pnl.OffhandFr = pnl.OffhandFr or 0
+	local y = -w - DarkHUD.OffhandYPad - (1 - pnl.OffhandFr) * h
 
 	local mat, has = draw.GetMaterial(unpack(icon))
 
 	if has and not handle.rendered then
 		handle:CacheShadow(3, 8, 4)
-		--handle.rendered = true
+		handle.rendered = true
 	end
+
+	pnl:To("OffhandX", pnl.Gone and fw - #Offhand.Binds * w or 8, 0.3, 0, 0.3)
+	pnl:To("OffhandFr", (pnl.Gone or pnl.GoingAway) and 0 or 1, 0.3, 0, 0.3)
 
 	DisableClipping(true)
 
@@ -100,20 +104,20 @@ dh:On("AmmoPainted", "PaintOffhand", function(_, pnl, w, h)
 		local left = x - rectSz
 		local uleft = ux - rectSz
 
-		local top = -w - DarkHUD.OffhandYPad - rectSz
+		local top = y - rectSz
 		local utop = uy - rectSz
 
 		local rsz = w + rectSz * 2
 
-		surface.SetDrawColor(rectCol:Unpack())
+		--[[surface.SetDrawColor(rectCol:Unpack())
 		surface.DrawRect(left, top, rsz, rsz)
 
 		surface.SetDrawColor(gradCol:Unpack())
 		surface.SetMaterial(MoarPanelsMats.gd)
 		surface.DrawTexturedRectUV(left,
-			-w * gradH - DarkHUD.OffhandYPad + rectSz,
+			-w * gradH - DarkHUD.OffhandYPad + rectSz - (1 - pnl.OffhandFr) * h,
 			rsz, w * gradH,
-			0, 0, 1, gradStart)
+			0, 0, 1, gradStart)]]
 
 		local ok, add
 
@@ -128,9 +132,9 @@ dh:On("AmmoPainted", "PaintOffhand", function(_, pnl, w, h)
 
 		::postpaint::
 
-		surface.SetDrawColor(outlineCol:Unpack())
+		--[[surface.SetDrawColor(outlineCol:Unpack())
 		surface.DrawOutlinedRect(left, top,
-			rsz, rsz)
+			rsz, rsz)]]
 
 		local txt = fmt:format(input.GetKeyName(bind.Key)):upper()
 
@@ -140,7 +144,7 @@ dh:On("AmmoPainted", "PaintOffhand", function(_, pnl, w, h)
 		local txX, txY = math.floor(uleft + rsz / 2 - txW / 2),
 			math.floor(utop - 4 - txH)
 
-		surface.SetTextColor(0, 0, 0)
+		surface.SetTextColor(0, 0, 0, (pnl.OffhandFr or 0) * 255)
 
 		for i=1, 5 do
 			surface.SetTextPos(txX, txY)
@@ -149,7 +153,7 @@ dh:On("AmmoPainted", "PaintOffhand", function(_, pnl, w, h)
 
 		surface.SetFont("Darkhud_OffhandTip")
 		surface.SetTextPos(txX, txY)
-		surface.SetTextColor(255, 255, 255)
+		surface.SetTextColor(255, 255, 255, (pnl.OffhandFr or 0) * 255)
 		surface.DrawText(txt)
 
 		x = x + (add or w) + pad
