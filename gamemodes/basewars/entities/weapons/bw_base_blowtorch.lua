@@ -107,7 +107,6 @@ local function isZappable(self, ent)
 end
 
 local function canZap(self, ent, dmg)
-
 	if not IsProp(ent) and not IsOwned(ent) then return false end
 
 	return BaseWars.Raid.CanBlowtorch(self:GetOwner(), ent, self, dmg)
@@ -127,6 +126,7 @@ function SWEP:PrimaryAttack()
 	})
 
 	local trent = tr.Entity
+
 	local ow = isZappable(self, trent)
 
 	if not ow then

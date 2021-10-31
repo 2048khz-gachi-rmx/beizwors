@@ -1,3 +1,4 @@
+if LibItUp then LibItUp.SetIncluded() end
 require("mysqloo")
 
 local is_dedi = jit.os == "Linux"
@@ -151,20 +152,20 @@ local onLiveConnect = {}
 function mysqloo.UseLiveDB()
 	local pr = Promise()
 
-	if mysqloo.LiveDatabase and mysqloo.LiveDatabase:status() == 0 then
+	if is_dedi then
+		mysqloo.OnConnect(function()
+			pr:Resolve(mysqloo.GlobalDatabase)
+		end)
+
+		return pr
+	end
+
+	if mysqloo.LiveDatabase then
 		if mysqloo.__liveConnected then
 			pr:Resolve(mysqloo.LiveDatabase)
 		else
 			onLiveConnect[#onLiveConnect + 1] = pr
 		end
-
-		return pr
-	end
-
-	if is_dedi then
-		mysqloo.OnConnect(function()
-			pr:Resolve(mysqloo.GlobalDatabase)
-		end)
 
 		return pr
 	end
@@ -176,7 +177,6 @@ function mysqloo.UseLiveDB()
 		hook.Run("OnLiveMySQLReady", db)
 
 		for k,v in ipairs(onLiveConnect) do
-			print("resolve completeLoad")
 			v:Resolve(db)
 		end
 	end
@@ -188,6 +188,7 @@ function mysqloo.UseLiveDB()
 		err("Do `live_mysql_reconnect` if you want to try again.")
 		err(...)
 	end
+
 
 	onLiveConnect[#onLiveConnect + 1] = pr
 

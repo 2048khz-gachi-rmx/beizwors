@@ -117,15 +117,15 @@ hook.Add("PlayerSay", "Discord", function(ply, msg)
 	if not discord.Enabled then return end
 	if not discord.DB then return end
 
-    local cmd = msg:match(cmdptrn)
+	local cmd = msg:match(cmdptrn)
 
-    if 	aowl.cmds[cmd] or
-    	CUM.cmds[cmd] or
-    	BaseWars.Commands.cmds[cmd] or
-    	isfunction(ULib[cmd]) --ulib has a very gay method of storing commands
-    then return end
+	if 	aowl.cmds[cmd] or
+		CUM.cmds[cmd] or
+		BaseWars.Commands.cmds[cmd] or
+		isfunction(ULib[cmd]) --ulib has a very gay method of storing commands
+	then return end
 
-    discord.Send("chat", ply:Nick(), msg)
+	discord.Send("chat", ply:Nick(), msg)
 
 end)
 
@@ -182,12 +182,13 @@ setmetatable(Embed, Embed)
 
 local db
 
-if mysqloo then
-	mysqloo.UseLiveDB():Then(function(self, db2)
-		db = db2
-		discord.DB = db2
-	end)
-end
+if not mysqloo then include("mysql.lua") end
+
+mysqloo.UseLiveDB():Then(function(self, db2)
+	print("discord: livedb connected")
+	db = db2
+	discord.DB = db2
+end, error)
 
 function discord.GetChannels(mode, cb)
 	local q = "SELECT whook_url FROM `relays` WHERE json_search(`modes`, 'one', '%s') IS NOT NULL"
