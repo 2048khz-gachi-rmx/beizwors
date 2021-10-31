@@ -1,11 +1,3 @@
-local fn = "_server_settings.txt"
-local jsonDat = file.Read(fn, "DATA")
-local dat = jsonDat and util.JSONToTable(jsonDat) or {}
-
-if not file.Exists(fn, "DATA") then
-	file.Write(fn, util.TableToJSON({}))
-end
-
 Settings = Settings or {}
 Settings.Settings = Settings.Settings or {}
 Settings.Categories = Settings.Categories or muldim:new()
@@ -65,7 +57,7 @@ ChainAccessor(stg, "_Category", "Category", true)
 ChainAccessor(stg, "_Type", "Type")
 
 function Settings.Get(k, v)
-	return cookie.GetString(k, v) --(dat[k] ~= nil and dat[k]) or v
+	return cookie.GetString("Setting:" .. k, v) --(dat[k] ~= nil and dat[k]) or v
 end
 
 function Settings.Set(k, v)
@@ -120,4 +112,18 @@ function Settings.Create(k, typ, cb, override)
 	end
 
 	return st
+end
+
+-- legacy settings import
+
+local fn = "_server_settings.txt"
+if not file.Exists(fn, "DATA") then return end
+
+local jsonDat = file.Read(fn, "DATA")
+local dat = jsonDat and util.JSONToTable(jsonDat) or {}
+
+file.Delete(fn)
+
+for k,v in pairs(dat) do
+	Settings.Set(k, v)
 end
