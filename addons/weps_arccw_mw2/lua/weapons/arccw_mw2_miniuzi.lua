@@ -44,8 +44,8 @@ SWEP.ExtendedClipSize = 48
 SWEP.ReducedClipSize = 16
 
 SWEP.VisualRecoilMult = 0
-SWEP.Recoil = 0.60
-SWEP.RecoilSide = 0.5
+SWEP.Recoil = 0.5
+SWEP.RecoilSide = 0.3
 SWEP.RecoilRise = 0.3
 
 SWEP.Delay = 0.063 -- 60 / RPM.
@@ -65,7 +65,7 @@ SWEP.Firemodes = {
 SWEP.NPCWeaponType = {"weapon_ar2", "weapon_smg1"}
 SWEP.NPCWeight = 100
 
-SWEP.AccuracyMOA = 16 -- accuracy in Minutes of Angle. There are 60 MOA in a degree.
+SWEP.AccuracyMOA = 12 -- accuracy in Minutes of Angle. There are 60 MOA in a degree.
 SWEP.HipDispersion = 200 -- inaccuracy added by hip firing.
 SWEP.MoveDispersion = 150
 

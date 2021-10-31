@@ -35,10 +35,10 @@ SWEP.Primary.ClipSize = 25 -- DefaultClip is automatically set.
 
 SWEP.PhysBulletMuzzleVelocity = 300
 
-SWEP.Recoil = 0.200
-SWEP.RecoilSide = 0.100
+SWEP.Recoil = 0.310
+SWEP.RecoilSide = 0.210
 SWEP.RecoilRise = 0.1
-SWEP.RecoilPunch = 2.5
+SWEP.RecoilPunch = 3
 
 SWEP.Delay = 60 / 650 -- 60 / RPM.
 SWEP.Num = 1 -- number of shots per trigger pull.
@@ -72,7 +72,7 @@ end
 SWEP.NPCWeaponType = "weapon_smg1"
 SWEP.NPCWeight = 100
 
-SWEP.AccuracyMOA = 7 -- accuracy in Minutes of Angle. There are 60 MOA in a degree.
+SWEP.AccuracyMOA = 8 -- accuracy in Minutes of Angle. There are 60 MOA in a degree.
 SWEP.HipDispersion = 325 -- inaccuracy added by hip firing.
 SWEP.MoveDispersion = 75
 
