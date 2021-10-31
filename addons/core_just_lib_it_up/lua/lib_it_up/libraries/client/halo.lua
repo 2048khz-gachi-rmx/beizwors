@@ -1,3 +1,11 @@
+local hAdd = _haloAdd or halo.Add
+_haloAdd = hAdd
+
+function halo.Add(...)
+	if not Settings.Get("halo_enable", true) then return end
+	return _haloAdd(...)
+end
+
 do return end
 module( "halo", package.seeall )
 

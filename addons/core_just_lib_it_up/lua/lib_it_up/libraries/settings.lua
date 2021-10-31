@@ -17,19 +17,26 @@ local alias = {
 	["boolean"] = "bool"
 }
 
+function stg:Cast(v, totyp)
+	totyp = totyp or self:GetType()
+	local typ = alias[type(v)] or type(v)
+
+	local f = _G["to" .. self:GetType()]
+	local ret = f and f(v)
+	if ret then
+		v = ret
+	else
+		errorNHf("Failed to convert %q (%q) to %q for the setting %q.", typ, v, toTyp, self:GetID())
+	end
+end
+
 function stg:SetValue(v)
 	local typ = alias[type(v)] or type(v)
 	if self:GetType() and typ ~= self:GetType() then
-		local f = _G["to" .. self:GetType()]
-		local ret = f and f(v)
-		if ret then
-			v = ret
-		else
-			errorNHf("Failed to convert %q (%q) to %q for the setting %q.", typ, v, self:GetType(), self:GetID())
-		end
+		v = self:Cast(v, typ)
 	end
 
-	cookie.Set("Setting:" .. self:GetID(), v)
+	cookie.Set("Setting:" .. self:GetID(), (v ~= nil and tostring(v)) or nil)
 	self._Value = v
 	return self
 end
@@ -57,7 +64,11 @@ ChainAccessor(stg, "_Category", "Category", true)
 ChainAccessor(stg, "_Type", "Type")
 
 function Settings.Get(k, v)
-	return cookie.GetString("Setting:" .. k, v) --(dat[k] ~= nil and dat[k]) or v
+	local val = cookie.GetString("Setting:" .. k, v)
+	if val == "false" or val == "true" then return tobool(val) end
+	if isnumber(val) then return tonumber(val) end
+
+	return (val == nil and v) or val --(dat[k] ~= nil and dat[k]) or v
 end
 
 function Settings.Set(k, v)

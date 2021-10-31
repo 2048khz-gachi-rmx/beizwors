@@ -318,10 +318,11 @@ BSHADOWS.EndShadow = function(intensity, spread, blur, opacity, direction, dista
 			sprX, sprY = spread, spread
 		end
 
-		render.OverrideAlphaWriteEnable(true, true)
-			render.BlurRenderTarget(ShadowRT, sprX, sprY, blur)
-		render.OverrideAlphaWriteEnable(false, false)
-
+		if Settings.Get("bshadows_enable", true) then
+			render.OverrideAlphaWriteEnable(true, true)
+				render.BlurRenderTarget(ShadowRT, sprX, sprY, blur)
+			render.OverrideAlphaWriteEnable(false, false)
+		end
 	end
 
 	--First remove the render target that the user drew
@@ -330,58 +331,63 @@ BSHADOWS.EndShadow = function(intensity, spread, blur, opacity, direction, dista
 	local shmat = BSHADOWS.ShadowMaterialGrayscale	--the actual shadow material
 	local mat = BSHADOWS.ShadowMaterial 			--the material on which the user has drawn
 
-	if color or color2 then
-		shmat = BSHADOWS.ShadowMaterialColorscale
-	end
+	if not Settings.Get("bshadows_enable", true) then goto justMirror end
 
-	shmat:SetTexture("$basetexture", ShadowRT)
-
-	if color then
-		local vc = Vector(color.r, color.g, color.b) --nO cOloR mEtatAblE
-
-		shmat:SetVector("$color", vc)				--this is a weird ass shader which adds something like a...halo, i guess
-													--it really looks like a halo more than a shadow
-		if not color2 then
-			shmat:SetUndefined("$color2")
+	do
+		if color or color2 then
+			shmat = BSHADOWS.ShadowMaterialColorscale
 		end
-	end
 
-	if color2 then
-		local vc = Vector(color2.r, color2.g, color2.b)
-		shmat:SetVector("$color2", vc)	--color2 is more "color of the shadow" than "color of the halo"
+		shmat:SetTexture("$basetexture", ShadowRT)
 
-		if not color then
-			shmat:SetVector("$color", Vector())
+		if color then
+			local vc = Vector(color.r, color.g, color.b) --nO cOloR mEtatAblE
+
+			shmat:SetVector("$color", vc)				--this is a weird ass shader which adds something like a...halo, i guess
+														--it really looks like a halo more than a shadow
+			if not color2 then
+				shmat:SetUndefined("$color2")
+			end
 		end
+
+		if color2 then
+			local vc = Vector(color2.r, color2.g, color2.b)
+			shmat:SetVector("$color2", vc)	--color2 is more "color of the shadow" than "color of the halo"
+
+			if not color then
+				shmat:SetVector("$color", Vector())
+			end
+		end
+
+		if color or color2 then
+			shmat:Recompute()
+		end
+
+		--Work out shadow offsets
+		local xOffset = math.sin(math.rad(direction)) * distance
+		local yOffset = math.cos(math.rad(direction)) * distance
+
+		shmat:SetFloat("$alpha", opacity / 255)
+
+		--first draw the shadow
+
+		render.SetMaterial(shmat)
+
+		local x, y = xOffset + curX, yOffset + curY
+
+		for i = 1, math.ceil(intensity) do
+				-- https://github.com/Facepunch/garrysmod-issues/issues/4635
+			if screct.x then scissor() end
+				render.DrawScreenQuadEx(x, y, curW or ScrW(), curH or ScrH())
+		end
+
+		if screct.x then unscissor() end
 	end
-
-	if color or color2 then
-		shmat:Recompute()
-	end
-
-	--Work out shadow offsets
-	local xOffset = math.sin(math.rad(direction)) * distance
-	local yOffset = math.cos(math.rad(direction)) * distance
-
-	shmat:SetFloat("$alpha", opacity / 255)
-
-	--first draw the shadow
-
-	render.SetMaterial(shmat)
-
-	local x, y = xOffset + curX, yOffset + curY
-
-	for i = 1, math.ceil(intensity) do
-			-- https://github.com/Facepunch/garrysmod-issues/issues/4635
-		if screct.x then scissor() end
-			render.DrawScreenQuadEx(x, y, curW or ScrW(), curH or ScrH())
-	end
-
-	if screct.x then unscissor() end
 
 	--then whatever the user has drawn
 	-- render.OverrideAlphaWriteEnable(true, false)
 
+	::justMirror::
 	if not _shadowOnly then
 		mat:SetTexture("$basetexture", CurRT)
 

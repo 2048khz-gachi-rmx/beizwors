@@ -10,20 +10,36 @@ surface.CreateFont("Settings_Blur", {
 })
 
 local function createTitle(scr, cat)
-	local title = vgui.Create("Panel", scr)
+	local title = scr:Add("Panel", cat)
 	local font = BaseWars.Menu.Fonts.BoldBig
 	local blur = BaseWars.Menu.Fonts.BlurBig
-	title:SetTall(draw.GetFontHeight(font))
+	local hgt = draw.GetFontHeight(font)
+	title:SetWide(scr:GetWide())
+	title:SetTall(hgt)
+	title:DockPadding(0, title:GetTall(), 0, 0)
+	title.Settings = {}
 
 	function title:Paint(w, h)
 		for i=1, 2 do
-			draw.SimpleText(cat, blur, w / 2, h / 2, color_black, 1, 1)
+			draw.SimpleText(cat, blur, w / 2, -hgt * 0.125, color_black, 1, 5)
 		end
 
-		draw.SimpleText(cat, font, w / 2, h / 2, color_white, 1, 1)
+		draw.SimpleText(cat, font, w / 2, -hgt * 0.125, color_white, 1, 5)
 	end
 
-	title:Dock(TOP)
+	--title:Dock(TOP)
+
+	function title:PerformLayout()
+		local h = hgt
+
+		for k,v in ipairs(self:GetChildren()) do
+			h = math.max(h, v.Y + v:GetTall())
+		end
+
+		self:SetTall(h)
+	end
+
+	return title
 end
 
 tab.Creators = {}
@@ -86,17 +102,20 @@ local function onOpen(navpnl, tabbtn, prevPnl)
 	tab.Panel = pnl
 
 
-	local scr = vgui.Create("FScrollPanel", pnl)
-	scr:DockMargin(0, 8, 0, 8)
-	scr:GetCanvas():DockPadding(0, 8, 0, 8)
+	local scr = vgui.Create("SearchLayout", pnl)
+	scr:DockMargin(0, 0, 0, 8)
+	--scr:GetCanvas():DockPadding(0, 8, 0, 8)
 	scr:Dock(FILL)
 	scr.ScissorShadows = false
+	pnl:InvalidateLayout(true)
 
 	for cat, sts in pairs(Settings.Categories) do
 		local title = createTitle(scr, cat)
 
 		for id, st in pairs(sts) do
-			local btn = vgui.Create("DButton", scr)
+			title.Settings[id] = st
+
+			local btn = vgui.Create("DButton", title)
 			btn:Dock(TOP)
 			btn.Paint = nil
 			btn:SetText("")
@@ -107,6 +126,16 @@ local function onOpen(navpnl, tabbtn, prevPnl)
 			end
 		end
 	end
+
+	scr:On("CustomSearch", "MatchSubsettings", function(self, cp, qry, name, ptrn)
+		local sts = cp.Settings
+
+		for k,v in pairs(sts) do
+			if k:lower():find(qry:lower(), nil, ptrn) then
+				return true
+			end
+		end
+	end)
 
 	return pnl, true
 end

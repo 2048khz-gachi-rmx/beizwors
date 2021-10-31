@@ -31,7 +31,7 @@ function SL:Init()
 
 	local ic = vgui.Create("FIconLayout")
 	scr:Add(ic)
-	
+
 	self.IconLayout = ic
 
 	ic:On("ShiftPanel", function(_, pnl, x, y)
@@ -69,7 +69,13 @@ function SL:Init()
 		end
 
 		for pnl, name in pairs(self.Names) do
-			if not name:lower():find(tx, nil, not self.PatternsEnabled) then self.Dehighlighted[pnl] = true end
+			if self:Emit("CustomSearch", pnl, tx, name, not self.PatternsEnabled) == true then
+				continue
+			end
+
+			if not name:lower():find(tx, nil, not self.PatternsEnabled) then
+				self.Dehighlighted[pnl] = true
+			end
 		end
 
 		for k,v in pairs(self.Dehighlighted) do
@@ -147,6 +153,10 @@ end
 
 function SL:OnChildAdded(p)
 	--self:Add(p)
+end
+
+function SL:SetName(pnl, name)
+	self.Names[pnl] = isstring(name) and name
 end
 
 function SL:Add(p, name)
