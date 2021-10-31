@@ -103,13 +103,7 @@ function Class:AliasMethod(method, ...)
 	end
 end
 
--- todo: do i even need this feature?
-function Class:ChangeInitArgs(...)
-	Class.__args = {...}
-end
-
 function Class:extend(...)
-	
 	local old = self
 
 	local new = {}
@@ -129,56 +123,35 @@ function Class:extend(...)
 
 	local curobj
 
-	new.__init = function(newobj, ...) --this function is kinda hard to wrap your head around, so i'll try to explain
-		--`self` is the parent class
-		--`new` is the new class
-
-		local is_def = false 	--is this the function call that defined curobj?
+	new.__init = function(newobj, ...)
+		local is_def = false
 
 		curobj = newobj
-		local oldArgs
 
 		if newobj.__instance == new then
 			is_def = true
-			oldArgs = Class.__args
-			Class.__args = {...}
 		end
-
-		local args = Class.__args
 
 		if self.__init and rawget(new, "AutoInitialize") ~= false then 	--recursively call the parents' __init's
-			--[[if self.___Debugging then
-				print("found __init in", self.Name)
-				print("Calling with args:", unpack(args, 1, table_maxn(args)))
-			end]]
-
-			local ret = self.__init(curobj, unpack(args, 1, table_maxn(args)))		--if any of the initializes return a new object,
+			local ret = self.__init(curobj, ...)		--if any of the initializes return a new object,
 			curobj = ret or curobj						--that object will be used forward going up the chain
 		end
-
 
 	  --[[------------------------------]]
 	  --	  calling :Initialize()
 	  --[[------------------------------]]
-	  	args = Class.__args
 
 		local func = rawgetInitFunc(new)	--after the oldest __init was called it'll start calling :Initialize()
 											--this way we call :Initialize() starting from the oldest one and going up to the most recent one
 
 		if func then
-			--[[if self.___Debugging then
-				print("Rawgot init function from", new.Name)
-				print("Calling with args:", unpack(args, 1, table_maxn(args)))
-			end]]
-
-			local ret = func(curobj, unpack(args, 1, table_maxn(args)))		--returning an object from any of the Initializes will use
+			local ret = func(curobj, ...)		--returning an object from any of the Initializes will use
 			curobj = ret or curobj 				--that returned object on every initialize up the chain
 		end
 
 		if is_def then
 			local temp = curobj 	--return curobj to original state
 			curobj = nil
-			Class.__args = oldArgs
 
 			return temp
 		end
@@ -207,7 +180,11 @@ Class.Callable = Class.callable
 
 function Class:new(...)
 
-	local func = self.__init
+	local func = rawget(self, "__init")
+	if not func then
+		errorf("Can't create an object from an instance!")
+		return
+	end
 
 	local obj = {}
 	setmetatable(obj, self)
