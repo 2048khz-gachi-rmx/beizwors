@@ -2,21 +2,113 @@ local tab = {}
 tab.Order = -1
 BaseWars.Menu.Tabs["Settings"] = tab
 
+surface.CreateFont("Settings_Blur", {
+	size = 36,
+	font = "BreezeSans",
+	blursize = 8,
+	weight = 400
+})
+
+local function createTitle(scr, cat)
+	local title = vgui.Create("Panel", scr)
+	local font = BaseWars.Menu.Fonts.BoldBig
+	local blur = BaseWars.Menu.Fonts.BlurBig
+	title:SetTall(draw.GetFontHeight(font))
+
+	function title:Paint(w, h)
+		for i=1, 2 do
+			draw.SimpleText(cat, blur, w / 2, h / 2, color_black, 1, 1)
+		end
+
+		draw.SimpleText(cat, font, w / 2, h / 2, color_white, 1, 1)
+	end
+
+	title:Dock(TOP)
+end
+
+tab.Creators = {}
+
+local function hovPaint(self, w, h)
+	if self:IsHovered() then
+		self:To("HovFrac", 1, 0.3, 0, 0.3)
+	else
+		self:To("HovFrac", 0, 0.5, 0, 0.3)
+	end
+
+	surface.SetDrawColor(0, 0, 0, 120 * self.HovFrac)
+	surface.DrawRect(0, 0, w, h)
+end
+
+local col = Color(200, 200, 200)
+
+local function lblPaint(self, w, h)
+	local st = self.Setting
+	local nm = st:GetName() or st:GetID()
+
+	col.a = self.HovFrac * 50 + 200
+
+	draw.SimpleText(nm, BaseWars.Menu.Fonts.MediumSmall,
+		8, h / 2, col, 0, 1)
+end
+
+function tab.Creators:bool(st)
+	local fntHgt = draw.GetFontHeight(BaseWars.Menu.Fonts.MediumSmall) * 1.25
+	self:SetTall(math.Multiple(fntHgt + 8, 4))
+	self.Setting = st
+	self.ActiveFrac = st:GetValue() and 1 or 0
+
+	function self:Paint(w, h)
+		hovPaint(self, w, h)
+		lblPaint(self, w, h)
+		self:To("ActiveFrac", st:GetValue() and 1 or 0, 0.3, 0, 0.3)
+
+		draw.OnOffSlider(self.ActiveFrac or 0, w * 0.88, h / 4,
+			w * 0.09, h / 2)
+	end
+
+	function self:DoClick()
+		st:SetValue(not st:GetValue())
+	end
+end
 
 local function onOpen(navpnl, tabbtn, prevPnl)
 	local f = BaseWars.Menu.Frame
 
 	if IsValid(prevPnl) then
-		prevPnl:PopInShow()
+		prevPnl:PopInShow(0.1, 0.2)
 		f:PositionPanel(prevPnl)
-		return prevPnl
+		return prevPnl, true
 	end
 
 	local pnl = vgui.Create("Panel", f, "Settings Canvas")
 	f:PositionPanel(pnl)
-
+	pnl:PopIn(0.1, 0.2)
 	tab.Panel = pnl
-	return pnl
+
+
+	local scr = vgui.Create("FScrollPanel", pnl)
+	scr:DockMargin(0, 8, 0, 8)
+	scr:GetCanvas():DockPadding(0, 8, 0, 8)
+	scr:Dock(FILL)
+	scr.ScissorShadows = false
+
+	for cat, sts in pairs(Settings.Categories) do
+		local title = createTitle(scr, cat)
+
+		for id, st in pairs(sts) do
+			local btn = vgui.Create("DButton", scr)
+			btn:Dock(TOP)
+			btn.Paint = nil
+			btn:SetText("")
+			if tab.Creators[st:GetType()] then
+				tab.Creators[st:GetType()] (btn, st)
+			else
+				printf("%q missing a setting creator.", st:GetType())
+			end
+		end
+	end
+
+	return pnl, true
 end
 
 local function onClose(navpnl, tabbtn, prevPnl)
