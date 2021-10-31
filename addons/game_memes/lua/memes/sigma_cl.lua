@@ -21,8 +21,7 @@ hook.Add("Think", "sigma", function()
 	end
 end)
 
-net.Receive("sigma_male", function()
-	local who = net.ReadEntity()
+function shrigmaPlay(url, fn, who, ignore)
 	local flags = ""
 
 	if who == LocalPlayer() then
@@ -31,18 +30,30 @@ net.Receive("sigma_male", function()
 		flags = "3d"
 	end
 
-	for k,v in ipairs(active) do
-		if v[2] == who then return end -- don't play again
+	if not ignore then
+		for k,v in ipairs(active) do
+			if v[2] == who and v[3] == fn then return end -- don't play again
+		end
 	end
 
-	hdl.DownloadFile("http://vaati.net/Gachi/shared/sigma_pull.mp3", "shrigma.dat"):Then(function(self, fn)
+	hdl.DownloadFile(url, fn):Then(function(self, fn)
 		sound.PlayFile(fn, flags, function(ch)
 			if not IsValid(ch) then return end
 			--if who ~= LocalPlayer() then -- only others need to be 3d tracked
-				active[#active + 1] = {ch, who}
+				active[#active + 1] = {ch, who, fn}
 			--end
 		end)
 	end)
+end
+
+net.Receive("sigma_male", function()
+	local who = net.ReadEntity()
+	shrigmaPlay("http://vaati.net/Gachi/shared/sigma_pull.mp3", "shrigma.dat", who)
+end)
+
+net.Receive("playsound", function()
+	local url, ply = net.ReadString(), net.ReadEntity()
+	shrigmaPlay(url, url:match("[^/]+$"), ply, true)
 end)
 
 local tab = {

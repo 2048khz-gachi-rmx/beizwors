@@ -99,14 +99,16 @@ local f = {
 }
 
 local urlps = {
-	["q2f2laugh"] = "https://b.vaati.net/aruc.mp3"
+	["q2f2laugh"] = "https://b.vaati.net/aruc.mp3",
+	["cani"] = "http://vaati.net/Gachi/shared/ballz.mp3",
 }
 
 CUM.AddCommand("ps", function(_, ply, line)
 	if not GachiRP then return end
 	if not IsValid(ply) then return false, "Console?" end
 
-	if ply.psCoolDown and CurTime() - ply.psCoolDown < 2 then return false end
+	if not BaseWars.IsRetarded(ply) and
+		ply.psCoolDown and CurTime() - ply.psCoolDown < 2 then return false end
 
 	if not line or line == "" then
 
@@ -141,8 +143,8 @@ CUM.AddCommand("ps", function(_, ply, line)
 
 	for k,v in pairs(urlps) do
 
-		if line==k then
-			played=true
+		if line == k then
+			played = true
 			net.Start("playsound")
 				net.WriteString(v)
 				net.WriteEntity(ply)
@@ -153,7 +155,7 @@ CUM.AddCommand("ps", function(_, ply, line)
 	end
 
 	if not played then
-		ply:PrintMessage(3,"sound '"..line..".ogg' not found")
+		ply:PrintMessage(3, "sound '" .. line .. ".ogg' not found")
 		return false
 	end
 
