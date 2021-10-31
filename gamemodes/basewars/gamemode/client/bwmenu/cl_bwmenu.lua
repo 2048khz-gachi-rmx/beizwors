@@ -31,6 +31,7 @@ function BaseWars.Menu.ReScale()
 	fonts.Sizes = fonts.Sizes or {}
 	local sz = fonts.Sizes
 
+	-- sizes
 	sz.Big = 20 + 16 * scale
 	sz.MediumBig = 16 + 16 * scale
 	sz.Medium = 10 + 16 * scale
@@ -38,14 +39,20 @@ function BaseWars.Menu.ReScale()
 	sz.Small = 8 + 12 * scale
 	sz.Small = 6 + 12 * scale
 
+	local family = "Open Sans Regular"
+
 	for k,v in pairs(sz) do
-		surface.CreateFont("BWMenu_" .. k, {
-			font = "Open Sans Regular",
+		local fn = "BWMenu_" .. k
+		surface.CreateFont(fn, {
+			font = family,
 			size = v
 		})
 
-		fonts[k] = "BWMenu_" .. k
+		fonts[k] = fn
 	end
+
+
+	-- bolds
 
 	fonts.BoldSizes = fonts.BoldSizes or {}
 	local bsz = fonts.BoldSizes
@@ -53,17 +60,33 @@ function BaseWars.Menu.ReScale()
 	bsz.Small = 8 + 16 * scale
 	bsz.Tiny = 6 + 12 * scale
 	bsz.Medium = 16 + 12 * scale
+	bsz.Big = 24 + 16 * scale
 
 	BaseWars.Menu.Scale = scale
 
+	family = "BreezeSans Medium"
+
 	for k,v in pairs(bsz) do
-		surface.CreateFont("BWMenu_Bold" .. k, {
-			font = "Open Sans SemiBold",
+		local fn = "BWMenu_Bold" .. k
+		surface.CreateFont(fn, {
+			font = family,
 			size = v
 		})
 
-		fonts["Bold" .. k] = "BWMenu_Bold" .. k
+		fonts["Bold" .. k] = fn
 	end
+
+	for k,v in pairs(bsz) do
+		local fn = "BWMenu_Blur" .. k
+		surface.CreateFont(fn, {
+			font = family,
+			size = v,
+			blursize = 8
+		})
+
+		fonts["Blur" .. k] = fn
+	end
+
 end
 
 BaseWars.Menu.ReScale()

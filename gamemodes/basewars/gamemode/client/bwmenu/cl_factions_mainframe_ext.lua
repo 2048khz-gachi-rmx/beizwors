@@ -267,17 +267,17 @@ local function align(f, pnl)
 end
 
 local function removePanel(pnl, hide)
-	pnl.__selMove = pnl:MoveBy(16, 0, 0.2, 0, 1.4)
+	pnl.__selMove = pnl:MoveBy(24, 0, 0.2, 0, 2.6)
 
 	if hide then
-		pnl:PopOutHide()
+		pnl:PopOutHide(0.2)
 	else
-		pnl:PopOut()
+		pnl:PopOut(0.2)
 	end
 
 end
 
-function BaseWars.Menu.CreateFactionList(f)
+function BaseWars.Menu.CreateFactionList(f, noanim)
 	local pnl = vgui.Create("Panel", f, "Factions Canvas")
 	f:PositionPanel(pnl)
 
@@ -289,6 +289,7 @@ function BaseWars.Menu.CreateFactionList(f)
 	local scr = vgui.Create("FactionsList", pnl)
 	scr:Dock(LEFT)
 	scr:SetWide(pnl:GetWide() * 0.34)
+	scr:DockMargin(0, 8, 0, 0)
 
 	pnl.FactionScroll = scr
 

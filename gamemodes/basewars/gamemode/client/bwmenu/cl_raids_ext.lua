@@ -632,7 +632,7 @@ local function onOpen(navpnl, tabbtn, _, noanim)
 			if noanim then
 				pnl:Show()
 			else
-				pnl:PopInShow()
+				pnl:PopInShow(0.1, 0.2)
 			end
 			if IsValid(pnl.NewFaction) then
 				pnl.NewFaction:Remove()
@@ -650,6 +650,9 @@ local function onOpen(navpnl, tabbtn, _, noanim)
 		end
 	else
 		pnl, scr = BaseWars.Menu.CreateFactionList(f)
+		if not noanim then
+			pnl:PopIn(0.1, 0.2)
+		end
 	end
 
 	-- add a custom NoFaction button
