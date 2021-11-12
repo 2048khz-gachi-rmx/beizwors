@@ -226,5 +226,48 @@ hook.Add("EntityRemoved", "EntityActuallyRemoved", function(ent)
 end)
 
 
+if CLIENT then
+	local wait = {}
+
+	function EventualEntity(eid, dontcare)
+		local pr = Promise()
+
+		local ent = Entity(eid)
+		if ent:IsValid() then
+			pr:Resolve(ent)
+			return pr
+		else
+			if wait[eid] then
+				return wait[eid]
+			else
+				wait[eid] = pr
+				pr._run_insta = dontcare
+			end
+
+			return pr
+		end
+	end
+
+	hook.Add("NotifyShouldTransmit", "EventualEntities", function(ent, add)
+		if not add then return end
+		local eid = ent:EntIndex()
+		if not wait[eid] then return end
+
+		local pr = wait[eid]
+		wait[eid] = nil
+
+		if pr._run_insta then
+			pr:Resolve(ent)
+		else
+			-- i hate this
+			ent:Timer("EventualTimer", 0, 300, function()
+				if not ent.Base then return end -- AAAAAAAAAAAAAAA
+				pr:Resolve(ent)
+				ent:RemoveTimer("EventualTimer")
+			end)
+		end
+	end)
+end
+
 include("entity_dt.lua")
 AddCSLuaFile("entity_dt.lua")
