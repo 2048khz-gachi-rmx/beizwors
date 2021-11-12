@@ -20,6 +20,7 @@ ENT.BypassMaster = true
 ENT.RebootTime = 0
 
 ENT.PowerRequired = 0
+ENT.IsManualPrinter = true
 
 function ENT:UseFunc(act, call)
 	if self:BW_GetOwner() ~= act:GetPInfo() then return end

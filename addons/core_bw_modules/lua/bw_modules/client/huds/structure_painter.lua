@@ -128,12 +128,14 @@ function sin.DoPainters(ent)
 		end
 
 		surface.SetAlphaMultiplier(ptr:GetFrac())
-		xpcall(ptr.Paint, GenerateErrorer("StructurePainter"), ptr)
+		xpcall(ptr.Paint, GenerateErrorer("StructurePainter"), ptr,
+			BaseWars.Tutorial.MaxY)
 	end
 
 	if active then
 		surface.SetAlphaMultiplier(ptr:GetFrac())
-		xpcall(active.Paint, GenerateErrorer("StructurePainter"), active)
+		xpcall(active.Paint, GenerateErrorer("StructurePainter"),
+			active, BaseWars.Tutorial.MaxY)
 	end
 
 	draw.DisableFilters(true, true)

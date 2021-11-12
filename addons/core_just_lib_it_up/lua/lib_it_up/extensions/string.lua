@@ -471,8 +471,6 @@ function string.IsMaybeSteamID64(what)
 	return what:match("^7656%d+") or what:match("^900719%d+")
 end
 
-
-
 function string.Quote(s, single)
 	if single then return '"' .. tostring(s) .. '"' end
 	return "'" .. tostring(s) .. "'"
