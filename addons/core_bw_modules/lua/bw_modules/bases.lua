@@ -1,7 +1,3 @@
-if CLIENT and not BaseWars.HUD then
-	include("hud.lua")
-end
-
 local function init(force)
 	local b = BaseWars.Bases and BaseWars.Bases.NW
 	local reload = not not b
@@ -89,5 +85,13 @@ local function init(force)
 	end
 end
 
-init()
-BaseWars.Bases.Reset = Curry(init, true)
+if CLIENT then
+	LibItUp.OnLoaded("hud.lua", function()
+		init()
+		BaseWars.Bases.Reset = Curry(init, true)
+	end)
+else
+	init()
+	BaseWars.Bases.Reset = Curry(init, true)
+end
+

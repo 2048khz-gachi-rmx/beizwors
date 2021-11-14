@@ -102,7 +102,7 @@ function pg:RecheckOwnership(specific_ent)
 	end
 end
 
-pg:On("CanAddEntity", "OwnerCheck", function(self, ent)
+function pg:DoOwnerCheck(ent)
 	local base = self:GetBase()
 	local ow = ent:BW_GetOwner()
 
@@ -111,6 +111,10 @@ pg:On("CanAddEntity", "OwnerCheck", function(self, ent)
 		self:_unown(ent)
 		return false
 	end
+end
+
+pg:On("CanAddEntity", "OwnerCheck", function(self, ent)
+	return self:DoOwnerCheck(ent)
 end)
 
 --[==================================[
@@ -278,7 +282,7 @@ hook.Add("EntityEnteredBase", "NetworkGridEnts", function(base, ent)
 	if not ent.IsBaseWars then return end
 
 	local grid = base.PowerGrid
-	if not grid then print("enter - base didnt have power grid?", base) return end
+	if not grid then return end
 
 	grid:AddEntity(ent)
 end)

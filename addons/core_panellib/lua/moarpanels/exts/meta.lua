@@ -93,6 +93,10 @@ function META:Lerp(key, val, dur, del, ease, forceswap, changeDest)
 		error("attempt to lerp to nan")
 	end
 
+	if isbool(val) then
+		val = val and 1 or 0
+	end
+
 	if not self2 then
 		print("!!! WTF META:Lerp called on", self, key, self2)
 	end

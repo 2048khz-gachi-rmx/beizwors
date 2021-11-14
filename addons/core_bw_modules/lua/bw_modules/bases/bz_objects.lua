@@ -302,7 +302,6 @@ ChainAccessor(bw.Zone, "Players", "Players")
 
 function bw.Base:EntityEnter(ent)
 	self:_CheckValidity()
-
 	local _, enter = hook.NHRun("EntityEnterBase", self, ent)
 	if SERVER and enter == false then return end
 

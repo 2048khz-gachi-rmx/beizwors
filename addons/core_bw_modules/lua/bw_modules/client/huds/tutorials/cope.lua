@@ -1,22 +1,15 @@
-setfenv(1, _G)
-
+--
 local tut = BaseWars.Tutorial
-local ptr = tut.AddStep(3, "Cope")
+local ptr = tut.AddStep(3, "Upgrading")
 
-local col = Color(230, 230, 230)
 
-function ptr:PaintBuy(cury)
-	local w, h = self:GetSize()
-	local py = cury
-	local tw, th = draw.SimpleText("cope & mald", "BSSB24",
-		6 * DarkHUD.Scale, cury, col)
-	cury = cury + th
-
-	return cury + self:PaintPoints(cury) - py
+function ptr:PaintUpgrade(cury)
+	self:CompletePoint(1, BaseWars.EverUpgraded())
+	return self:PaintPoints(cury)
 end
 
 ptr:AddPaint(999, "PaintFrame", ptr)
-ptr:AddPaint(998, "PaintBuy", ptr)
+ptr:AddPaint(998, "PaintName", ptr)
+ptr:AddPaint(997, "PaintUpgrade", ptr)
 
-ptr:AddPoint(1, "Delete Garry's Mod")
---ptr:CompletePoint(1, true)
+ptr:AddPoint(1, "Upgrade your printer by typing /upg in chat while looking at it.")

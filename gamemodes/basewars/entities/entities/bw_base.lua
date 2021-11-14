@@ -68,20 +68,6 @@ end
 
 function ENT:OnChangeGridID(new)
 
-	if self.OldGridID == new or new <= 0 then return end
-
-	self.OldGridID = new
-
-	local grid = PowerGrids[new]
-	PowerGridIDsToEnts.Add(self, new)
-
-	if not grid then
-		grid = PowerGrid:new(self:CPPIGetOwner(), new)
-		grid:AddEntity(self)
-	else
-		grid:AddEntity(self)
-	end
-
 end
 
 function ENT:SHInit()
@@ -150,7 +136,6 @@ if SERVER then
 	end
 
 	function ENT:OnTakeDamage(dmginfo)
-
 		local dmg = dmginfo:GetDamage()
 		local Attacker = dmginfo:GetAttacker()
 

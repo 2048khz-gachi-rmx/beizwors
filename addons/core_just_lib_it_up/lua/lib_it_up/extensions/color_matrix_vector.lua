@@ -39,6 +39,7 @@ Colors.Error = Color(230, 75, 75)
 -- better for buttons
 Colors.Greenish = Color(88, 188, 88)
 Colors.Reddish = Color(175, 68, 68)
+Colors.Purpleish = Color(230, 110, 255)
 
 -- THANK U BASED GigsD4X
 -- https://gist.github.com/GigsD4X/8513963

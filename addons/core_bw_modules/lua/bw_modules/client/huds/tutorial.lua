@@ -8,10 +8,21 @@ local ptr = tut.Painter
 
 tut.ActivePainters = tut.ActivePainters or {}
 tut.StepPainters = tut.StepPainters or {}
-tut.CurrentStep = "Begin"
+tut.CurrentStep = "Notify"
 tut.Steps = tut.Steps or {}
 
+if cookie.GetNumber("BW_TutorialComplete", 0) == 1 then
+	tut.CurrentStep = "Complete"
+end
+
+--[[
+if GetConVar("developer"):GetInt() > 0 then
+	cookie.Set("BW_TutorialComplete", "0")
+end
+]]
+
 ChainAccessor(ptr, "Step", "Step")
+ChainAccessor(ptr, "Completed", "Completed")
 
 for k,v in pairs(tut.StepPainters) do
 	v:Disappear()
@@ -39,9 +50,11 @@ function ptr:Initialize(step)
 
 	tut.StepPainters[step] = self -- register the painter:step
 	self:SetStep(step)
+	self:SetCompleted(false)
 
 	self.AppearTime = 0.3
 	self.AppearDelay = 0.1
+	self:SetWide(math.max(250, ScrW() * 0.15))
 end
 
 function ptr:GetPoints()
@@ -64,6 +77,7 @@ end
 function ptr:CompletePoint(id, b)
 	if not isnumber(id) then id = self.Points:GetByValue(id) end
 	if not id then errorNHf("no such point: %s", id) return end
+	if self:GetCompleted() then return end
 
 	b = (b == nil) or b
 
@@ -83,11 +97,11 @@ function ptr:CompletePoint(id, b)
 	end
 
 	if allDone then
+		self:SetCompleted(true)
+		self:Emit("Completed")
 		for k,v in pairs(tut.Steps) do
 			if v == tut.CurrentStep then
 				tut.CurrentStep = tut.Steps[k + 1]
-				print("ebin, settings next step", v, k + 1,
-					tut.CurrentStep)
 				break
 			end
 		end
@@ -177,6 +191,16 @@ function ptr:PaintPoints(y)
 	return y - oy
 end
 
+local col = Color(210, 225, 240)
+
+function ptr:PaintName(y)
+
+	local _, th = draw.SimpleText(self:GetStep(), "BSSB24",
+		6 * DarkHUD.Scale, y, col)
+
+	return th
+end
+
 function ptr:_GenMatrix(mx)
 	local infr, outfr = self.AppearFrac, self.DisappearFrac
 
@@ -190,9 +214,6 @@ function ptr:_GenMatrix(mx)
 	y = math.floor(y)
 
 	mx:TranslateNumber(math.floor(xOff - self.AppearToX * (infr + outfr)), y)
-
-	mx:RotateNumber(0, ang)
-	--self.TranslateY = cy
 end
 
 function ptr:Delete()
@@ -213,7 +234,7 @@ function tut.DoPainters()
 	local acPtr = tut.GetCurrentPainter()
 
 	if acPtr then
-		if #tut.ActivePainters > 1 then
+		if #tut.ActivePainters > 0 then
 			acPtr.AppearDelay = 1.2
 		end
 
@@ -264,4 +285,12 @@ hook.Add("HUDPaint", "TutorialPaint", function()
 	tut.DoPainters()
 end)
 
-FInc.FromHere("tutorials/*.lua", _CL)
+
+
+LibItUp.OnLoaded("bases.lua", function()
+	LibItUp.OnInitEntity(function()
+		FInc.FromHere("tutorials/*.lua", _CL)
+	end)
+end)
+
+include("tutorial_tab_ext.lua")

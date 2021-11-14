@@ -145,10 +145,6 @@ function GM:EntityTakeDamage(ent, dmginfo)
 	local Inflictor = dmginfo:GetInflictor()
 	local Attacker 	= dmginfo:GetAttacker()
 
-	--local Damage 	= dmginfo:GetDamage()
-	--local PropDamageScale = 0.5
-	--local IsProp = ent:GetClass() == "prop_physics"
-
 	if not ent:IsPlayer() then
 		-- custom logic goes first
 		local ret = hook.Run("BW_CanDealEntityDamage", Attacker, ent, Inflictor, dmginfo)

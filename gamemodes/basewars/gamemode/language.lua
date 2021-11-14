@@ -134,7 +134,7 @@ Strings.Tip = "Tip!"
 Strings.PrinterUpgradeTip = "Type /upg or /upgrade while looking at\n" ..
 	"something to upgrade it.\n" ..
 	"You can specify how many levels " ..
-	"you want to upgrade something by.\nTry it now!"
+	"you want to upgrade something by, for example: \"/upg 4\".\nTry it now!"
 
 Strings.PrinterUpgradeTipFont = "OS28"
 

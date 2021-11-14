@@ -109,7 +109,7 @@ local function CreateBWFrame()
 	f:PopIn()
 	f:SetRetractedSize(f:GetRetractedSize() * 1.2)
 	function f:Disappear()
-		self:PopOutHide(nil, nil, function()
+		local anim = self:PopOutHide(nil, nil, function()
 			PopoutTime = CurTime()
 		end)
 
@@ -117,12 +117,14 @@ local function CreateBWFrame()
 		self:SetKeyboardInputEnabled(false)
 
 		self:Emit("Disappear")
+		return anim
 	end
-	
+
 	function f:Appear()
 		self:PopInShow()
 		self:SetMouseInputEnabled(true)
 		self:SetKeyboardInputEnabled(true)
+		self:Emit("Appear")
 	end
 
 	function f:OnKeyCodePressed(key)

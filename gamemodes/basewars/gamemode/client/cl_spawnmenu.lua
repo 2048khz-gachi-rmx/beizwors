@@ -2,6 +2,7 @@ setfenv(1, _G)
 
 BaseWars.Spawnmenu = BaseWars.Spawnmenu or {}
 BaseWars.SpawnMenu = BaseWars.Spawnmenu
+BaseWars.SpawnMenu.Highlight = BaseWars.SpawnMenu.Highlight or {}
 
 local sm = BaseWars.Spawnmenu
 
@@ -9,15 +10,16 @@ local function IsGroup(ply, group)
 	if not ply.CheckGroup then error("what the fuck where's ULX") return end
 	if not IsValid(ply) or not ply:IsPlayer() then return end
 
-	if ply:CheckGroup(string.lower(group)) or (ply:IsAdmin() and (group=="vip" or group=="trusted")) or ply:IsSuperAdmin() then
+	if (group == "vip" or group == "trusted") and ply:IsAdmin() then
+		return true
+	end
+
+	if ply:CheckGroup(string.lower(group)) or ply:IsSuperAdmin() then
 		return true
 	end
 
 	return false
-
 end
-
-local SpawnlistCanvas
 
 local tohide = {}
 
@@ -367,6 +369,12 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 
 		function btn:PrePaint(w, h)
 			--b:Open()
+			
+			if BaseWars.SpawnMenu.Highlight[dat.ClassName] then
+				local fr = 1 - ((SysTime() / 1.3) % 1)
+				draw.LerpColor(fr, self.drawColor,
+					Colors.Purpleish, Colors.Button)
+			end
 
 			local enough, way_enough, barely_enough = ply_money >= price, ply_money > price * 50, ply_money < price * 3
 			--local enough_lv = ply_level >= lv
@@ -447,6 +455,8 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 		end
 
 		function btn:DoClick()
+			BaseWars.SpawnMenu.Highlight[dat.ClassName] = nil
+	
 			self:SetColor(color_white, true)
 			self.Shadow.MaxSpread = 1.7
 			self.Shadow.Alpha = 255
@@ -544,7 +554,6 @@ local function openCategory(pnl, btn)
 end
 
 local function MakeSpawnList()
-
 	local pnl = vgui.Create("InvisPanel")	-- main canvas for the entire basewars tab
 	pnl:Dock(FILL)
 	SpawnlistCanvas = pnl
@@ -564,7 +573,10 @@ local function MakeSpawnList()
 
 	function pnl:Fill()
 		for k,v in SortedPairs(BaseWars.SpawnList) do
-			if cats.Categories[v.Name] then cats.Categories[v.Name]:Remove() end
+			local catName = v.Name
+			if cats.Categories[v.Name] then
+				cats.Categories[v.Name]:Remove()
+			end
 
 			local tab = vgui.Create("FButton", cats)
 			tab:Dock(TOP)
@@ -585,7 +597,6 @@ local function MakeSpawnList()
 			local sel_X = 20
 
 			local ic_tx_padding = 4
-			local box_padding = 2
 
 			local font = "BS28"
 
@@ -606,15 +617,29 @@ local function MakeSpawnList()
 			local icW = ic and ((ic:GetSize()) + ic_tx_padding) or 0
 
 			fullW = txW + icW
+
 			function tab:PostPaint(w, h)
 				--draw.RoundedBox(8, self.IconX - box_padding, 0, fullW + box_padding*2, h, box_col)
-
+				self:To("HovFrac", self:IsHovered(), 0.3, 0, 0.3)
 				if active == self then
 					self:To("IconX", sel_X, 0.2, 0, 0.15)
 					self:LerpColor(col, sel_col, 0.3, 0, 0.3)
 				else
 					self:To("IconX", unsel_X, 0.2, 0, 0.2)
 					self:LerpColor(col, Colors.LightGray, 0.3, 0, 0.3)
+
+					for k,v in pairs(BaseWars.SpawnMenu.Highlight) do
+						local dat = BaseWars.Catalogue[k]
+						if not dat then continue end
+
+						local cat = dat.Category
+						if cat ~= catName then continue end
+
+						local fr = 1 - ((SysTime() / 1.3) % 1)
+						draw.LerpColor(Lerp(fr, 0.2, 0.7), col,
+							Colors.Purpleish, Colors.LightGray)
+					end
+
 				end
 
 				local x = math.Round(self.IconX)
@@ -651,6 +676,7 @@ local function MakeSpawnList()
 
 
 	function its:PostPaint(w, h)
+		spawnmenu.BaseWarsOpened = true -- kinda ugly but aight
 		local x, y = self:LocalToScreen(0, 0)
 		BSHADOWS.SetScissor(x, y, w, h)
 	end
@@ -723,7 +749,8 @@ end
 
 
 language.Add("spawnmenu.category.basewars", "BaseWars")
-spawnmenu.AddCreationTab("#spawnmenu.category.basewars", MakeSpawnList, "icon16/building.png", BaseWars.Config.RestrictProps and -100 or 2)
+spawnmenu.AddCreationTab("#spawnmenu.category.basewars", MakeSpawnList, "icon16/building.png",
+	BaseWars.Config.RestrictProps and -100 or 2)
 
 if GetConVar("developer"):GetInt() < 1 then
 	hook.Add("InitPostEntity", "BaseWars.SpawnMenu.RemoveTabs", RemoveTabs)

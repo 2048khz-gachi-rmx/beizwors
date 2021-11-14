@@ -291,8 +291,7 @@ end
 
 hook.Add("HUDPaint", "StructureInfoPaint", PaintStuff)
 
-print("!! including painter_ext !!")
 include("client/huds/painter_ext.lua")
-FInc.FromHere("client/huds/*.lua", _CL, false, print)
+FInc.FromHere("client/huds/*.lua", _CL, false)
 
 hook.Run("BW_HUDLoaded")

@@ -3,13 +3,13 @@ local path = "bw_modules/"
 function IncludeBasewarsModules()
 	local modules = 0
 
-	local function incrementModule()
+	local function incrementModule(fn)
 		modules = modules + 1
 
 		if MODULE.Name then
 			hook.Run("BasewarsModuleLoaded", MODULE.Name)
 		end
-
+		LibItUp.MarkLoaded(fn)
 	end
 
 	local function moduleLoaded(p)

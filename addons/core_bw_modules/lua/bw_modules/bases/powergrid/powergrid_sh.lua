@@ -5,7 +5,7 @@ bw.PowerGrid = bw.PowerGrid or Emitter:extend()
 
 local pg = bw.PowerGrid
 pg.ThinkInterval = 0.5
-pg.DefaultCapacity = 1000
+pg.DefaultCapacity = 100
 
 function pg:Initialize(base)
 	CheckArg(1, base, bw.IsBase)
@@ -98,11 +98,19 @@ function pg:SetCapacity(n)
 end
 
 function pg:AddEntity(ent)
-	if not ent.IsBaseWars then return end
-	if self:GetAllEntities()[ent] then return end -- already added
+
+	if not ent.IsBaseWars then
+		return
+	end
+
+	if self:GetAllEntities()[ent] then
+		return
+	end -- already added
 	if not IsValid(self) then return end
 
-	if self:Emit("CanAddEntity", ent) == false then return end
+	if self:Emit("CanAddEntity", ent) == false then
+		return
+	end
 
 	local old_grid = bw.EntityToPowerGrid[ent]
 	if old_grid then
@@ -176,5 +184,17 @@ function ENTITY:GetPowerGrid()
 	local base = self:BW_GetBase()
 	if base then
 		return base:GetPowerGrid()
+	end
+end
+
+if SERVER then
+	function ENTITY:GetAllPowerGrids()
+		local bases = self:BW_GetAllBases()
+		local ret = {}
+		for k,v in ipairs(bases) do
+			ret[k] = v:GetPowerGrid()
+		end
+
+		return ret
 	end
 end

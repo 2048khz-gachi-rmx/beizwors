@@ -27,9 +27,10 @@ function sin:PaintPower(cury)
 	local szTo = 0
 
 	if pwFr > 0 then
-		offy = offy - draw.GetFontHeight("OSB20") * 0.125 * pwFr -- wtf
+		offy = offy - draw.GetFontHeight("OSB20") * 0.25 * pwFr -- wtf
 		surface.SetDrawColor(255, 255, 255)
-		draw.BeginMask(surface.DrawRect, 0, 0, w, h)
+
+		draw.BeginMask(surface.DrawRect, 0, cury, w, h)
 		draw.DrawOp()
 
 		col.r = 220 + math.sin(CurTime() * math.pi * 3) * 30

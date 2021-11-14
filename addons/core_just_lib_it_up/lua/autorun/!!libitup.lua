@@ -206,6 +206,10 @@ hook.Run("LibbedItUp", libTbl)
 hook.Run("LibItUp", libTbl)
 
 local function onLoad(s)
+	if not s then
+		s = debug.getinfo(2).short_src -- try to resolve path...?
+	end
+
 	--printf("Loaded %s %s %.2fs. after start...", s, Realm(true, true), SysTime() - s1)
 	local fn = file.GetFile(s)
 
@@ -220,6 +224,7 @@ local function onLoad(s)
 	libTbl.LoadedDeps[fn] = true
 end
 
+libTbl.MarkLoaded = onLoad
 
 local inc = FInc.RealmResolver():SetDefault(true):SetVerbose()
 

@@ -102,6 +102,7 @@ function ptr:Appear()
 		self.DisappearFrac = 0
 		self.AppearFrac = 0
 		self.Disappeared = false
+		self:Emit("Appear")
 	end
 
 	local an = hud.Anims
@@ -111,12 +112,17 @@ function ptr:Appear()
 	an:MemberLerp(self, "DisappearFrac", 0,
 		self.AppearTime, self.AppearDelay, self.AppearEase)
 
+	if new then
+		self:Emit("Appear")
+	end
+	
 	timer.Remove("PainterInvalidate" .. ("%p"):format(self))
 end
 
 function ptr:Disappear()
 	if self.Disappeared or self.Disappearing then return end
 	self.Disappearing = true
+	self:Emit("Disappear")
 
 	local an = hud.Anims
 	local anim, new = an:MemberLerp(self, "DisappearFrac", 1,

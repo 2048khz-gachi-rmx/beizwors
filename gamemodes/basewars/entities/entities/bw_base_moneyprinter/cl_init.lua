@@ -23,8 +23,9 @@ function ENT:CLInit()
 	self:On("DrawCable", "CablesInRack", self.ShouldDrawInRack)
 
 	self:NetworkVarNotify("Level", function(self, key, old, new)
-		if key == "Level" and new > 1 and self:CPPIGetOwner() == LocalPlayer() then
-			cookie.Set("PrinterUpgraded", 1)
+		if key == "Level" and new > 1 and
+			self:CPPIGetOwner() == LocalPlayer() then
+			cookie.Set("PrintersEverUpgraded", 1)
 		end
 	end)
 
@@ -33,11 +34,11 @@ function ENT:CLInit()
 end
 
 function BaseWars.EverUpgraded()
-	return cookie.GetNumber("PrinterUpgraded", 0) ~= 0
+	return cookie.GetNumber("PrintersEverUpgraded", 0) ~= 0
 end
 
 function BaseWars.UnsetUpgraded()
-	cookie.Set("PrinterUpgraded", 0)
+	cookie.Set("PrintersEverUpgraded", 0)
 end
 
 local wpad = 32
