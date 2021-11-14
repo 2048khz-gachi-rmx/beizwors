@@ -26,7 +26,7 @@ function ENT:UseFunc(act, call)
 	if self:BW_GetOwner() ~= act:GetPInfo() then return end
 
 	local pg = self:GetPowerGrid()
-	if not pg or not pg:TakePower(5) then return end
+	if not pg or not pg:TakePower(3) then return end
 
 	if self:BW_GetOwner():GetMoney() > 25000 then
 		self.BreakingDown = self.BreakingDown + 1
@@ -73,7 +73,7 @@ function ENT:Init()
 	self.BreakingDown = 0
 end
 
-function ENT:PaintStructureInfo(w, y) return 0 end
+function ENT:PaintStructureInfo(w, y)return 0 end
 
 function ENT:DrawTipDisplay(w, h, a)
 	local tipW, tipH = w * 0.5, 72
@@ -97,7 +97,7 @@ function ENT:DrawTipDisplay(w, h, a)
 		end
 		local hgt = contFont:match("%d+$")
 		if not wrappedtx or wrappedsrc ~= Language.PrinterUpgradeTip then
-			wrappedsrc = Language.PrinterUpgradeTip
+			wrappedsrc = Language("PrinterUpgradeTip")
 			wrappedtx = string.WordWrap2(wrappedsrc, contW - 16, contFont)
 
 			local _, lns = wrappedtx:gsub("[\r\n]", "")

@@ -17,9 +17,10 @@ if SERVER then util.AddNetworkString("ManualGen") end
 function ENT:Init(...)
 	self.BaseClass.Init(self, ...)
 
-	self.PowerGenerated2 = math.floor(
-		math.ceil(8 * 4 / BaseWars.Bases.PowerGrid.ThinkInterval) / 10
-	) * 10
+	--[[self.PowerGenerated2 = math.floor(
+		math.ceil(2 * 4 / BaseWars.Bases.PowerGrid.ThinkInterval) / 10
+	) * 10]]
+	self.PowerGenerated2 = 12
 end
 
 function ENT:GenPower()

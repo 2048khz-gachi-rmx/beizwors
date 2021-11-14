@@ -86,10 +86,12 @@ local cLoadout = CreateCategory("Loadout")
 local cPrinters = CreateCategory("Printers")
 local cRecreational = CreateCategory("Recreational")
 local cInventory = CreateCategory("Inventory")
+local cPower = CreateCategory("Electricity")
 
 if CLIENT then
+	cPower.Icon = Icons.Electricity:Copy():SetSize(28, 28)
 	cEnts.Icon = Icon("https://i.imgur.com/1a5sZQc.png", "entities56.png"):SetSize(28, 28)
-	--cLoadout.Icon = Icon("https://i.imgur.com/1a5sZQc.png", "entities56.png"):SetSize(28, 28)
+	cLoadout.Icon = Icon("https://i.imgur.com/xgzEBhK.png", "gun48.png"):SetSize(28, 28)
 	cPrinters.Icon = Icon("https://i.imgur.com/vzrqPxk.png", "coins_pound64.png"):SetSize(28, 28)
 	cRecreational.Icon = Icon("https://i.imgur.com/tKMbV5S.png", "gamepad56.png"):SetSize(28, 28)
 end
@@ -106,6 +108,11 @@ end
 local curTyp
 local function SetType(t)
 	curTyp = t
+end
+
+local curCat
+local function SetCat(t)
+	curCat = t
 end
 
 local function AddItem(cat, typ, class, name, price, mdl)
@@ -130,6 +137,7 @@ local function AddItem(cat, typ, class, name, price, mdl)
 		subcat_t.Tiers[curTier] = true
 	end
 
+	t.Category = cat
 	t.CatID = #cat_t.Items
 	t.SubcatID = #subcat_t.Items
 
@@ -223,6 +231,10 @@ end
 
 local function ReuseEntities(...)
 	return AddEntities(curTyp, ...)
+end
+
+local function ReuseCat(...)
+	return AddItem(curCat, curTyp, ...)
 end
 
 --[[
@@ -325,27 +337,29 @@ SetType(nil)
 SetType("Consumables")
 	ReuseEntities("bw_repairkit", "Repair Kit", k * 2.5, "models/Items/car_battery01.mdl", 3)
 
+SetCat("Electricity")
 SetType("Generators")
 	SetTier(1)
-		ReuseEntities("bw_gen_manual", "Manual Generator", 0, "models/props_c17/cashregister01a.mdl")
+		ReuseCat("bw_gen_manual", "Manual Generator", 0, "models/props_c17/cashregister01a.mdl")
 			.Limit = 1
-		ReuseEntities("bw_gen_solar", "Solar Panel", 1500, "models/props_lab/miniteleport.mdl")
-		ReuseEntities("bw_gen_scrap", "Scrap Generator", k * 5, "models/props_c17/TrapPropeller_Engine.mdl")
-		ReuseEntities("bw_gen_gas", "Gas Generator", k * 20, "models/xqm/hydcontrolbox.mdl")
+		ReuseCat("bw_gen_solar", "Solar Panel", 1500, "models/props_lab/miniteleport.mdl")
+		ReuseCat("bw_gen_scrap", "Scrap Generator", k * 5, "models/props_c17/TrapPropeller_Engine.mdl")
+		ReuseCat("bw_gen_gas", "Gas Generator", k * 20, "models/xqm/hydcontrolbox.mdl")
 
 	SetTier(2)
-		ReuseEntities("bw_gen_coalfired", "Coal Fired Generator", k * 75, "models/props_wasteland/laundry_washer003.mdl")
-		ReuseEntities("bw_gen_fission", "Fission Reactor", k * 200, "models/props/de_nuke/equipment1.mdl")
-		ReuseEntities("bw_gen_fusion", "Fusion Reactor", k * 500, "models/maxofs2d/thruster_propeller.mdl")
+		ReuseCat("bw_gen_coalfired", "Coal Fired Generator", k * 75, "models/props_wasteland/laundry_washer003.mdl")
+		ReuseCat("bw_gen_fission", "Fission Reactor", k * 200, "models/props/de_nuke/equipment1.mdl")
+		ReuseCat("bw_gen_fusion", "Fusion Reactor", k * 500, "models/maxofs2d/thruster_propeller.mdl")
 
 	SetTier(3)
-		--ReuseEntities("bw_gen_joke", "Numismatic Reactor", m * 150, "models/props_c17/cashregister01a.mdl")
-		ReuseEntities("bw_gen_hydroelectric", "Hydroelectric Reactor", m * 1.5, "models/props_wasteland/laundry_washer001a.mdl")
-		ReuseEntities("bw_gen_combustion", "Combustion Reactor", m * 20, "models/props_c17/substation_transformer01a.mdl")
+		--ReuseCat("bw_gen_joke", "Numismatic Reactor", m * 150, "models/props_c17/cashregister01a.mdl")
+		ReuseCat("bw_gen_hydroelectric", "Hydroelectric Reactor", m * 1.5, "models/props_wasteland/laundry_washer001a.mdl")
+		ReuseCat("bw_gen_combustion", "Combustion Reactor", m * 20, "models/props_c17/substation_transformer01a.mdl")
 
 SetType("Batteries")
 	SetTier(1)
-		ReuseEntities("bw_battery_car", "Car Battery", 1500, "models/items/car_battery01.mdl", 2)
+		ReuseCat("bw_battery_car", "Scrap Battery", 1000, "models/items/car_battery01.mdl", 2)
+		ReuseCat("bw_battery_capacitor", "Capacitor Battery", 50000, "models/props_lab/powerbox02b.mdl", 2)
 
 SetType("Structures")
 

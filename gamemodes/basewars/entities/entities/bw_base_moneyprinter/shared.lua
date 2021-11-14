@@ -17,7 +17,7 @@ ENT.IsPrinter 		= true
 ENT.IsValidRaidable = false
 
 ENT.RebootTime = 10
-ENT.PowerRequired = 8
+ENT.PowerRequired = 6
 
 local slot = 2
 
