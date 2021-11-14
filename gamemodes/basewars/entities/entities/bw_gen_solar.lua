@@ -7,6 +7,7 @@ ENT.Model 			= "models/props_lab/miniteleport.mdl"
 ENT.TransmitRadius 	= 200
 
 ENT.PowerGenerated 	= 0
+ENT.IsSolarPanel = true
 
 BaseWars.Solar = BaseWars.Solar or {}
 BaseWars.Solar.SkylessPower = 4
@@ -29,7 +30,7 @@ end
 function ENT:Think()
 	self.BaseClass.Think(self)
 	if CLIENT then return end
-	BaseWars.Solar.Think(self)
+	return BaseWars.Solar.Think(self)
 end
 
 function ENT:GenerateOptions(qm, pnl)

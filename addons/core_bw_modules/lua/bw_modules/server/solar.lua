@@ -15,30 +15,31 @@ function sol:Initialize()
 	self.BaseHandle = ents.Create("bw_invismarker")
 	local bh = self.BaseHandle
 
-	local solMax = self:OBBMaxs()
-	local solCenter = self:OBBCenter()
-
+	--bh:SetModel("models/hunter/blocks/cube6x6x6.mdl")
 	bh:SetParent(self)
 	bh.SolarAttachment = self
 
 	bh.CustomOBB = {
-		Vector(-50, -50, -200),
-		Vector(50, 50, 200),
+		Vector(-100, -100, -100),
+		Vector(100, 100, 100),
 	}
 
 	bh.Model = false
 	bh:Spawn()
 	bh:Activate()
 
+	local horOff = bh:OBBCenter() - self:OBBCenter()
+	horOff.z = 0
+
+	--[[
 	local bhMin, bhMax = unpack(bh.CustomOBB)
-
 	local vertOff = bhMax.z - bhMin.z
-
 	local horOff = Vector()
 
 	horOff[1] = -(bhMax.z + bhMin.z) / 2
 	horOff[2] = (bhMax.y + bhMin.y) / 2
 	horOff[3] = -vertOff / 2
+	]]
 
 	bh:SetPos(horOff)
 
@@ -49,12 +50,27 @@ function sol:Initialize()
 end
 
 function sol:Think()
-	if CurTime() - self._LastThink < 0.25 then return end
+	--if CurTime() - self._LastThink < 0.25 then return end
 	self._LastThink = CurTime()
 
-	local grid = self:GetPowerGrid()
-	self:SetBaseAccess(not not grid)
-	if not grid then return end
+	local grid
+	local bases = self:BW_GetAllBases()
+	local did = false
+
+	for k,v in ipairs(bases) do
+		if v:IsEntityOwned(self) then
+			self:SetBaseAccess(true)
+			grid = v:GetPowerGrid()
+			did = true
+			break
+		end
+	end
+
+	if not did then
+		self:SetBaseAccess(false)
+	end
+
+	--if not grid then return end
 
 	local pos = self:LocalToWorld(rayPos)
 	tdat.output = tout
@@ -67,21 +83,28 @@ function sol:Think()
 
 	if isSky then
 		local upd = self.ForceUpdate or self.PowerGenerated ~= skyPower
-		self.PowerGenerated = skyPower
 
-		if upd then
-			grid:UpdatePowerIn()
+		if grid then
+			self.PowerGenerated = skyPower
+
+			if upd then
+				grid:UpdatePowerIn()
+			end
 		end
 	else
-		local upd = self.ForceUpdate or self.PowerGenerated ~= skylessPower
-		self.PowerGenerated = skylessPower
+		local upd = grid and self.ForceUpdate or self.PowerGenerated ~= skylessPower
+		if grid then
+			self.PowerGenerated = skylessPower
 
-		if upd then
-			grid:UpdatePowerIn()
+			if upd then
+				grid:UpdatePowerIn()
+			end
 		end
 	end
 
 	self:SetSunAccess(isSky)
+	self:NextThink(CurTime() + 0.35)
+	return true
 end
 
 local function entToBoth(ent)
@@ -93,11 +116,11 @@ local function entToBoth(ent)
 	return solar, handle
 end
 
-hook.Add("EntityExitBase", "SolarPanelAttach", function(base, ent)
+hook.Add("EntityExitZone", "SolarPanelAttach", function(zone, ent)
 	local solar, handle = entToBoth(ent)
-
 	if not solar then return end
 
+	local base = zone:GetBase()
 	local ents = base:GetEntities()
 	-- this hook runs before the entity exits; the exiter will still be in the list
 
@@ -105,26 +128,30 @@ hook.Add("EntityExitBase", "SolarPanelAttach", function(base, ent)
 
 	solar.ActuallyInside = solar.ActuallyInside and ent ~= solar
 
-	if ent == solar and ents[handle] then print("disallowing exit") return false end
-	if ent == handle and not solar.ActuallyInside and ents[solar] then
-		ents[handle] = nil
-		solar:BW_ExitBase(base)
+
+	if ent == solar and ents[handle] then
+		return false
 	end
 
+	if ent == handle and not solar.ActuallyInside and ents[solar] then
+		ents[handle] = nil
+		solar:ExitZone(zone)
+	end
 end)
 
-hook.Add("EntityEnterBase", "SolarPanelAttach", function(base, ent)
+hook.Add("EntityEnteredZone", "SolarPanelAttach", function(zone, ent)
 	local solar, handle = entToBoth(ent)
 	if not solar then return end
 
 	solar.ActuallyInside = solar.ActuallyInside or ent == solar
 
+	local base = zone:GetBase()
 	local ents = base:GetEntities()
 
 	-- if the handle entered with no solar inside, add the solar as well
 	if ent == handle and not ents[solar] then
 		local inside = solar.ActuallyInside
-		solar:BW_EnterBase(base)
+		solar:EnterZone(zone)
 		solar.ActuallyInside = inside
 	end
 end)

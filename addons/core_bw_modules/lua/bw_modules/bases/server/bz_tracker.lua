@@ -95,14 +95,11 @@ function ENTITY:BW_GetAllBases()
 	return getBaseQueue(self)
 end
 
-
-
-
-	local function enterBase(ent, base)
-		if not base:IsValid() then return end
-		bw.BasePresence[ent] = base
-		base:EntityEnter(ent)
-	end
+local function enterBase(ent, base)
+	if not base:IsValid() then return end
+	bw.BasePresence[ent] = base
+	base:EntityEnter(ent)
+end
 
 function ENTITY:BW_EnterBase(base)
 	return enterBase(self, base)
@@ -114,7 +111,9 @@ end
 			return
 		end]]
 
-		bw.BasePresence[ent] = nil
+		if bw.BasePresence[ent] == base then
+			bw.BasePresence[ent] = nil
+		end
 
 		if base:IsValid() then
 			base:EntityExit(ent, ent._ForceBaseRemove)
@@ -143,6 +142,9 @@ local function addBase(ent, base)
 		return
 	end
 
+	-- actually, just make us the new base lol
+	enterBase(ent, base)
+
 	-- make sure we don't put the base in multiple times
 	local baseID = base:GetID()
 	for k,v in ipairs(t) do
@@ -160,9 +162,9 @@ local function removeBase(ent, base)
 	if not t[1] then return end -- the queue was empty; don't bother
 
 	-- if we're removing the current base, also remove us from being current
-	if getBase(ent) == base then
+	--if getBase(ent) == base then
 		exitBase(ent, base)
-	end
+	--end
 
 	local baseID = base:GetID()
 
@@ -190,14 +192,13 @@ local function checkZoneBases(ent)
 	local newBases = {} -- [confirmed_present_base] = true
 
 	-- check for entering new bases
-
 	for k,v in ipairs(zones) do
 		-- for every zone we're in, check if we're also in that zone's base
 		local base = v:GetBase()
 		if revBases[base] then newBases[base] = true continue end -- we're already in that base; don't care
 		-- we entered a new base: register
 		addBase(ent, base)
-		--print("	entered a new base!", base)
+
 		revBases[base] = true
 		newBases[base] = true
 	end
@@ -208,7 +209,6 @@ local function checkZoneBases(ent)
 
 	for _, base in ipairs(bases) do
 		if not newBases[base] then
-			--print("	left base", base)
 			removeBase(ent, base)
 		end
 	end
@@ -231,6 +231,8 @@ local function removeZone(ent, zone)
 
 	for k,v in ipairs(t) do
 		if v == zone then
+			local ok, allow = hook.NHRun("EntityExitZone", zone, ent)
+			if allow == false then return end
 			table.remove(t, k)
 
 			if zone:IsValid() then
@@ -239,7 +241,6 @@ local function removeZone(ent, zone)
 
 			checkZoneBases(ent)
 			hook.NHRun("EntityExitedZone", zone, ent)
-
 			return
 		end
 	end
@@ -260,8 +261,16 @@ function bw.Zone:_EntityEntered(brush, ent)
 	addZone(ent, self)
 end
 
+function ENTITY:EnterZone(zone)
+	addZone(self, zone)
+end
+
 function bw.Zone:_EntityExited(brush, ent)
 	removeZone(ent, self)
+end
+
+function ENTITY:ExitZone(zone)
+	removeZone(self, zone)
 end
 
 bw:On("DeleteZone", "Tracker", function(self, delzone)
