@@ -1,8 +1,8 @@
--- AddCSLuaFile("cl_init.lua")
+AddCSLuaFile("cl_init.lua")
 
 ENT.Base = "base_gmodentity"
 ENT.Type = "anim"
-ENT.PrintName = "Base Entity"
+ENT.PrintName = "Invisible marker"
 ENT.DontCollide = true
 ENT.Model = "models/hunter/blocks/cube025x025x025.mdl"
 
@@ -12,7 +12,6 @@ function ENT:Initialize()
 	local mins, maxs
 
 	if self.CustomOBB then
-		print("yo custom obb")
 		mins, maxs = unpack(self.CustomOBB)
 	else
 		mins, maxs = self:OBBMins(), self:OBBMaxs()

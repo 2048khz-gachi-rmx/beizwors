@@ -1,6 +1,6 @@
 ENT.Base = "base_gmodentity"
 ENT.Type = "anim"
-ENT.PrintName = "Base Entity"
+ENT.PrintName = "Invisible marker"
 ENT.DontCollide = true
 
 function ENT:Initialize()
@@ -17,7 +17,7 @@ end
 function ENT:Draw()
 	local mn, mx = self:GetCollisionBounds()
 
-	render.DrawWireframeBox(self:GetPos(), self:GetAngles(), mn, mx)
+	render.DrawWireframeBox(self:GetPos(), angle_zero, mn, mx)
 end
 
 hook.Add("ShouldCollide", "CollisionTest", function(a, b)
