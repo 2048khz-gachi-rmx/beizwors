@@ -2,7 +2,7 @@ AddCSLuaFile()
 
 ENT.Base = "base_gmodentity"
 ENT.Type = "anim"
-ENT.PrintName = "Base Entity"
+ENT.PrintName = "BW Base Entity"
 
 ENT.Model = "models/props_interiors/pot02a.mdl"
 ENT.Skin = 0

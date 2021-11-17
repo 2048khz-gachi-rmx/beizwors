@@ -209,9 +209,9 @@ local function Resolve(res, path)
 	-- extensions get included manually; do not include them
 	-- folders can only have the full _extension name, not _ext
 
-	local is_ext = fn:match("_ext$") or fn:match("_extension$") or
-		fn:match("^ext_.+") or fn:match("^extension_.+") or
-		fn:match("_ext_") or path:match("_?extension_?")
+	local is_ext = (fn:match("_ext$") or fn:match("_extension$") or
+			fn:match("^ext_.+") or fn:match("^extension_.+") or
+			fn:match("_ext_") or path:match("_?extension_?")) and not res.__Extensions
 
 	-- if we didn't pass cl/sv/sh path check...
 	if not is_sv and not is_cl and not is_sh then
@@ -283,6 +283,13 @@ function Resolver:SetVerbose(b)
 end
 
 Resolver:AliasMethod(Resolver.SetVerbose, "Verbose")
+
+function Resolver:SetExtensions(b)
+	self.__Extensions = (b == nil and true) or b
+	return self
+end
+
+Resolver:AliasMethod(Resolver.SetExtensions, "Extensions", "AllowExtensions", "Extension")
 
 local default_resolver = Resolver:new()
 
