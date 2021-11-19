@@ -7,7 +7,7 @@ ENT.PowerRequired = 115
 
 ENT.Capacity 		= 12e6
 ENT.PrintInterval 	= 1
-ENT.PrintAmount		= 10500
+ENT.PrintAmount		= 12500
 
 ENT.PrintName = "Red Matter Printer"
 

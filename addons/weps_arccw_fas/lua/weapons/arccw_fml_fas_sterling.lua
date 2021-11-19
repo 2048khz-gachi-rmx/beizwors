@@ -27,8 +27,8 @@ SWEP.ViewModelFOV = 70
 
 SWEP.DefaultBodygroups = "000000"
 
-SWEP.Damage = 39
-SWEP.DamageMin = 21 -- damage done at maximum range
+SWEP.Damage = 27
+SWEP.DamageMin = 14 -- damage done at maximum range
 SWEP.Range = 80 -- in METRES
 SWEP.Penetration = 2
 SWEP.DamageType = DMG_BULLET
@@ -142,7 +142,7 @@ SWEP.RejectAttachments = {
 }
 
 SWEP.Attachments = {
-    {
+    --[[{
         PrintName = "Optic", -- print name
         DefaultAttName = "Iron Sights",
         Slot = "optic", -- what kind of attachments can fit here, can be string or table
@@ -154,7 +154,7 @@ SWEP.Attachments = {
             wang = Angle(-10, 0, 180)
         },
         InstalledEles = {"noch"},
-    },
+    },]]
     {
         PrintName = "Muzzle",
         DefaultAttName = "Standard Muzzle",
@@ -167,9 +167,9 @@ SWEP.Attachments = {
             wang = Angle(-9.79, 0, 180)
         },
     },
-    {
+    --[[{
         PrintName = "Underbarrel",
-        Slot = {"foregrip", "ubgl", "bipod","style_pistol"},
+        Slot = {"foregrip", "ubgl", "bipod", "style_pistol"},
         Bone = "Weapon_Main",
         Offset = {
             vang = Angle(90,0, -90),
@@ -181,7 +181,7 @@ SWEP.Attachments = {
             vmax = Vector(0, -0.3, 14),
             wmin = Vector(11, 0.832, -3.5),
             wmax = Vector(11, 0.832, -3.5),
-        }		
+        }
     },
     {
         PrintName = "Tactical",
@@ -193,7 +193,7 @@ SWEP.Attachments = {
             wpos = Vector(15.625, -0.253, -6.298),
             wang = Angle(-8.829, -0.556, 90)
         },
-    },
+    },]]
     {
         PrintName = "Grip",
         Slot = "grip",
@@ -229,7 +229,7 @@ SWEP.Attachments = {
             wang = Angle(-9, 0, 180)
         },
 		FreeSlot = true,
-    },		
+    },
 }
 
 SWEP.Animations = {

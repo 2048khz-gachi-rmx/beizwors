@@ -7,7 +7,7 @@ ENT.PowerRequired = 85
 
 ENT.Capacity 		= 8e6
 ENT.PrintInterval 	= 1
-ENT.PrintAmount		= 6000
+ENT.PrintAmount		= 6500
 
 ENT.PrintName = "Dark Matter Printer"
 

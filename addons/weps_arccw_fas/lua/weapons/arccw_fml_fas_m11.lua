@@ -53,7 +53,8 @@ SWEP.RecoilSide = 0.3
 SWEP.RecoilRise = 0.55
 SWEP.VisualRecoilMult = 0.1
 
-SWEP.Delay = 60 / 1150 -- 60 / RPM.
+-- does it make sense that the mac-11 fires slow? no, but do i care? also no
+SWEP.Delay = 60 / 1050
 SWEP.Num = 1 -- number of shots per trigger pull.
 SWEP.Firemodes = {
     {
@@ -67,7 +68,7 @@ SWEP.Firemodes = {
     }
 }
 
-SWEP.AccuracyMOA = 7 -- accuracy in Minutes of Angle. There are 60 MOA in a degree.
+SWEP.AccuracyMOA = 14 -- accuracy in Minutes of Angle. There are 60 MOA in a degree.
 SWEP.HipDispersion = 270 -- inaccuracy added by hip firing.
 SWEP.MoveDispersion = 240
 

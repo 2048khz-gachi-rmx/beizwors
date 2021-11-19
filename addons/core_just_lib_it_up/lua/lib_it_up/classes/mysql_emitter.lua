@@ -22,7 +22,11 @@ MySQLEmitter.IsMySQLEmitter = true
 
 function MySQLEmitter:Initialize(query, also_do)
 	local meta = getmetatable(query)
-	if not meta or meta.MetaName ~= "MySQLOO table" then
+
+	if not meta or (not meta.MetaName or
+		(not meta.MetaName:find("MySQLOO") or not meta.MetaName:find("[Qq]uery")) and
+		(not meta.MetaName:find("MySQLOO table") or not query.start) -- thanks mysqloo. cunts
+	) then
 		errorf("MySQLEmitter: expected a mysql query object, got %s instead", type(query))
 		return
 	end
@@ -114,7 +118,7 @@ MySQLDatabase.IsMySQLDatabase = true
 function MySQLDatabase:Initialize(db)
 	local meta = getmetatable(query)
 	if not meta or meta.MetaName ~= "MySQLOO table" then
-		errorf("MySQLEmitter: expected a mysql query object, got %s instead", type(query))
+		errorf("MySQLEmitter: expected a mysql table object, got %s instead", type(query))
 		return
 	end
 end

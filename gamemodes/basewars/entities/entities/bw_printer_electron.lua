@@ -9,7 +9,7 @@ ENT.PowerCapacity = 10000
 
 ENT.Capacity 		= 2e9
 ENT.PrintInterval 	= 1
-ENT.PrintAmount		= 750000
+ENT.PrintAmount		= 1.9e6
 
 ENT.PrintName = "Electron Printer"
 
@@ -17,4 +17,4 @@ ENT.FontColor = Color(40, 40, 200)
 ENT.BackColor = Color(150,150,150)
 
 ENT.IsValidRaidable = true
-ENT.PresetMaxHealth = 3500
+ENT.PresetMaxHealth = 2000

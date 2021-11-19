@@ -19,12 +19,12 @@ local BWAddons = {
     "2131057232", -- arccw base(d on what)
     -- 2179387416, -- arccw arknights charms because aerach
     "2131058270", -- arccw cs+
-    "2135529088", -- arccw mw2
+    --"2135529088", -- arccw mw2
     "2175261690", -- arccw fa:s 1
     "2131161276", -- arccw m9k "extras"
     "2257255110", -- arccw GO
-    -- "2393318131", -- arccw fa:s 2
-    "2306829669", -- arccw home defense
+    "2393318131", -- arccw fa:s 2
+    --"2306829669", -- arccw home defense
     "2427171109", -- gso unlamifier
 
     "2409364730", -- gunsmith offensive extras

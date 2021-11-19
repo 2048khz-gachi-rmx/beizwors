@@ -7,7 +7,7 @@ ENT.PowerRequired = 250
 
 ENT.Capacity 		= 140e6
 ENT.PrintInterval 	= 1
-ENT.PrintAmount		= 100000
+ENT.PrintAmount		= 120000
 
 ENT.PrintName = "Molecular Printer"
 
@@ -15,4 +15,4 @@ ENT.FontColor = Color( 0, 100, 180)
 ENT.BackColor = Color(150,150,150)
 
 ENT.IsValidRaidable = true
-ENT.PresetMaxHealth = 3500
+ENT.PresetMaxHealth = 1000
