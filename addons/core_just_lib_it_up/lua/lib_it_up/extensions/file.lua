@@ -1,16 +1,27 @@
 LibItUp.SetIncluded()
+local gm = gmod.GetGamemode()
 function file.Here(lv)
 	lv = lv or 2
 	local source = debug.getinfo(lv).source
 
-	return source:match(".+/lua/(.+/).+%.lua")
+	return source:match(".+/lua/(.+/).+%.lua") or
+		source:match("gamemodes/" .. gm.FolderName .. "/(.+/).+%.lua")
 end
 
 function file.Me(lv)
 	lv = lv or 2
 	local source = debug.getinfo(lv).source
 
-	return source:match(".+/lua/.+/(.+%.lua)")
+	return source:match(".+/lua/.+/(.+%.lua)") or
+		source:match("gamemodes/" .. gm.FolderName .. "/.+/(.+%.lua)")
+end
+
+function file.PathToMe(lv)
+	lv = lv or 2
+	local source = debug.getinfo(lv).source
+
+	return source:match(".+/lua/(.+/.+%.lua)") or
+		source:match("gamemodes/(" .. gm.FolderName .. "/.+/.+%.lua)")
 end
 
 local sep = "/\\"
