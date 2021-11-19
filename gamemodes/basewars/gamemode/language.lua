@@ -2,11 +2,11 @@ AddCSLuaFile()
 
 local KROMER = GetGlobalBool("KROMER")
 if SERVER then
-	SetGlobalBool("KROMER", math.random() < 0.03)
+	SetGlobalBool("KROMER", KROMER or math.random() < 0.03)
 elseif not KROMER then
 	timer.Create("cringe network race", 1, 10, function()
 		if GetGlobalBool("KROMER") then
-			include("language.lua")
+			include(file.PathToMe())
 			timer.Remove("cringe network race")
 		end
 	end)
