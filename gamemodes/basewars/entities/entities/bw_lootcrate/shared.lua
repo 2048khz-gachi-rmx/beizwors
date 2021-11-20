@@ -17,17 +17,14 @@ ENT.SizeInfo = {
 
 ENT.TypeInfo = {
 	weapon = {
-
 		models = {
 			medium = {
 				"models/props/de_prodigy/ammo_can_02.mdl",
 			}
 		},
-
 	},
 
 	scraps = {
-
 		models = {
 			small = {
 				"models/props_c17/BriefCase001a.mdl",
@@ -42,7 +39,6 @@ ENT.TypeInfo = {
 				"models/Items/item_item_crate.mdl",
 			}
 		},
-
 	},
 }
 
@@ -98,8 +94,11 @@ function ENT:PreInit()
 	self.CrateType = self.CrateType or "scraps"
 	self.Size = self.Size or "small"
 
-	local mTbl = self:GetTypeInfo().models[self.Size]
-	self.Model = mTbl[math.random(#mTbl)]
+
+	if not self.Model then
+		local mTbl = self:GetTypeInfo().models[self.Size]
+		self.Model = mTbl[math.random(#mTbl)]
+	end
 end
 
 function ENT:UpdateTransmitState()

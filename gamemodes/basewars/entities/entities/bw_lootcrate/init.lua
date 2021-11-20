@@ -1,6 +1,7 @@
 include("shared.lua")
 AddCSLuaFile("shared.lua")
 
+include("generation.lua")
 AddCSLuaFile("cl_init.lua")
 
 function ENT:Init(me)
@@ -80,7 +81,7 @@ function ENT:Use(ply)
 		drop:SetDropOrigin(self:GetPos())
 		drop:Spawn()
 		drop:SetPos(dropPos)
-		drop:Timer(2, 3, 1, function() drop:Remove() end)
+		drop:Timer(2, Inventory.DropCleanupTime, 1, function() drop:Remove() end)
 		drop:Activate()
 	end
 
