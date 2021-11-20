@@ -5,15 +5,23 @@ _OreData = _OreData or {}
 file.CreateDir("inventory")
 file.CreateDir("inventory/ores")
 
+MARKER_WRITE = "ores"
+
 local map = game.GetMap()
 
-local function readOreData(force)
-	if _OreData and not force then return _OreData end
+local function readOreData(force, where)
+	local path = "inventory/ores/" .. map .. ".dat"
+	if where then
+		path = "inventory/" .. where .. "/" .. map .. ".dat"
+		file.CreateDir("inventory/" .. where .. "/")
+	end
 
-	local dat = file.Read("inventory/ores/" .. map .. ".dat", "DATA")
+	if _OreData and (not force and not where) then return _OreData end
+
+	local dat = file.Read(path, "DATA")
 
 	if not dat then
-		file.Write("inventory/ores/" .. map .. ".dat", "")
+		file.Write(path, "")
 		return {}
 	end
 
@@ -25,10 +33,20 @@ end
 
 readOreData(true)
 
-local function writeOreData()
-	file.Write("inventory/ores/" .. map .. ".dat", util.TableToJSON(_OreData))
-	Inventory.OresPositions = _OreData
-	OresRespawn()
+local function writeOreData(where)
+	local path = "inventory/ores/" .. map .. ".dat"
+
+	if where then
+		path = "inventory/" .. where .. "/" .. map .. ".dat"
+		file.CreateDir("inventory/" .. where .. "/")
+	end
+
+	file.Write(path, util.TableToJSON(_OreData))
+
+	if MARKER_WRITE == "ores" then
+		Inventory.OresPositions = _OreData
+		OresRespawn()
+	end
 end
 
 local nw = Networkable("Orepositions")
@@ -40,6 +58,18 @@ nw.AlreadyNetworkedPos = {}
 
 nw.Filter = function(self, ply)
 	return ply:IsSuperAdmin()
+end
+
+function SetMarkerName(nm)
+	table.Empty(bufs)
+	-- table.Empty(nw.AlreadyNetworkedPlyBuf)
+	-- table.Empty(nw.AlreadyNetworkedPos)
+
+	MARKER_WRITE = nm
+
+	local poses = readOreData(true, nm)
+	nw:Set("Positions", poses)
+	nw:Network(true)
 end
 
 nw:On("WriteChangeValue", 1, function(self, k, v, plyList)
@@ -205,7 +235,7 @@ function TOOL:Reload()
 		_OreData[#_OreData + 1] = v
 	end
 
-	writeOreData()
+	writeOreData(MARKER_WRITE)
 
 	printf("Player %s(%s) saved %d new ore positions.", ow:Nick(), ow:SteamID64(), amt)
 
