@@ -11,7 +11,8 @@ local lootInfo = {
 			amt = {2, 4},
 			loot = {
 				blank_bp = {3, 9},
-				copper_bar = {2, 5}
+				circuit_board = {1, 2, 0.3},
+				capacitor = {1, 4},
 			}
 		},
 
@@ -20,7 +21,10 @@ local lootInfo = {
 			amt = {3, 5},
 			loot = {
 				blank_bp = {10, 16},
-				copper_bar = {3, 8}
+				circuit_board = {2, 4, 0.6},
+				emitter = {1, 1, 0.3},
+				cpu = {1, 1, 0.2},
+				capacitor = {3, 7},
 			}
 		}
 	},
@@ -59,6 +63,8 @@ function ENT:GenerateLoot()
 
 	for k,v in RandomPairs(dat.loot) do
 		if toGen == 0 then break end
+		if v[3] and math.random() > v[3] then continue end
+
 		toGen = toGen - 1
 
 		local it = Inventory.NewItem(k)
@@ -76,6 +82,12 @@ function ENT:GenerateLoot()
 		Inventory.MySQL.NewFloatingItem(it):Then(pr:Resolver())
 
 		prs[#prs + 1] = pr
+	end
+
+	if #prs == 0 then
+		self:RespawnIn(10)
+		self:Remove()
+		return
 	end
 
 	return Promise.OnAll(prs):Then(function()
