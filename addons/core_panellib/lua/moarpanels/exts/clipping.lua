@@ -117,6 +117,8 @@ function draw.BeginMask(mask, ...)
 
 end
 
+draw.StartMask = draw.BeginMask
+
 function draw.SetMaskDraw(should)
 	if should then
 		render.SetStencilCompareFunction( STENCIL_ALWAYS )
@@ -151,7 +153,7 @@ end
 function draw.FinishMask()
 	render.SetStencilEnable(false)
 end
-
+draw.EndMask = draw.FinishMask
 
 function draw.Masked(mask, op, demask, deop, ...)
 

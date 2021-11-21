@@ -18,9 +18,9 @@ function BaseWars.Printers.GetPrintRate(ent)
 end
 
 BaseWars.Printers.Update = BaseWars.Printers.Add
+BaseWars.Printers.PrintDelay = 1
 
-
-timer.Create("BW_Printers", 1, 0, function()
+timer.Create("BW_Printers", BaseWars.Printers.PrintDelay, 0, function()
 
 	for k,v in pairs(mt) do
 		if not IsValid(k) then mt[k] = nil continue end

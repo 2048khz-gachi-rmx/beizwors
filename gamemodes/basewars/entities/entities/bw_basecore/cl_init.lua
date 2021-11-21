@@ -110,6 +110,7 @@ hook.Add("PreDrawHalos", "BaseCoreHalo", function()
 	local lp = LocalPlayer()
 	local base = lp:BW_GetBase()
 	if not base then return end
+	if lp:GetBase() == base then return end
 
 	local core = base:GetBaseCore()
 	if not core or not core:IsValid() then return end
