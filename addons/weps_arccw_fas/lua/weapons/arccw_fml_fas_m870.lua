@@ -28,10 +28,10 @@ SWEP.ViewModel = "models/weapons/arccw/fml/fas1/c_m870.mdl"
 SWEP.WorldModel = "models/weapons/arccw/fml/fas1/w_m870.mdl"
 SWEP.ViewModelFOV = 70
 
-SWEP.Damage = 12
+SWEP.Damage = 15
 SWEP.DamageMin = 2 -- damage done at maximum range
 SWEP.Range = 14 -- in METRES
-SWEP.RangeMin = 4 -- in METRES
+SWEP.RangeMin = 0 -- in METRES
 SWEP.Penetration = 1
 SWEP.DamageType = DMG_BUCKSHOT
 SWEP.ShootEntity = nil -- entity to fire, if any
@@ -54,8 +54,8 @@ SWEP.MaxRecoilBlowback = 0.8
 SWEP.ShotgunReload = true
 SWEP.ManualAction = true
 
-SWEP.Delay = 60 / 300 -- 60 / RPM.
-SWEP.Num = 12 -- number of shots per trigger pull.
+SWEP.Delay = 60 / 220 -- 60 / RPM.
+SWEP.Num = 11
 SWEP.RunawayBurst = false
 SWEP.Firemodes = {
     {

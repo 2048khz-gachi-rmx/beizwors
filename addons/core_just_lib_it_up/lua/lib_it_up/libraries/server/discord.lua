@@ -41,10 +41,12 @@ end)
 
 local socket = dissocket
 
-local port = 27020
 local pingport = 27025
 
 local silence = false
+
+discord.IP = Settings.Get("DiscordIP") or game.GetIPAddress():match("(.+):%d+$")
+discord.Port = tonumber(Settings.Get("DiscordPort") or game.GetIPAddress():match(".+:(%d+)$"))
 
 local function socketConnect(sock, connected, ip, port)
 
@@ -67,8 +69,11 @@ end
 socket:SetCallbackConnect(socketConnect);
 
 local function sockDisconnect(sock)
-	MsgC(Color(250, 100, 100), "Disconnected from IRC server.\nType discord_reconnect or DiscordReconnect() to attempt reconnection.\nRight now, listening for messages.")
-	sock:Listen("127.0.0.1", pingport)
+	MsgC(Color(250, 100, 100), "Disconnected from IRC server.\n",
+		"Type discord_reconnect or DiscordReconnect() to attempt reconnection.\n",
+		"Right now, listening for messages.\n")
+
+	sock:Listen(discord.IP, discord.Port)
 	sock:SetCallbackConnect(socketConnect)
 end
 socket:SetCallbackDisconnect(sockDisconnect);
@@ -98,11 +103,14 @@ socket:SetCallbackReceive(socketReceive);
 
 
 function DiscordReconnect()
-
 	socket:Close()
-
-	socket:Connect("127.0.0.1", port)
-
+	local ok = socket:Connect(discord.IP, discord.Port)
+	if not ok then
+		MsgC(Color(250, 100, 100), "Failed to connect to " .. discord.IP .. ":" .. discord.Port, "\n	",
+			socket:GetLastError())
+	else
+		print("connected discord :)")
+	end
 end
 
 concommand.Add("discord_reconnect", function(ply)

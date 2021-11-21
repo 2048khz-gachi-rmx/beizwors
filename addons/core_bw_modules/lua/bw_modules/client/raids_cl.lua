@@ -375,7 +375,7 @@ local function alert(rded)
 	end
 end
 
-hook.Add("RaidStart", "NotifySound", function(rd, rder, rded, fac)
+hook.NHAdd("RaidStart", "NotifySound", function(rd, rder, rded, fac)
 	-- npc/attack_helicopter/aheli_damaged_alarm1.wav
 	-- NPC_AttackHelicopter.BadlyDamagedAlert
 	if rd:IsRaider(LocalPlayer()) then

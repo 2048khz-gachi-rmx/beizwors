@@ -93,6 +93,14 @@ end)
 	:SetDescription("Slaps a player(optionally with set velocity).")
 
 
+local function doSound(ply, url)
+	net.Start("playsound")
+		net.WriteString(url)
+		net.WriteEntity(ply)
+	net.Broadcast()
+end
+
+
 local f = {
 	"gachi",
 	"playsound",
@@ -101,6 +109,77 @@ local f = {
 local urlps = {
 	["q2f2laugh"] = "https://b.vaati.net/aruc.mp3",
 	["cani"] = "http://vaati.net/Gachi/shared/ballz.mp3",
+	["kys"] = "http://vaati.net/Gachi/shared/kys.mp3",
+	["kys_now"] = function(ply)
+		local thunders = 4
+		local ttbl = {}
+		for i=1, 4 do ttbl[i] = i end
+		table.Shuffle(ttbl)
+
+		local snd = "ambient/ambience/rainscapes/thunder_close0%d.wav"
+
+		local thunder_1 = snd:format(ttbl[1])
+		local thunder_2 = snd:format(ttbl[1])
+		local lightning = "ambient/weather/thunderstorm/lightning_strike_%d.wav"
+		local light_rand = lightning:format(math.random(1, 4))
+
+		ply:SetNWVector("kys_where", ply:EyePos() + VectorRand(-256, 256) + Vector(0, 0, 1024))
+
+		sound.Play(thunder_1,
+			ply:GetPos() + Vector(0, 0, 128),
+		90, 100, 1)
+
+		local delay = 1.3
+		ply:Timer("kys", delay, 1, function()
+			sound.Play(thunder_2,
+				ply:GetPos() + Vector(0, 0, 128),
+			90, 100, 1)
+			doSound(ply, "http://vaati.net/Gachi/shared/kys_you_should.mp3")
+		end)
+
+		delay = delay + 3.2
+		ply:Timer("kys_2", delay, 1, function()
+			for i=1, 4 do
+				sound.Play(lightning:format(i),
+					ply:GetPos() + Vector(0, 0, 128),
+				90, 100, 1)
+			end
+		end)
+
+		delay = delay + 0.1
+		ply:Timer("kys_2.5", delay, 1, doSound, "http://vaati.net/Gachi/shared/kys_NOW.mp3")
+
+		delay = delay + 0.4
+		ply:Timer("kys_3", delay, 1, function()
+			ply:Kill()
+
+			local ef = EffectData()
+			ef:SetOrigin(ply:GetPos() + ply:OBBCenter())
+			ef:SetScale(200)
+			ef:SetNormal(vector_up)
+			ef:SetEntity(ply)
+			util.Effect("ThumperDust", ef)
+			util.Effect("cball_explode", ef)
+
+			for i=1, 2 do
+				sound.Play(("ambient/energy/weld%d.wav"):format(i),
+					ply:GetPos() + ply:OBBCenter(),
+				90, 100, 1)
+			end
+
+			sound.Play(("ambient/explosions/explode_%d.wav"):format(math.random(1, 9)),
+				ply:GetPos() + ply:OBBCenter(),
+			90, 100, 1)
+
+			ply:Timer("kys_reset", 1, function()
+				ply:SetNWFloat("kys_now", 0)
+			end)
+		end)
+
+		print(delay)
+		ply:SetNWFloat("kys_now", CurTime() + delay)
+		ply:SetNWFloat("kys_start", CurTime())
+	end
 }
 
 CUM.AddCommand("ps", function(_, ply, line)
@@ -126,6 +205,8 @@ CUM.AddCommand("ps", function(_, ply, line)
 		return false
 	end
 
+	line = line:lower()
+
 	local played = false
 
 	for k,v in pairs(f) do
@@ -141,17 +222,15 @@ CUM.AddCommand("ps", function(_, ply, line)
 
 	end
 
-	for k,v in pairs(urlps) do
-
-		if line == k then
-			played = true
-			net.Start("playsound")
-				net.WriteString(v)
-				net.WriteEntity(ply)
-			net.Broadcast()
-			ply.psCoolDown = CurTime()
+	if urlps[line] then
+		played = true
+		if isstring(urlps[line]) then
+			doSound(ply, urlps[line])
+		elseif isfunction(urlps[line]) then
+			urlps[line](ply)
 		end
 
+		ply.psCoolDown = CurTime()
 	end
 
 	if not played then

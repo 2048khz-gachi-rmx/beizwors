@@ -190,7 +190,7 @@ function raidmeta:Initialize(rder, rded, fac)
 	self:AddParticipant(rded, 2)
 
 
-	hook.Run("RaidStart", self, rder, rded, fac ~= nil)
+	hook.NHRun("RaidStart", self, rder, rded, fac ~= nil)
 end
 
 function IsRaid(obj)
@@ -671,7 +671,7 @@ function doRaidNotify(rd)
 				table.insert(rded, "<@" .. sidToDiscord[k] .. ">")
 			else
 				local pin = GetPlayerInfo(k)
-				table.insert(rded, pin:Nick():gsub("@", "\\@"))
+				table.insert(rded, (pin:Nick():gsub("@", "\\@")))
 			end
 		elseif IsPlayerInfo(k) and rd:IsRaider(k:SteamID()) then
 			local ins = k:Nick():gsub("@", "\\@")
@@ -689,6 +689,6 @@ function doRaidNotify(rd)
 		fmt:format(table.concat(rders, ", "), table.concat(rded, ", ")))
 end
 
-hook.Add("RaidStart", "DiscordNotify", function(rd, rder, rded, fac)
+hook.NHAdd("RaidStart", "DiscordNotify", function(rd, rder, rded, fac)
 	doRaidNotify(rd)
 end)

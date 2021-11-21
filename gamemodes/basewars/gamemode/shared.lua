@@ -239,8 +239,8 @@ function BaseWars.NumberFormat(num)
 		local Str = NumTable[i][2]
 
 		if num >= Div or num <= -Div then
-
-			return string.Comma2(math.Round(num / Div, 1)) .. " " .. Str
+			local frac = math.floor(num / Div * 10) / 10
+			return string.Comma2(frac) .. " " .. Str
 
 		end
 	end

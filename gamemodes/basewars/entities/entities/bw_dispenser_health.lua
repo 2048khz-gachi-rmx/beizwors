@@ -221,7 +221,7 @@ function ENT:OpenShit(qm, self, pnl)
 
 		canv.MaxInnerAlpha = 40
 
-		local canUse = ent:IsPowered() and ent:GetStims() > 1
+		local canUse = ent:IsPowered() and ent:GetStims() >= 1
 
 		if not canUse then
 			give_stim:SetColor(Colors.Button, true)

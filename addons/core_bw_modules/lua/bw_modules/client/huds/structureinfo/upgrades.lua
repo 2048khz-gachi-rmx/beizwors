@@ -15,11 +15,13 @@ function sin:PaintLevel(cury)
 
 	local lv = ent and ent:GetLevel()
 	local mx = ent and ent.GetMaxLevel and ent:GetMaxLevel()
-	local uc = ent and ent.GetUpgradeCost and ent:GetUpgradeCost()
+	local uc = ent and ent.GetUpgradeCost
 
 	self.EntLevel = lv or self.EntLevel
 	self.EntMaxLevel = mx or self.EntMaxLevel
-	self.EntUpgCost = uc or self.EntUpgCost
+	if uc then
+		self.EntUpgCost = ent:GetUpgradeCost()
+	end
 
 	if not self.EntLevel then return end
 

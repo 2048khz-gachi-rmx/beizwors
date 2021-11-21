@@ -127,5 +127,5 @@ function raidmeta:Initialize(rder, rded, when, id, vsfac)
 		raid.MyRaid = self
 	end
 
-	hook.Run("RaidStart", self, rder, rded, vsfac)
+	hook.NHRun("RaidStart", self, rder, rded, vsfac)
 end
