@@ -1,12 +1,12 @@
 --[[-------------------------------------------------------------------------
 -- 	FButton
 ---------------------------------------------------------------------------]]
-local PANEL = {}
 
 local RED = Color(255, 0, 0)
 local DIM = Color(30, 30, 30, 210)
 
 local button = {}
+button.RBRadius = 8
 
 local sharedScaleVec = Vector(1, 1)
 local sharedTranslVec = Vector(0, 0)
@@ -14,6 +14,7 @@ local mx = Matrix()
 
 ChainAccessor(button, "Font", "Font")
 ChainAccessor(button, "Label", "Text") -- yeet
+
 
 function button:Init()
 	self.Color = Colors.Button:Copy()
@@ -43,8 +44,6 @@ function button:Init()
 
 	self.LabelColor = Color(255, 255, 255)
 	self.DisabledLabelColor = Color(255, 255, 255, 150)
-
-	self.RBRadius = 8
 
 	self.HoverColor = nil
 	self.HoverColorGenerated = nil
@@ -211,9 +210,7 @@ end
 
 -- draw the background
 function button:DrawButton(x, y, w, h)
-
-	local rad = self.RBRadius or 8
-
+	local rad = self.RBRadius
 
 	local bg = self.drawColor or self.Color or RED
 
@@ -224,7 +221,7 @@ function button:DrawButton(x, y, w, h)
 	local x2, y2 = x, y
 
 	if self.Border then
-		local bordercol = self.Border.col or self.Color or RED
+		local bordercol = self.Border.col or self.BorderColor or RED
 		local bw, bh = self.Border.w or 2, self.Border.h or 2
 		if bw > 0 or bh > 0 then
 			dRB(rad, x, y, w, h, bordercol, rbinfo)

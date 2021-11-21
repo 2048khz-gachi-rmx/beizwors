@@ -16,7 +16,7 @@ Colors.FrameBody = Color(50, 50, 50)
 local close_hov = Color(235, 90, 90)
 local close_unhov = Color(205, 50, 50)
 
-
+PANEL.RBRadius = 4
 
 function PANEL:Init()
 
@@ -29,7 +29,7 @@ function PANEL:Init()
 
 	local b = vgui.Create("DButton", self)
 	self.CloseButton = b
-	b:SetPos(w - 72, 2)
+	b:SetPos(w - 64 - 4, 4)
 	b:SetSize(64, 24)
 	b:SetText("")
 	b.Color = Color(205, 50, 50)
@@ -64,8 +64,6 @@ function PANEL:Init()
 	self.DimColor = Color(0, 0, 0, 220)
 
 	self:DockPadding(4, 32 + 4, 4, 4)
-
-
 	self.SizableNum = 3
 
 	self.SizableBoxX = 1
@@ -83,7 +81,7 @@ function PANEL:_ShadowGenerator(w, h)
 	local hh = self.HeaderSize
 	local tops = true
 
-	local rad = self.RBRadius or 8
+	local rad = self.RBRadius
 
 	if hh > 0 then
 		draw.RoundedBoxEx(self.HRBRadius or rad, 0, 0, w, hh, hc, true, true)
@@ -150,7 +148,7 @@ end
 function PANEL:OnSizeChanged(w,h)
 
 	if IsValid(self.m_bCloseButton) then
-		self.m_bCloseButton:SetPos(w - 72, 2)
+		self.m_bCloseButton:SetPos(w - 64 - 4, 4)
 	end
 
 	self:OnChangedSize(w,h)
@@ -167,7 +165,7 @@ local rots = {
 
 function PANEL.DrawHeaderPanel(self, w, h, x, y)
 
-	local rad = self.RBRadius or 8
+	local rad = self.RBRadius
 
 	local hc = self.HeaderColor
 	local bg = self.BackgroundColor
@@ -498,7 +496,7 @@ end
 function PANEL:PaintOver(w,h)
 
 	if self.Dim then
-		local rad = self.RBRadius or 8
+		local rad = self.RBRadius
 
 		self.DimColor.a = self.DimAlpha or 220
 

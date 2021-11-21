@@ -1,3 +1,6 @@
+local NavPanel = {}
+local NavbarChoice = {}
+local Navbar = {}
 
 local btnPaint = function(self, w, h)
 	local col = self.Color
@@ -31,7 +34,7 @@ end
 
 ]]
 
-local NavbarChoice = {}
+
 local questionMark
 
 hook.Add("OnScreenSizeChanged", "garry_die", function()
@@ -266,10 +269,10 @@ vgui.Register("NavbarChoice", NavbarChoice, "DButton")
 local RoundingMask = function(scr, w, h)
 	local nav = scr.Navbar
 	local x = -nav.X
-	draw.RoundedPolyBox(8, x, 0, w, h, color_white, true, true, false, true)
+	local ffr = baseclass.Get("FFrame")
+	draw.RoundedPolyBox(ffr.RBRadius, x, 0, w, h,
+		color_white, true, true, false, true)
 end
-
-local Navbar = {}
 
 function Navbar:Init()
 	local showHolder = vgui.Create("InvisPanel", self)
@@ -307,8 +310,8 @@ function Navbar:Init()
 
 
 	scr.Navbar = self
-
 	scr.GradBorder = true
+
 	function scr:Draw()
 	end
 
@@ -440,7 +443,8 @@ function Navbar:Draw(w, h)
 		x = -self.X 	-- rounded box to match the parent's bottom-left rounding
 	end
 
-	draw.RoundedBoxEx(8, x, 0, w, h, self.Color, false, false, true, false)
+	local ffr = baseclass.Get("FFrame")
+	draw.RoundedBoxEx(ffr.RBRadius, x, 0, w, h, self.Color, false, false, true, false)
 
 	surface.DisableClipping(true)
 		surface.SetMaterial(MoarPanelsMats.gl)
@@ -472,7 +476,7 @@ end
 
 vgui.Register("Navbar", Navbar, "InvisPanel")
 
-local NavPanel = {}
+
 
 function NavPanel:Init()
 
@@ -481,6 +485,8 @@ function NavPanel:Init()
 	local navbar = vgui.Create("Navbar", self)
 	navbar:SetPos(-150, self.HeaderSize)
 	navbar:SetWide(200)
+
+	navbar.NavPanel = self
 
 	navbar:On("Expand", function(...)
 		self:GenerateInvisibleButton(...)
@@ -579,7 +585,7 @@ function NavPanel:AddCustomElement(fr)
 end
 
 function NavPanel:PositionPanel(pnl)
-	local rad = self.RBRadius or 8
+	local rad = self.RBRadius
 	pnl:SetPos(self.RetractedSize + rad, self.HeaderSize)
 	pnl:SetSize(self:GetWide() - self.RetractedSize - (rad * 2), self:GetTall() - self.HeaderSize)
 end
