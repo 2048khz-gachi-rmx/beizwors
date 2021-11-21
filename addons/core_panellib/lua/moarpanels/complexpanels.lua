@@ -371,6 +371,8 @@ function ebutton:GetExpand()
 	return self.ExpandPanel
 end
 
+ebutton.MxScaleDown = 1
+
 function ebutton:OnSizeChanged(w, h)
 	if not self.ExpandPanel then self:Init(w, h) end
 
