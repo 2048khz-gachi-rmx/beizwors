@@ -76,6 +76,10 @@ function ENT:DrawUpgradeCost(y, w, h)
 
 end
 
+function ENT:GetMoneyFraction()
+	return self:GetNWMoney() / self:GetCapacity()
+end
+
 function ENT:DrawMoneyBar(pos, ang, scale, _, _, me, pwd)
 
 	if me.TTR then me.PrintAmount = self:GetNWInt("UpgradeCost", 0) / me.TTR  end
@@ -118,12 +122,15 @@ local blk = Color(0, 0, 0, 250)
 local critDmgCol = Color(170, 40, 40)
 function ENT:DrawMisc(pos, ang, scale, w, h, me, pwd)
 
-	local nameW, nameH = w * 0.75, h * 0.2
+	surface.SetFont("EXSB64")
+	local txW = surface.GetTextSize(me.PrintName)
+
+	local nameW, nameH = math.max(w * 0.6, txW + w * 0.05), draw.GetFontHeight("EXSB64") * 2 * 0.95
 	local nameX, nameY = (w - nameW) / 2, h * 0.075
 
 	setDrawColor(blk)
 	rect(nameX, nameY, nameW, nameH)
-	simpleText(me.PrintName, "BS64", w/2, nameY, white, 1)
+	simpleText(me.PrintName, nil, w/2 - txW / 2, nameY, white)
 
 	if pwd then
 
