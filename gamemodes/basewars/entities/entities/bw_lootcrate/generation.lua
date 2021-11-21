@@ -158,6 +158,7 @@ local function makeCrate(pos)
 
 	local crate = ents.Create(entClass)
 	crate.SavedKey = dat.key
+
 	crate:SetPos(dat[1])
 	crate:SetAngles(dat[2])
 
@@ -181,7 +182,7 @@ function LootCratesSpawn(amt)
 		if not e:IsValid() then table.remove(ActiveLootCrates, i) end
 	end
 
-	local maxCrates = math.max(3, player.GetCount() / 3)
+	local maxCrates = math.max(4, 2 + player.GetCount() / 2)
 
 	amt = amt or maxCrates - #ActiveLootCrates - LootCratesAwaitingRespawn
 	if amt <= 0 then return end

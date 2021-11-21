@@ -90,12 +90,11 @@ function ENT:PreInit()
 		return
 	end
 
+	if not self.CrateType then
+		-- unset properties?
+		self.CrateType = "scraps"
+		self.Size = "small"
 
-	self.CrateType = self.CrateType or "scraps"
-	self.Size = self.Size or "small"
-
-
-	if not self.Model then
 		local mTbl = self:GetTypeInfo().models[self.Size]
 		self.Model = mTbl[math.random(#mTbl)]
 	end

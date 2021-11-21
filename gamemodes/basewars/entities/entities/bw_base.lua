@@ -101,6 +101,34 @@ if SERVER then
 			if IsValid(self) then self:RemoveEFlags(EFL_FORCE_CHECK_TRANSMIT) end
 		end)
 
+		if self.SubModels then
+			for k,v in ipairs(self.SubModels) do
+				local prop = ents.Create("prop_physics")
+				prop:SetPos(self:LocalToWorld(v.Pos or Vector()))
+				prop:SetAngles(self:LocalToWorldAngles(v.Ang or Angle()))
+				prop:SetModel(v.Model or "models/Gibs/HGIBS.mdl")
+				prop:SetSkin(v.Skin or 0)
+				prop:SetParent(self)
+				if v.Material then
+					prop:SetMaterial(v.Material)
+				end
+			end
+		end
+	end
+
+	function FillSubModelData(ent)
+		local t = {}
+		for k,v in ipairs(ent:GetChildren()) do
+			t[#t + 1] = {
+				Pos = v:GetLocalPos(),
+				Ang = v:GetLocalAngles(),
+				Model = v:GetModel(),
+				Skin = (v:GetSkin() ~= 0 and v:GetSkin()) or nil,
+				Material = (v:GetMaterial() ~= 0 and v:GetMaterial()) or nil
+			}
+		end
+
+		return t
 	end
 
 	function ENT:Repair()

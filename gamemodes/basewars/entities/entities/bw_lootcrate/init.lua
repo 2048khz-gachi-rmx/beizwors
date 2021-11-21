@@ -4,6 +4,8 @@ AddCSLuaFile("shared.lua")
 include("generation.lua")
 AddCSLuaFile("cl_init.lua")
 
+CrateRespawnTime = 90
+
 function ENT:Init(me)
 
 end
@@ -11,6 +13,15 @@ end
 function ENT:Think()
 	self:NextThink(CurTime() + 1)
 	return true
+end
+
+function ENT:RespawnIn(time)
+	LootCratesAwaitingRespawn = LootCratesAwaitingRespawn + 1
+	time = time or CrateRespawnTime
+	timer.Simple(time, function()
+		LootCratesAwaitingRespawn = LootCratesAwaitingRespawn - 1
+		LootCratesSpawn(1)
+	end)
 end
 
 local dropBounds = Vector(8, 8, 8)
@@ -85,6 +96,7 @@ function ENT:Use(ply)
 		drop:Activate()
 	end
 
+	self:RespawnIn()
 	self:Remove()
 end
 
@@ -133,7 +145,6 @@ function ENT:ChangeProperties(ply)
 		self.ModelCopies = nil
 	end
 
-	print("picked size:", sz)
 	self.Size = sz
 
 	if not self.ModelCopies then
