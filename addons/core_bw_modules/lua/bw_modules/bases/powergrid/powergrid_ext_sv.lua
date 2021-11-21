@@ -260,7 +260,7 @@ function pg:Think()
 			end
 
 			-- remainder goes into storage
-			self:SetPower(cur + add - cur_sub)
+			self:AddPower(add - cur_sub)
 		end
 	end
 
