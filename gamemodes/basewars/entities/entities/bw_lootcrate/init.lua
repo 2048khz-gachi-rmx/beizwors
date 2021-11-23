@@ -7,7 +7,12 @@ AddCSLuaFile("cl_init.lua")
 CrateRespawnTime = 90
 
 function ENT:Init(me)
+	ActiveLootCrates[#ActiveLootCrates + 1] = self
+end
 
+function ENT:OnRemove()
+	table.RemoveByValue(ActiveLootCrates, self)
+	self:RespawnIn(1) -- unintended removal if RespawnIn actually works
 end
 
 function ENT:Think()
@@ -16,6 +21,9 @@ function ENT:Think()
 end
 
 function ENT:RespawnIn(time)
+	if self.SpawningElsewhere then return end
+	self.SpawningElsewhere = true
+
 	LootCratesAwaitingRespawn = LootCratesAwaitingRespawn + 1
 	time = time or CrateRespawnTime
 	timer.Simple(time, function()
