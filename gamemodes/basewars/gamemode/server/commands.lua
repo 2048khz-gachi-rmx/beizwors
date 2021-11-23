@@ -319,9 +319,17 @@ BaseWars.Commands.AddCommand({"dw", "dropwep"}, function(ply)
 
 end, false)
 
-util.AddNetworkString("OpenDiscord")
+util.AddNetworkString("CommandThing")
 
 BaseWars.Commands.AddCommand({"discord", "dis", "dc"}, function(ply)
-	net.Start("OpenDiscord")
+	net.Start("CommandThing")
+		net.WriteUInt(0, 4)
 	net.Send(ply)
 end, false)
+
+BaseWars.Commands.AddCommand({"content", "servercontent", "workshop"}, function(ply)
+	net.Start("CommandThing")
+		net.WriteUInt(1, 4)
+	net.Send(ply)
+end, false)
+

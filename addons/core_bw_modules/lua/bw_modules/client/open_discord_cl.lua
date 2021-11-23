@@ -1,6 +1,6 @@
 --
 
-net.Receive("OpenDiscord", function()
+local function openDiscord()
 	local f = vgui.Create("FFrame")
 		f:SetSize(400, 200)
 		f:Center()
@@ -50,7 +50,19 @@ net.Receive("OpenDiscord", function()
 		local dh = vgui.Create("DHTML", f)
 			dh:SetSize(1, 1)
 			dh:OpenURL(BaseWars.Config.DiscordLink)
-
-
 	end
+end
+
+local function openContent()
+	gui.OpenURL("https://steamcommunity.com/sharedfiles/filedetails/?id=2662165222")
+end
+
+local numToFunc = {
+	openDiscord,
+	openContent,
+}
+
+net.Receive("CommandThing", function()
+	local id = net.ReadUInt(4) + 1
+	numToFunc[id] ()
 end)
