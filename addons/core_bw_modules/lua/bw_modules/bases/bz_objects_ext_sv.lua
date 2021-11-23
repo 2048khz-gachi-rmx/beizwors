@@ -108,14 +108,13 @@ function bw.Base:Unclaim(temporarily)
 	if not temporarily then
 		self:SetClaimed(false)
 
-		self:Emit("Unclaim")
-		hook.NHRun("BaseUnclaimed", self, prev)
-
 		self.PublicNW:Set("ClaimedFaction", false)
 		self.PublicNW:Set("ClaimedBy", nil)
 
-		self:UpdateNW()
+		self:Emit("Unclaim")
 		hook.NHRun("BaseUnclaimed", self, prev)
+
+		self:UpdateNW()
 	end
 end
 

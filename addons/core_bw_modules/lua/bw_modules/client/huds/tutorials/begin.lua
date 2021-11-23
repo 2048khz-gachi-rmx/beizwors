@@ -28,7 +28,7 @@ do
 	end)
 
 	hook.Add("BaseUnclaimed", "TutorialTrack", function(base)
-		if not LocalPlayer():GetBase() then
+		if not LocalPlayer():GetBase() or base == LocalPlayer():GetBase() then
 			ptr:CompletePoint(2, false)
 		end
 	end)

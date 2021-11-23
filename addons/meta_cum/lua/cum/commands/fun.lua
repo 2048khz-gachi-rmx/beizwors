@@ -171,12 +171,13 @@ local urlps = {
 				ply:GetPos() + ply:OBBCenter(),
 			90, 100, 1)
 
+			util.ScreenShake(ply:GetPos() + ply:OBBCenter(), 8, 1024, 6, 512)
+
 			ply:Timer("kys_reset", 1, function()
 				ply:SetNWFloat("kys_now", 0)
 			end)
 		end)
 
-		print(delay)
 		ply:SetNWFloat("kys_now", CurTime() + delay)
 		ply:SetNWFloat("kys_start", CurTime())
 	end

@@ -7,6 +7,12 @@ local function pID(ply)
 	return (ply:IsBot() and "BOT:" .. ply:UserID()) or ply:SteamID64() -- ugh
 end
 
+function raidmeta:__tostring()
+	return ("Raid [%d_%s][%.1f]"):format(self:GetID(),
+		self.Faction and "fac" or "nonfac",
+		self:GetLeft())
+end
+
 function raidmeta:AddParticipant(obj, side)
 	assert(isnumber(side))
 

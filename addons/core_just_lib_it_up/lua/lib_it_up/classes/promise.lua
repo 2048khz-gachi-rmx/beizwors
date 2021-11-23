@@ -146,6 +146,8 @@ function Promise:Rejector()
 	return self._rejector
 end
 
+Promise.Rejecter = Promise.Rejector -- lole
+
 local function typecheck(tbl)
 	for k,v in ipairs(tbl) do
 		if not IsPromise(v) then

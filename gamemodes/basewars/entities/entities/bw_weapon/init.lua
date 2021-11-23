@@ -116,8 +116,9 @@ function ENT:Use(act, call, usetype, value)
 	end
 
 	if IsValid(Wep) then
-		local Clip = Wep.Primary and Wep.Primary.DefaultClip
-		ply:GiveAmmo((Clip and Clip * 2) or 30, Wep:GetPrimaryAmmoType())
+		--local Clip = Wep.Primary and Wep.Primary.DefaultClip
+		--ply:GiveAmmo((Clip and Clip * 2) or 30, Wep:GetPrimaryAmmoType())
+		return
 	else
 		Wep = ply:Give(Class)
 		if not IsValid(Wep) then
@@ -131,7 +132,15 @@ function ENT:Use(act, call, usetype, value)
 
 		if not self.Dropped then
 			local Clip = Wep.Primary and Wep.Primary.DefaultClip
-			ply:GiveAmmo((Clip and Clip * 3) or 30, Wep:GetPrimaryAmmoType())
+			local aType = Wep:GetPrimaryAmmoType()
+			local already_given = ply:GetDeathVar("bwweapon_ammo_" .. aType, 0)
+
+			local to_give = math.max(0, ((Clip and Clip * 2) or 30) - already_given)
+
+			if to_give > 0 then
+				ply:SetDeathVar("bwweapon_ammo_" .. aType, already_given + to_give)
+				ply:GiveAmmo(to_give, aType)
+			end
 		end
 
 		hook.Run("BW_WeaponPickedUp", self, Wep, ply)

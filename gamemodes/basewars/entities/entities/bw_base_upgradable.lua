@@ -44,7 +44,8 @@ end
 
 function ENT:GetLevelData(lv)
 	lv = lv or self:GetLevel()
-	return self.Levels[lv]
+	local ent_base = baseclass.Get(self:GetClass()) -- autorefresh = goode
+	return ent_base.Levels and ent_base.Levels[lv] or self.Levels[lv]
 end
 
 

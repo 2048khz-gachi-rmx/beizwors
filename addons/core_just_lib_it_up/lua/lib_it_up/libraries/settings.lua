@@ -7,10 +7,14 @@ local stg = Settings.Setting
 
 Settings.Table = dat
 
+function Settings.GetObject(id)
+	return Settings.Settings[id]
+end
+
 function stg:Initialize(id)
 	Settings.Settings[id] = self
 	self:SetID(id)
-	self:SetValue(Settings.Get(id))
+	self:SetValue(Settings.GetStored(id))
 end
 
 local alias = {
@@ -39,8 +43,16 @@ function stg:SetValue(v)
 	local old = self:GetValue()
 	cookie.Set("Setting:" .. self:GetID(), (v ~= nil and tostring(v)) or nil)
 	self._Value = v
-	self:Emit("Change", old, v)
+
+	local v2 = self:Emit("Remap", v)
+	self._RemappedValue = (v2 == nil and v) or v2
+	self:Emit("Change", old, self._RemappedValue)
 	return self
+end
+
+function stg:GetValue(real)
+	if real then return self._Value end
+	return self._RemappedValue
 end
 
 function stg:SetDefaultValue(v)
@@ -59,18 +71,83 @@ function stg:SetCategory(c)
 	return self
 end
 
+function stg:SetInverted(b)
+	if b == nil or b then
+		self:On("Remap", "_Invert", function(_, v) return not v end)
+	else
+		self:RemoveListener("Remap", "_Invert")
+	end
+
+	self:SetValue(self:GetValue(true))
+
+	return self
+end
+
 ChainAccessor(stg, "_ID", "ID")
 ChainAccessor(stg, "_Name", "Name")
-ChainAccessor(stg, "_Value", "Value", true)
+--ChainAccessor(stg, "_Value", "Value", true)
 ChainAccessor(stg, "_Category", "Category", true)
 ChainAccessor(stg, "_Type", "Type")
 
-function Settings.Get(k, v)
-	local val = cookie.GetString("Setting:" .. k, v)
-	if val == "false" or val == "true" then return tobool(val) end
-	if isnumber(val) then return tonumber(val) end
+local function changeByRun(cv, val)
+	if isbool(val) then
+		RunConsoleCommand(cv:GetName(), val and "1" or "0")
+	else
+		RunConsoleCommand(cv:GetName(), tostring(val))
+	end
+end
 
-	return (val == nil and v) or val --(dat[k] ~= nil and dat[k]) or v
+local function changeByMethod(cv, val)
+	if isbool(val) then
+		cv:SetBool(val)
+	elseif isnumber(val) then
+		cv:SetFloat(val)
+	else
+		cv:SetString(val)
+	end
+end
+
+
+function stg:SetConVar(v)
+	self._Convar = v
+	local cvar_obj
+	self:On("Change", "CvarUpdate", function()
+		cvar_obj = cvar_obj or GetConVar(v)
+		if not cvar_obj then errorNHf("Missing setting convar: %s", v:GetConVar()) return end
+
+		local changer = changeByMethod
+		if not cvar_obj:IsFlagSet(FCVAR_LUA_CLIENT) and not cvar_obj:IsFlagSet(FCVAR_LUA_SERVER) then
+			changer = changeByRun
+		end
+
+		changer(cvar_obj, self:GetValue())
+	end)
+
+	return self
+end
+
+ChainAccessor(stg, "_Convar", "ConVar", true)
+ChainAccessor(stg, "_Convar", "Convar", true)
+
+
+function Settings.GetStored(k, v)
+	local val = cookie.GetString("Setting:" .. k, v)
+
+	if val == "false" or val == "true" then
+		val = tobool(val)
+	elseif isnumber(val) then
+		val = tonumber(val)
+	end
+
+	return (val == nil and v) or val
+end
+
+function Settings.Get(k, v)
+	local obj = Settings.GetObject(k)
+	if not obj then errorNHf("No such setting: %s", k) return false end
+
+	local val = obj:GetValue()
+	return (val == nil and v) or val
 end
 
 function Settings.Set(k, v)
@@ -96,7 +173,7 @@ function stg:SetType(typ)
 	typ = (tostring(typ) or ""):lower()
 
 	if not acceptable[typ] then
-		errorNHf("Unacceptable setting type: %q", typ)
+		errorNHf("Unrecognized setting type: %q", typ)
 		return
 	end
 
@@ -109,7 +186,7 @@ function Settings.Create(k, typ, cb, override)
 	typ = (tostring(typ) or ""):lower()
 
 	if not acceptable[typ] then
-		errorNHf("Unacceptable setting type: %q", typ)
+		errorNHf("Unrecognized setting type: %q", typ)
 		return
 	end
 
@@ -140,3 +217,17 @@ file.Delete(fn)
 for k,v in pairs(dat) do
 	Settings.Set(k, v)
 end
+
+LibItUp.OnInitEntity(function()
+	for k,v in pairs(Settings.Setting) do
+		if not v:GetConVar() then continue end
+		local cv = GetConVar(v:GetConVar())
+
+		if not cv then
+			errorNHf("Missing setting convar: %s", v:GetConVar())
+			continue
+		end
+
+		cv:SetString(v:GetValue())
+	end
+end)

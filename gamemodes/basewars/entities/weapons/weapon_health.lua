@@ -141,6 +141,7 @@ function SWEP:PrimaryAttack()
 	if maxHP <= 0 then return end
 
 	if ent:Health() >= ent:GetMaxHealth() then return end
+	if ent:BW_GetOwner() and ent:BW_GetOwner():GetRaid() then return end
 
 	local ef = EffectData()
 	ef:SetOrigin( tr.HitPos )

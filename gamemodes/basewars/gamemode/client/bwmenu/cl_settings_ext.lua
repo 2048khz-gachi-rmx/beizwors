@@ -71,19 +71,19 @@ function tab.Creators:bool(st)
 	local fntHgt = draw.GetFontHeight(BaseWars.Menu.Fonts.MediumSmall) * 1.25
 	self:SetTall(math.Multiple(fntHgt + 8, 4))
 	self.Setting = st
-	self.ActiveFrac = st:GetValue() and 1 or 0
+	self.ActiveFrac = st:GetValue(true) and 1 or 0
 
 	function self:Paint(w, h)
 		hovPaint(self, w, h)
 		lblPaint(self, w, h)
-		self:To("ActiveFrac", st:GetValue() and 1 or 0, 0.3, 0, 0.3)
+		self:To("ActiveFrac", st:GetValue(true) and 1 or 0, 0.3, 0, 0.3)
 
 		draw.OnOffSlider(self.ActiveFrac or 0, w * 0.88, h / 4,
 			w * 0.09, h / 2)
 	end
 
 	function self:DoClick()
-		st:SetValue(not st:GetValue())
+		st:SetValue(not st:GetValue(true))
 	end
 end
 

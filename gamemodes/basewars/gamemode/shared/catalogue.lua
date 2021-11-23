@@ -497,11 +497,12 @@ SetType("[ACW] Sniper Rifles")
 		ReuseLoadout("arccw_contender", "G2 Contender", k * 100, "models/weapons/arccw/w_contender.mdl")
 
 	SetTier(2)
-		ReuseLoadout("arccw_go_ssg08", "Scout", 750 * k)
-		ReuseLoadout("arccw_fml_fas_m24", "M24", 1500 * k,"models/weapons/arccw/fml/fas1/w_m24.mdl")
+		ReuseLoadout("arccw_fml_fas_m24", "M24", 500 * k,"models/weapons/arccw/fml/fas1/w_m24.mdl")
+		ReuseLoadout("arccw_go_ssg08", "Scout", 7.5 * m)
+		
 
 	SetTier(3)
-		ReuseLoadout("arccw_fml_fas_m82", "Barett M82", 3500 * k, "models/weapons/arccw/fml/fas1/w_m82.mdl")
+		ReuseLoadout("arccw_fml_fas_m82", "Barett M82", 35 * m, "models/weapons/arccw/fml/fas1/w_m82.mdl")
 
 SetTier(nil)
 

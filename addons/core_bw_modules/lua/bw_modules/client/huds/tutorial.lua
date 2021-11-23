@@ -230,6 +230,7 @@ end
 function ptr:Activate()
 	table.insert(tut.ActivePainters, self)
 	self.Active = true
+	self:SetCompleted(false) -- !?
 end
 
 function tut.GetCurrentPainter()
@@ -244,10 +245,11 @@ function tut.DoPainters()
 			acPtr.AppearDelay = 1.2
 		end
 
-		acPtr:Appear()
 		if not acPtr.Active then
 			acPtr:Activate()
 		end
+
+		acPtr:Appear()
 	end
 
 	tut.MaxY = 0

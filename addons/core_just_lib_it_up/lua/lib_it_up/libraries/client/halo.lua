@@ -1,8 +1,11 @@
 local hAdd = _haloAdd or halo.Add
 _haloAdd = hAdd
 
+local stg
+
 function halo.Add(...)
-	if not Settings.Get("halo_enable", true) then return end
+	stg = stg or Settings.GetObject("halo_enable")
+	if not stg:GetValue() then return end
 	return _haloAdd(...)
 end
 

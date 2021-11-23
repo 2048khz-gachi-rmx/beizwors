@@ -45,8 +45,8 @@ local pingport = 27025
 
 local silence = false
 
-discord.IP = Settings.Get("DiscordIP") or game.GetIPAddress():match("(.+):%d+$")
-discord.Port = tonumber(Settings.Get("DiscordPort") or game.GetIPAddress():match(".+:(%d+)$"))
+discord.IP = Settings.GetStored("DiscordIP") or game.GetIPAddress():match("(.+):%d+$")
+discord.Port = tonumber(Settings.GetStored("DiscordPort") or game.GetIPAddress():match(".+:(%d+)$"))
 
 local function socketConnect(sock, connected, ip, port)
 

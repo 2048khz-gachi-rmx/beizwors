@@ -336,7 +336,7 @@ BSHADOWS.EndShadow = function(intensity, spread, blur, opacity, direction, dista
 			sprX, sprY = spread, spread
 		end
 
-		if Settings.Get("bshadows_enable", true) then
+		if Settings.GetStored("bshadows_enable", true) then
 			render.OverrideAlphaWriteEnable(true, true)
 				render.BlurRenderTarget(ShadowRT, sprX, sprY, blur)
 			render.OverrideAlphaWriteEnable(false, false)
@@ -349,7 +349,7 @@ BSHADOWS.EndShadow = function(intensity, spread, blur, opacity, direction, dista
 	local shmat = BSHADOWS.ShadowMaterialGrayscale	--the actual shadow material
 	local mat = BSHADOWS.ShadowMaterial 			--the material on which the user has drawn
 
-	if not Settings.Get("bshadows_enable", true) then goto justMirror end
+	if not Settings.GetStored("bshadows_enable", true) then goto justMirror end
 
 	do
 		if color or color2 then

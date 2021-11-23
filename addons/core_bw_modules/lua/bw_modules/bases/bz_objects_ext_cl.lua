@@ -141,6 +141,7 @@ function bw.Base:IsOwner(what)
 	if fac then
 		return by == what or by:IsMember(what)
 	else
+		if IsFaction(what) then return false end
 		return by == GetPlayerInfo(what)
 	end
 end

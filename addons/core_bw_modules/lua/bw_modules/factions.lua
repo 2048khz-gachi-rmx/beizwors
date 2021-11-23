@@ -128,7 +128,7 @@ function facmeta:GetBase()
 			return false
 		end
 
-		if not base:IsOwner(self) then
+		if SERVER and not base:IsOwner(self) then
 			errorf("Something went wrong: %s has base set as %s, but it doesn't own it.", self, base)
 			return
 		end

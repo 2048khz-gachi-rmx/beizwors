@@ -225,22 +225,33 @@ local function addZone(ent, zone)
 	hook.NHRun("EntityEnteredZone", zone, ent)
 end
 
+local function _doRemove(ent, t, k, zone)
+	local ok, allow = hook.NHRun("EntityExitZone", zone, ent)
+	if allow == false and not ent._ForceBaseRemove then return end
+	table.remove(t, k)
+
+	if zone:IsValid() then
+		zone:EntityExit(ent)
+	end
+
+	checkZoneBases(ent)
+	hook.NHRun("EntityExitedZone", zone, ent)
+end
+
 local function removeZone(ent, zone)
 	local t = getZones(ent)
 	if not t[1] then return end -- presence was empty; don't bother
 
+	assert(bw.IsZone(zone) or isnumber(zone))
+
+	if isnumber(zone) then -- given key
+		_doRemove(ent, t, zone, t[zone])
+		return
+	end
+
 	for k,v in ipairs(t) do
 		if v == zone then
-			local ok, allow = hook.NHRun("EntityExitZone", zone, ent)
-			if allow == false then return end
-			table.remove(t, k)
-
-			if zone:IsValid() then
-				zone:EntityExit(ent)
-			end
-
-			checkZoneBases(ent)
-			hook.NHRun("EntityExitedZone", zone, ent)
+			_doRemove(ent, t, k, v)
 			return
 		end
 	end

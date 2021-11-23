@@ -8,7 +8,7 @@ ENT.Skin = 0
 ENT.Capacity        = 0
 ENT.PrintName = "Manual Printer"
 
-ENT.FontColor = Color(200, 117, 51)
+ENT.FontColor = Color(110, 60, 31)
 ENT.BackColor = color_black
 ENT.IsValidRaidable = false
 ENT.Model = "models/grp/printers/printer.mdl"
@@ -21,6 +21,10 @@ ENT.RebootTime = 0
 
 ENT.PowerRequired = 0
 ENT.IsManualPrinter = true
+
+function ENT:GetMoneyFraction()
+	return 1
+end
 
 function ENT:UseFunc(act, call)
 	if self:BW_GetOwner() ~= act:GetPInfo() then return end

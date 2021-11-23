@@ -201,7 +201,7 @@ function ENT:OnOpenRefine(ref, pnl)
 
 	-- OUTPUT
 	local out = vgui.Create("DHorizontalScroller", main)
-	out:SetTall(main:GetTall() * 0.3)
+	out:SetTall(main:GetTall() - p:GetTall())
 	out:SetWide(main:GetWide())
 	out.Y = main:GetTall() * 0.7
 
@@ -368,7 +368,12 @@ function ENT:OpenMenu()
 
 	inv:MoveRightOf(ref, 8)
 
-	local refTab = ref:AddTab("Refine ores", function(_, _, pnl) self:OnOpenRefine(ref, pnl) end, function() self:OnCloseRefine(ref) end)
+	local refTab = ref:AddTab("Refine ores", function(_, _, pnl)
+		self:OnOpenRefine(ref, pnl)
+	end, function()
+		self:OnCloseRefine(ref)
+	end)
+
 	refTab:SetTall(60)
 	refTab:Select(true)
 

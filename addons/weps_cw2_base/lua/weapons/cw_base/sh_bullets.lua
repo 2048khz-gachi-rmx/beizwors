@@ -50,7 +50,7 @@ end
 
 function SWEP:FireBullet(damage, cone, clumpSpread, bullets)
 	sp = GetShootPos(self.Owner)
-	local commandNumber = self.Owner:GetCurrentCommand():CommandNumber()
+	local commandNumber = self.Owner:GetCurrentCommand():CommandNumber() + 5 -- trolled
 	math.randomseed(commandNumber)
 	
 	if self.Owner:Crouching() then

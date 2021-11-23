@@ -585,9 +585,16 @@ function NavPanel:AddCustomElement(fr)
 end
 
 function NavPanel:PositionPanel(pnl)
-	local rad = self.RBRadius
-	pnl:SetPos(self.RetractedSize + rad, self.HeaderSize)
-	pnl:SetSize(self:GetWide() - self.RetractedSize - (rad * 2), self:GetTall() - self.HeaderSize)
+	local pos, sz = self:GetPositioned()
+
+	pnl:SetPos(unpack(pos))
+	pnl:SetSize(unpack(sz))
+end
+
+function NavPanel:GetPositioned(pnl)
+	return {self.RetractedSize, self.HeaderSize}, 	-- pos
+		{self:GetWide() - self.RetractedSize, 		-- size
+		self:GetTall() - self.HeaderSize}
 end
 
 function NavPanel:SetActivePanel(pnl, nopopout, noanim) --nil is acceptable as pnl
