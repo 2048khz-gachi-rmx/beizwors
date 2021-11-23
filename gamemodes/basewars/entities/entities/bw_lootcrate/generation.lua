@@ -11,8 +11,10 @@ local lootInfo = {
 			amt = {2, 4},
 			loot = {
 				blank_bp = {3, 9},
-				circuit_board = {1, 2, 0.3},
-				capacitor = {1, 4},
+				-- circuit_board = {1, 2, 0.3},
+				-- capacitor = {1, 4},
+				lube = {1, 1, 0.2},
+				adhesive = {1, 1, 0.35},
 			}
 		},
 
@@ -21,10 +23,13 @@ local lootInfo = {
 			amt = {3, 5},
 			loot = {
 				blank_bp = {10, 16},
-				circuit_board = {2, 4, 0.6},
-				emitter = {1, 1, 0.3},
-				cpu = {1, 1, 0.2},
-				capacitor = {3, 7},
+				-- circuit_board = {2, 4, 0.6},
+				-- emitter = {1, 1, 0.3},
+				-- cpu = {1, 1, 0.2},
+				-- capacitor = {3, 7},
+
+				adhesive = {1, 3, 0.5},
+				lube = {1, 2, 0.4},
 			}
 		}
 	},
@@ -147,7 +152,9 @@ local function rollCratePos(num)
 			local pos = data[1]
 
 			for _, ent in ipairs(ActiveLootCrates) do
-				if ent:GetPos():DistToSqr(pos) < 64^2 then goto nextPos end
+				if ent:GetPos():DistToSqr(pos) < 64^2 then
+					goto nextPos
+				end
 			end
 
 			if pos then
