@@ -194,6 +194,9 @@ local function Resolve(res, path)
 	local fn = file.GetFile(path):gsub("%.lua", "")
 
 	if fn:match("^_") then return false, false end -- _stuff don't get included
+	for k,v in ipairs(pt) do
+		if v:match("^_") then return false, false end -- same but for paths
+	end
 
 	local is_sv = table.HasValue(pt, "server") or table.HasValue(pt, "sv") or false
 	local is_cl = not is_sv and (table.HasValue(pt, "client") or table.HasValue(pt, "cl")) or false
