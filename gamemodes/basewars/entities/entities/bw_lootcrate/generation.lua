@@ -224,6 +224,11 @@ local function loadCrates()
 	Inventory.LootCrates.Create = makeCrate
 	Inventory.LootCrates.RollPosition = rollCratePos
 
+	for k,v in ipairs(ActiveLootCrates) do
+		v:RemoveRespawnless()
+	end
+
+	ActiveLootCrates = {}
 	Inventory.MySQL.WaitStates(LootCratesSpawn, "itemids")
 end
 
