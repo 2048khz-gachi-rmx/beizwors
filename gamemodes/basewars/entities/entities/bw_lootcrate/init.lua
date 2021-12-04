@@ -4,7 +4,7 @@ AddCSLuaFile("shared.lua")
 include("generation.lua")
 AddCSLuaFile("cl_init.lua")
 
-CrateRespawnTime = 90
+CrateRespawnTime = 30
 
 function ENT:Init(me)
 	ActiveLootCrates[#ActiveLootCrates + 1] = self
@@ -32,6 +32,11 @@ function ENT:RespawnIn(time)
 	end)
 end
 
+function ENT:RemoveRespawnless()
+	self.SpawningElsewhere = true
+	self:Remove()
+end
+
 local dropBounds = Vector(8, 8, 8)
 local zoffset = Vector(0, 0, dropBounds.z)
 local xyBounds = Vector(dropBounds.x, dropBounds.y, 0)
@@ -44,13 +49,20 @@ function ENT:Use(ply)
 
 	if not self.Ready then print("uninitialized fuck you") return end -- can't use uninitialized
 
-	local dropDist = 64
+
 	local ignoreTable = player.GetAll()
 	table.insert(ignoreTable, self)
+
+	local a = self:GetAngles()
+	local dA = a:Forward() + a:Up() + a:Right()
+	local sPos = self:GetPos() + self:OBBCenter() * dA + zoffset
 
 	for k,v in pairs(self.Storage:GetItems()) do
 		local drop = ents.Create("dropped_item")
 		table.insert(ignoreTable, drop)
+
+		local dropDist = 48
+		local dropHeight = 64
 
 		local dropDir = math.random() * 360
 		local off = Vector(
@@ -58,49 +70,57 @@ function ENT:Use(ply)
 			math.sin(math.rad(dropDir)) * dropDist,
 			0)
 
-		local dropPos
+		local lastPos = sPos
+
+		local segs = 32
+		local hitPos
+
+		for i=0, 1, 1 / segs do
+			local newPos = LerpVector(i, sPos, sPos + off)
+			newPos[3] = newPos[3] + math.sin(i * math.pi) * dropHeight
+
+			local tr = util.TraceHull({
+				mins = -dropBounds,
+				maxs = dropBounds,
+
+				start = lastPos,
+				endpos = newPos,
+				filter = ignoreTable,
+			})
+
+			if tr.Hit then
+				hitPos = tr.HitPos
+				break
+			end
+
+			lastPos = newPos
+		end
+
+		-- trace downwards till ground
+		hitPos = hitPos or lastPos
+
+		local tr = util.TraceHull({
+			mins = -dropBounds * 0.8,
+			maxs = dropBounds * 0.8,
+
+			start = hitPos,
+			endpos = hitPos - Vector(0, 0, 4096),
+			filter = ignoreTable,
+		})
+
+		local dropPos = hitPos
+
+		if tr.Hit then
+			dropPos = tr.HitPos
+		end
 
 		self.Storage:RemoveItem(v, true)
 		v:SetSlot(nil)
-
-		-- trace in a random direction on the x,y plane
-
-		local sPos = self:GetPos() + self:OBBCenter()
-
-		local tr = util.TraceHull({
-			mins = -xyBounds,
-			maxs = xyBounds,
-
-			start = sPos,
-			endpos = sPos + off,
-			filter = ignoreTable,
-		})
-
-		if tr.Hit then
-			dropPos = tr.HitPos
-		else
-			dropPos = sPos + off
-		end
-
-		-- trace downwards
-		local tr = util.TraceHull({
-			mins = -dropBounds,
-			maxs = dropBounds,
-
-			start = dropPos + zoffset,
-			endpos = dropPos - Vector(0, 0, 4096),
-			filter = ignoreTable,
-		})
-
-		if tr.Hit then
-			dropPos = tr.HitPos
-		end
 
 		drop:SetItem(v)
 		drop:SetDropOrigin(self:GetPos())
 		drop:Spawn()
 		drop:SetPos(dropPos)
-		drop:Timer(2, Inventory.DropCleanupTime, 1, function() drop:Remove() end)
 		drop:Activate()
 	end
 
