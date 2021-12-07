@@ -194,7 +194,10 @@ function PANEL:Recalculate()
 
 			table.Empty(segs)
 
+			local iter = 0
+
 			for s, line in eachNewline(wrapped) do
+				iter = iter + 1
 				local tw, th = self:_GetDatSize(s, v)
 
 				if line > 1 then
@@ -222,6 +225,18 @@ function PANEL:Recalculate()
 					selStart = nil, selEnd = nil
 				}
 
+			end
+
+			-- edge case: newline we haven't iterated over
+			-- (probably because there's no text after it)
+			-- carry line
+
+			if iter < amtNewlines(wrapped) + 1 then
+				self.Lines[curLine] = ownWide * (align / 2) - curLineWidth * (align / 2)
+				self.LineWidths[curLine] = curLineWidth
+				curLine = curLine + 1
+				curLineWidth = 0
+				buf.x = tw
 			end
 
 			maxH = math.max(maxH, t.y + t.h)

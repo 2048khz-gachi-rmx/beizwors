@@ -273,7 +273,7 @@ BaseWars.Commands.AddCommand({"dropmoney", "give", "givemoney"}, function(ply)
 	ply:ChatAddText(Colors.Error, "Transferring money is disabled.")
 end, false)
 
-BaseWars.Commands.AddCommand({"dw", "dropwep", "drop"}, function(ply)
+BaseWars.Commands.AddCommand({"dw", "dropwep", "drop", "dropweapon"}, function(ply)
 
 	local Wep = ply:GetActiveWeapon()
 
