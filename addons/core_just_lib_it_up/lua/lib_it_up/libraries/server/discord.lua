@@ -30,13 +30,11 @@ if Modules and Modules.Log then
 end
 
 hook.Add("PostGamemodeLoaded", "inventory_log", function()
-
 	log = function(str, ...)
 		Modules.Log(logtbl, str:format(...))
 	end
 
 	discord.Log = log
-
 end)
 
 local socket = dissocket
@@ -121,7 +119,7 @@ end)
 --matches everything after a !, ., / until a first space
 local cmdptrn = "^[%./!](%w+)%s?"
 
-hook.Add("PlayerSay", "Discord", function(ply, msg)
+hook.NHAdd("PlayerSay", "Discord", function(ply, msg)
 	if not discord.Enabled then return end
 	if not discord.DB then return end
 

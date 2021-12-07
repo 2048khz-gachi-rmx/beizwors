@@ -67,7 +67,7 @@ function Promise:Then(full, rej)
 end
 
 function Promise:_run(...)
-	if self._running then print("Can't run again idiot", self) return end -- can't run again. idiot.
+	if self._running then errorf("Can't run promise %s again", self) return end
 	local s, f = self._success, self._fail
 	self._running = true
 
@@ -103,25 +103,21 @@ end
 function Promise:Resolve(x, ...)
 	if x == self then error("fuck you a+ [you passed self into resolve]") return end
 	if self._Rejected then
-		error("Can't resolve a rejected promise!")
+		errorf("Can't resolve a rejected promise %s!", self)
 		return
 	end
 
-	self._Resolved = {x, ...}
-	if IsPromise(x) then
-		x:Then(function(...)
-			self:Resolve(...)
-		end, function(...)
-			self:Reject(...)
-		end)
+	if IsPromise(x) and not x._running then
+		x:Then(self:Resolver(), self:Rejector())
 	else
+		self._Resolved = {x, ...}
 		return self:_run(x, ...)
 	end
 end
 
 function Promise:Reject(...)
 	if self._Resolved then
-		error("Can't reject a resolved promise!")
+		errorf("Can't reject a resolved promise %s!", self)
 		return
 	end
 

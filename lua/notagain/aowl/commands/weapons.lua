@@ -36,7 +36,7 @@ do -- give weapon
 		if not isstring(weapon) and ent==ply then weapon = target end
 
 		if not ent:IsPlayer() then return false, aowl.TargetNotFound(target) end
-		print(ent, weapon)
+
 		if not isstring(weapon) or weapon == "#wep" then
 			local wep = ply:GetActiveWeapon()
 			if IsValid(wep) then
@@ -45,7 +45,7 @@ do -- give weapon
 				return false,"Invalid weapon"
 			end
 		end
-		
+
 		ammo1 = tonumber(ammo1) or 0
 		ammo2 = tonumber(ammo2) or 0
 		for _,prefix in ipairs(prefixes) do
@@ -73,13 +73,12 @@ do -- give weapon
 	        end
         end
     local errtxt = "Multiple matches found: "
-    
+
 	    if #matches>=1 then 
 	        ent:Give(matches[1])
 	        ply:ChatPrint('Giving ' .. matches[1] .. ' to ' .. ent:Nick())
 	        return true
 	    end
-	        
 
 		return false, "Couldn't find " .. weapon
 	end, "superadmin")

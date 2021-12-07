@@ -1,0 +1,7 @@
+PrecacheParticleSystem("impact_concrete")
+PrecacheParticleSystem("impact_metal")
+PrecacheParticleSystem("impact_computer")
+PrecacheParticleSystem("impact_grass")
+PrecacheParticleSystem("impact_dirt")
+PrecacheParticleSystem("impact_wood")
+PrecacheParticleSystem("impact_glass")

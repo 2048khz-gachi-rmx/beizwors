@@ -33,7 +33,10 @@ ptr:AddPaint(997, "PaintAuto", ptr)
 
 ptr:AddPoint(1, "Purchase a solar panel.")
 ptr:AddPoint(2, "Provide sky access to your solar panel.")
+ptr:AddPointDescription(2, "Holding E on it will show a beam; make sure it hits the sky.")
+
 ptr:AddPoint(3, "Make sure the panel provides power for your base.")
+ptr:AddPointDescription(3, "Simply putting it near your base is enough.")
 
 local function tryTrack(ent)
 	if ent.IsSolarPanel and ent:BW_IsOwner(LocalPlayer()) then
@@ -46,8 +49,10 @@ ptr:On("Appear", "TryTrack", function()
 	for k,ent in ipairs(ents.FindByClass("*bw_*")) do
 		tryTrack(ent)
 	end
-	print("LE SOLAR HAS APPEARED")
-	BaseWars.SpawnMenu.Highlight["bw_gen_solar"] = true
+
+	if not ptr:IsCompleted(1) then
+		BaseWars.SpawnMenu.Highlight["bw_gen_solar"] = true
+	end
 end)
 
 ptr:On("Completed", "RemoveHilite", function()

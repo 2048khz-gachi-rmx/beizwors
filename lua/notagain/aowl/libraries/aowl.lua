@@ -1,9 +1,4 @@
-
 aowl = aowl or {}
-
-local luadata = requirex("luadata")
-
-local USERSFILE = "aowl/users.txt"
 
 timer.Simple(1, function() hook.Run("AowlInitialized") end)
 CreateConVar("aowl_hide_ranks", "1", FCVAR_REPLICATED)
@@ -38,9 +33,6 @@ do -- goto locations --
 
 	aowl.GotoLocations["spawn"] = function(p) p:Spawn() end
 	aowl.GotoLocations["respawn"] = aowl.GotoLocations["spawn"]
-	aowl.GotoLocations["flatgrass"] = Vector(94.630287, -0.007538, 12656.031250)
-	aowl.GotoLocations["flat"] = aowl.GotoLocations["flatgrass"]
-	aowl.GotoLocations["arena"] = aowl.GotoLocations["flatgrass"]
 end
 
 do -- commands
@@ -54,9 +46,7 @@ do -- commands
 		end
 		local echo = {}
 
-		local function i(...)
-			table.insert(...)
-		end
+		local i = table.insert
 
 		i(echo, Color(120, 120, 230))
 		i(echo, "[aowl] ")
@@ -98,7 +88,7 @@ do -- commands
 
 					if not isok then
 						ErrorNoHalt("Aowl cmd "..tostring(cmd and cmd.cmd).." failed:\n    "..tostring(allowed).."\n")
-						reason = "I SUCK AT CODING; COMMAND ERRORED OUT"
+						reason = "COMMAND ERROR"
 						allowed = false
 					end
 				end
@@ -459,11 +449,11 @@ do -- groups
 		vip = "trusted",
 		["vip+"] = "trusted",
 
+		-- ban vadikus
 		moderators = "mods",
 		moderator = "mods",
-		trialmod = "mods",
-		trialmod_vip = "mods",
-		["trialmod_vip+"] = "mods",
+		mod = "mods",
+
 		helper = "mods",
 		helpers = "mods",
 
@@ -471,17 +461,18 @@ do -- groups
 		trialadmin = "admins",
 
 		developer = "developers",
+		dev = "developers",
 
 		owner = "owners",
 		superadmin = "owners",
 		superadmins = "owners",
-		Manager = "owners",
+		manager = "owners",
 	}
+
 	aowl.UGroupAliases = alias
 	local META = FindMetaTable("Player")
 
 	function META:CheckUserGroupLevel(name)
-
 		--Console?
 		if not self:IsValid() then return true end
 		if BaseWars.IsDev(self) then return true end
@@ -499,7 +490,7 @@ do -- groups
 	end
 
 	function META:TeleportingBlocked()
-		return hook.Run("CanPlyTeleport",self)==false
+		return hook.Run("CanPlyTeleport", self) == false
 	end
 
 	function META:IsUserGroup(name)

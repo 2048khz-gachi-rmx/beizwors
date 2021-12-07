@@ -15,6 +15,7 @@ do
 
 	ptr:AddPoint(1, "Find a base")
 	ptr:AddPoint(2, "Claim the core")
+	ptr:AddPointDescription(2, "You can claim a core by holding E on it.")
 
 	ptr:On("Appear", "trk", function()
 		ptr:CompletePoint(1, not not LocalPlayer():BW_GetBase())

@@ -38,9 +38,11 @@ function ENT:Initialize()
 end
 
 local useTime = 0
+local isErr = not util.IsValidModel(ENT.Model)
 
 function ENT:Draw()
 	self:DrawModel()
+	isErr = isErr and not util.IsValidModel(self:GetModel())
 
 	if halo.RenderedEntity() == self then
 		render.CullMode(1)
@@ -59,7 +61,23 @@ function ENT:Draw()
 	if lp:BW_GetBase() ~= base then return end
 
 	local tr = lp:GetEyeTrace()
-	local using = lp:KeyDown(IN_USE) and tr.Entity == self and tr.Fraction * 32768 < 96
+	local looking = tr.Entity == self
+
+	if isErr then
+		local ep = self:LocalToWorld(self:OBBCenter())
+		local dist = tr.HitPos:Distance(ep)
+		if dist < 24 then
+			ep:Sub(tr.StartPos)
+
+			local dot = ep:Dot(tr.Normal) / ep:Length()
+
+			looking = dot > 0.92
+		end
+	end
+
+	local using = lp:KeyDown(IN_USE) and
+		looking and
+		tr.Fraction * 32768 < 96
 
 	if using then
 		self.Using = math.min(self.Using + FrameTime(), useTime)

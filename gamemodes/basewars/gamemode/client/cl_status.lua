@@ -2,6 +2,7 @@ hook.Add("ChatText", "___Nope", function(ind, name, txt, type)
 	if type == "joinleave" then return true end
 end)
 
+--[[
 gameevent.Listen( "player_disconnect" )
 
 hook.Add( "player_disconnect", "Cya", function( data )
@@ -14,17 +15,25 @@ hook.Add( "player_disconnect", "Cya", function( data )
 	MsgC(Color(250, 30, 30), "[Disconnect] ", Color(200, 200, 200), txt .. ".	", Color(100, 220, 100), data.networkid .. "\n")
 	surface.PlaySound("npc/roller/mine/combine_mine_deploy1.wav")
 end)
+]]
+
+Colors.Leave = Color(220, 70, 70)
 
 net.Receive("NewPlayerBroadcast", function()
-	local finished = net.ReadBool()
-	local joined
-	if finished then joined = net.ReadBool() end
+	local typ = net.ReadUInt(4)
+
+	local startConnect = typ == 0
+	local joinFull = typ == 1
+
+	local left = typ >= 2
+	local leftUnconnected = typ == 2
+	local leftConnected = typ == 3
 
 	local plyname = net.ReadString()
 	local sid = net.ReadString()
 
 	local dat = {
-		finished and Colors.Sky or Colors.Yellowish, "[Connect] ",
+		Colors.Yellowish, "[Connect] ",
 		Color(200, 200, 200), "Player ",
 		Color(100, 220, 100), plyname, " ",
 		Color(160, 160, 160), "[STEAMID]",
@@ -32,28 +41,50 @@ net.Receive("NewPlayerBroadcast", function()
 
 	local append
 
-	if finished then
-		if not joined then
-			dat[1] = Colors.Red
-			surface.PlaySound("npc/turret_floor/retract.wav")
-		else
-			surface.PlaySound("garrysmod/content_downloaded.wav")
-		end
+	if left then
+		dat[1] = Colors.Leave
+		dat[2] = "[Disconnect] "
+	elseif joinFull then
+		dat[1] = Colors.Sky
+	end
 
-		append = {
-			Color(200, 200, 200),
-			joined and "finished loading after " or "gave up on joining after ",
-			Color(220, 200, 35), ("%d"):format(net.ReadUInt(16)),
-			Color(200, 200, 200), "s.",
-		}
-	else
+	if startConnect then
+		surface.PlaySound("npc/scanner/scanner_nearmiss1.wav")
+
 		append = {
 			Color(200, 200, 200), "has started connecting to the server.",
 		}
+	elseif joinFull then
+		surface.PlaySound("garrysmod/content_downloaded.wav")
 
-		surface.PlaySound("npc/scanner/scanner_nearmiss1.wav")
-		--surface.PlaySound("npc/roller/mine/rmine_blip1.wav")
+		append = {
+			Color(200, 200, 200),
+			"finished loading after ",
+			Color(220, 200, 35), ("%d"):format(net.ReadUInt(16)),
+			Color(200, 200, 200), "s.",
+		}
+	elseif leftUnconnected then
+		surface.PlaySound("npc/turret_floor/retract.wav")
+
+		append = {
+			Color(200, 200, 200),
+			"gave up on joining after ",
+			Color(220, 200, 35), ("%d"):format(net.ReadUInt(16)),
+			Color(200, 200, 200), "s.",
+		}
+	elseif leftConnected then
+		surface.PlaySound("npc/turret_floor/retract.wav")
+		surface.PlaySound("npc/roller/mine/combine_mine_deploy1.wav")
+
+		append = {
+			Color(200, 200, 200),
+			"left after playing for ",
+			Color(220, 200, 35), ("%d"):format(net.ReadUInt(16)),
+			Color(200, 200, 200), "s.",
+		}
 	end
+
+	--surface.PlaySound("npc/roller/mine/rmine_blip1.wav")
 
 	for k,v in ipairs(append) do
 		table.insert(dat, v)

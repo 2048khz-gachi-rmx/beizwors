@@ -102,8 +102,9 @@ local ray = Material("trails/physbeam")
 function ENT:Draw()
 	self:DrawModel()
 	local qm = self.IsQMInteracting
+	self._LastInteract = qm and CurTime() or self._LastInteract or 0
 
-	if qm then
+	if qm or CurTime() - self._LastInteract < 5 then
 		local pos = self:LocalToWorld(rayPos)
 		local pos2 = pos + self:GetAngles():Up() * 16384
 

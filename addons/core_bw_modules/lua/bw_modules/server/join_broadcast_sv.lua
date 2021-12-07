@@ -1,13 +1,172 @@
 util.AddNetworkString("NewPlayerBroadcast")
 
-_IPs = _IPs or {} -- ew
-local IPs = _IPs
+BaseWars.Announcer = BaseWars.Announcer or {}
+local an = BaseWars.Announcer
 
-_joinTimes = _joinTimes or {}
-local joinTimes = _joinTimes
+an.IPs = an.IPs or {}
+an.JoinTimes = an.JoinTimes or {}
+an.LeaveTimes = an.LeaveTimes or {}
+an.SpawnTimes = an.SpawnTimes or {}
+an.UIDToSID = an.UIDToSID or {}
 
-hook.Add( "CheckPassword", "BroadcastJoin", function( steamID64, ip, pw1, pw2, name )
-	local sid = util.SteamIDFrom64( steamID64 )
+local IPs = an.IPs
+local joinTimes = an.JoinTimes
+local leaveTimes = an.LeaveTimes
+local spawnTimes = an.SpawnTimes
+local u2s = an.UIDToSID
+
+local announceCD = 10
+
+local function getJoinTime(sid)
+	if joinTimes[sid] then return SysTime() - joinTimes[sid], true end
+	return 0, false
+end
+
+local function getLeaveTime(sid)
+	if leaveTimes[sid] then return SysTime() - leaveTimes[sid], true end
+	return 0, false
+end
+
+local function getPlayTime(sid)
+	if spawnTimes[sid] then return SysTime() - spawnTimes[sid], true end
+	return 0, false
+end
+
+function an.AnnounceJoin(name, sid64, ip, sub)
+	local sid = util.SteamIDFrom64(sid64)
+
+	net.Start("NewPlayerBroadcast")
+		net.WriteUInt(0, 4)
+		net.WriteString(name)
+		net.WriteString(sid)
+	net.Broadcast()
+
+	local txt = name .. (" has started connecting to the server. (%s @ %s)")
+		:format(sid64, ip)
+
+	MsgC(
+		Colors.Yellowish, "[Connect] ",
+		Color(230, 230, 230), txt,
+		"\n"
+	)
+
+	joinTimes[sid64] = joinTimes[sid64] or SysTime() - (sub or 0)
+	IPs[sid64] = ip
+end
+
+function an.OnJoin(name, sid64, ip)
+	local time, was = getLeaveTime(sid64)
+	local cd = announceCD - time
+
+	print("OnJoin:", time, was)
+
+	if was and cd > 0 then
+		timer.Create("announcejoin_" .. sid64, cd, 1, function()
+			an.AnnounceJoin(name, sid64, ip, cd)
+		end)
+	else
+		an.AnnounceJoin(name, sid64, ip)
+	end
+end
+
+function an.AnnounceLeave(name, sid64, reason)
+	local passed = getJoinTime(sid64)
+	joinTimes[sid64] = nil
+	leaveTimes[sid64] = SysTime()
+
+	local dat = {
+		Colors.Red, "[Disconnect] ",
+		Color(200, 200, 200), "TX1",
+		Color(100, 220, 100), "NAME",
+		Color(160, 160, 160), "DETAILS",
+		Color(200, 200, 200), "TX2",
+		Color(160, 160, 160), "WHY",
+		"\n"
+	}
+
+	local remap = {
+		TX1 = "Player ",
+		NAME = name .. " ",
+		DETAILS = ("(%s @ %s) "):format(sid64, IPs[sid64] or "??? untracked IP?"),
+		TX2 = "has left the server. ",
+		WHY = ("(%s)"):format( reason:gsub("^%(", ""):gsub("%)$", "") )
+	}
+
+	if passed ~= 0 then
+		remap.TX2 = ("has given up on connecting after %ds. "):format(passed)
+	end
+
+	table.RemapValues(dat, remap, true)
+
+	MsgC(unpack(dat))
+
+	net.Start("NewPlayerBroadcast")
+		net.WriteUInt(2, 4)
+		net.WriteString(name)
+		net.WriteString(sid64)
+		net.WriteUInt(math.floor(passed), 16)
+	net.Broadcast()
+end
+
+function an.AnnounceLeaveGame(name, sid64, reason)
+	local passed = getPlayTime(sid64)
+
+	local dat = {
+		Colors.Red, "[Disconnect] ",
+		Color(200, 200, 200), "TX1",
+		Color(100, 220, 100), "NAME",
+		Color(160, 160, 160), "DETAILS",
+		Color(200, 200, 200), "TX2",
+		Color(160, 160, 160), "WHY",
+		"\n"
+	}
+
+	local remap = {
+		TX1 = "Player ",
+		NAME = name .. " ",
+		DETAILS = ("(%s @ %s) "):format(sid64, IPs[sid64] or "??? untracked IP?"),
+		TX2 = "has left the server. ",
+		WHY = ("(%s)"):format( reason:gsub("^%(", ""):gsub("%)$", "") )
+	}
+
+	table.RemapValues(dat, remap, true)
+
+	MsgC(unpack(dat))
+
+	net.Start("NewPlayerBroadcast")
+		net.WriteUInt(3, 4)
+		net.WriteString(name)
+		net.WriteString(sid64)
+		net.WriteUInt(math.floor(passed), 16)
+	net.Broadcast()
+end
+
+function an.OnLeave(name, sid64, reason)
+	local pt, played = getPlayTime(sid64)
+	if played then
+		-- leaving after actually spawning and playing
+		an.AnnounceLeaveGame(name, sid64, reason)
+		return
+	end
+
+	-- unspawned leave; ratelimit
+	local time, was = getLeaveTime(sid64)
+	local cd = announceCD - time
+
+	print("onLeave:", time, was, sid64)
+
+	if was and cd > 0 then
+		return
+		--[[timer.Create("announceleave_" .. sid64, cd, 1, function()
+			an.AnnounceLeave(name, sid64, reason)
+		end)]]
+	else
+		an.AnnounceLeave(name, sid64, reason)
+	end
+end
+
+hook.Add("CheckPassword", "BroadcastJoin", function( sid64, ip, pw1, pw2, name )
+	local sid = util.SteamIDFrom64( sid64 )
 	if pw1 and pw2 and #pw1 > 0 and pw1 ~= pw2 then
 		local id_tx = "%s (%s) failed password."
 		local dat = {
@@ -23,77 +182,26 @@ hook.Add( "CheckPassword", "BroadcastJoin", function( steamID64, ip, pw1, pw2, n
 		return
 	end
 
-	net.Start("NewPlayerBroadcast")
-		net.WriteBool(false)
-		net.WriteString(name)
-		net.WriteString(sid)
-	net.Broadcast()
+	an.OnJoin(name, sid64, ip)
+end)
 
-	local txt = name .. (" has started connecting to the server. (%s @ %s)")
-		:format(steamID64, ip)
 
-	MsgC(
-		Colors.Yellowish, "[Connect] ",
-		Color(230, 230, 230), txt,
-		"\n"
-	)
-
-	joinTimes[steamID64] = SysTime()
-	IPs[steamID64] = ip
-end )
-
-local function getJoinTime(sid)
-	if joinTimes[sid] then return SysTime() - joinTimes[sid] end
-	return 0
-end
 
 gameevent.Listen( "player_disconnect" )
 hook.NHAdd("player_disconnect", "TrackLeave", function( data )
 	local name = data.name
 	local reason = data.reason and data.reason:gsub("[\r\n]*$", "")
-	local sid = util.SteamIDTo64(data.networkid)
-
-	local passed = getJoinTime(sid)
-	joinTimes[sid] = nil
-
-	local dat = {
-		Colors.Red, "[Disconnect] ",
-		Color(200, 200, 200), "TX1",
-		Color(100, 220, 100), "NAME",
-		Color(160, 160, 160), "DETAILS",
-		Color(200, 200, 200), "TX2",
-		Color(160, 160, 160), "WHY",
-		"\n"
-	}
-
-	local remap = {
-		TX1 = "Player ",
-		NAME = name .. " ",
-		DETAILS = ("(%s @ %s) "):format(sid, IPs[sid] or "??? untracked IP?"),
-		TX2 = "has left the server. ",
-		WHY = ("(%s)"):format(reason)
-	}
-
-	if passed ~= 0 then
-		remap.TX2 = ("has given up on connecting after %ds. "):format(passed)
-	end
-
-	table.RemapValues(dat, remap, true)
-
-	MsgC(unpack(dat))
-
-	net.Start("NewPlayerBroadcast")
-		net.WriteBool(true)
-		net.WriteBool(false)
-		net.WriteString(name)
-		net.WriteString(sid)
-		net.WriteUInt(math.floor(passed), 16)
-	net.Broadcast()
+	local sid64 = u2s[data.userid] or util.SteamIDTo64(data.networkid)
+	
+	an.OnLeave(name, sid64, reason)
 end)
 
 hook.Add("PlayerFullyLoaded", "BroadcastJoin", function(ply)
+	u2s[ply:UserID()] = ply:SteamID64() -- botz
+
 	local passed = getJoinTime(ply:SteamID64())
 	joinTimes[ply:SteamID64()] = nil
+	spawnTimes[ply:SteamID64()] = SysTime()
 
 	local dat = {
 		Colors.Sky, "[Connect] ",
@@ -107,8 +215,7 @@ hook.Add("PlayerFullyLoaded", "BroadcastJoin", function(ply)
 	}
 
 	net.Start("NewPlayerBroadcast")
-		net.WriteBool(true)
-		net.WriteBool(true)
+		net.WriteUInt(1, 4)
 		net.WriteString(ply:Nick())
 		net.WriteString(ply:SteamID())
 		net.WriteUInt(math.floor(passed), 16)

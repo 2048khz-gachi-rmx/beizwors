@@ -43,9 +43,9 @@ function BaseWars.DealDamage(ent, dmg)
 
 		local fr = (hp - dmg) / ent:GetMaxHealth()
 		ent:SetNWFloat("LastDamage", CurTime())
-	else
+	--[[else
 		print("!!! Unhandled DealDamage call on", ent)
-		-- ??
+		-- ??]]
 	end
 end
 

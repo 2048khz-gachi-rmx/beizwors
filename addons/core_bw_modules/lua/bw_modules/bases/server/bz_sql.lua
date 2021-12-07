@@ -58,8 +58,10 @@ function bw.SQLResync()
 			"ADD UNIQUE INDEX `base_name_UNIQUE`(`base_name` ASC, `map_name` ASC)",
 		}
 
+		local cor = coroutine.Resumer()
+
 		mysqloo.CreateTable(db, bases_tbl, basesArg, unpack(additional))
-			:Then(coroutine.Resumer())
+			:Then(cor)
 
 
 		local zonesArg = LibItUp.SQLArgList()
@@ -72,7 +74,8 @@ function bw.SQLResync()
 			zonesArg:AddArg(v .. " FLOAT NOT NULL")
 		end
 
-		local em = mysqloo.CreateTable(db, zones_tbl, zonesArg):Then(coroutine.Resumer())
+		local em = mysqloo.CreateTable(db, zones_tbl, zonesArg)
+		em:Then(cor)
 
 		local a, b = coroutine.yield();
 		local c, d = coroutine.yield()	-- 2 queries, 2 yields
@@ -90,7 +93,7 @@ function bw.SQLResync()
 			WHERE b.map_name = "%s";]])
 					:format(selWhat, zones_tbl, bases_tbl, db:escape(game.GetMap()))
 
-		em:Do(db:query(q))
+		MySQLEmitter(db:query(q), true)
 			:Then(function(self, q, data)
 				local bases = {}	-- [base_ID] = { name = string, zones = {...} }
 

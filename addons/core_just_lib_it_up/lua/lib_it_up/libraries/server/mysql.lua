@@ -201,3 +201,27 @@ end
 function mysql.quote(db, str)
 	return "'" .. db:escape(str) .. "'"
 end
+
+-- why the fuck is this not in core mysqloo
+
+local DB = FindMetaTable("MySQLOO Database")
+local QRY = FindMetaTable("MySQLOO Query")
+
+DB._realQuery = DB._realQuery or DB.query
+
+function DB:query(str)
+	local qObj = self:_realQuery(str)
+
+	qObj._fromDb = self
+	qObj._strQry = str
+
+	return qObj
+end
+
+function QRY:GetSQL()
+	return self._strQry
+end
+
+function QRY:GetDB()
+	return self._fromDb
+end

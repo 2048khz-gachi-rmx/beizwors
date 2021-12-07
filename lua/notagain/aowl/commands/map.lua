@@ -91,42 +91,6 @@ aowl.AddCommand({"clearserver", "cleanupserver", "serverclear", "cleanserver", "
 	end
 end,"developers")
 
-aowl.AddCommand("cleanup", function(player, line,target)
-	if target=="disconnected"  or target=="#disconnected"  then
-		prop_owner.ResonanceCascade()
-		return
-	end
-
-	local targetent = easylua.FindEntity(target)
-
-	if not player:IsAdmin() then
-		if targetent == player then
-			if cleanup and cleanup.CC_Cleanup then
-				cleanup.CC_Cleanup(player, "gmod_cleanup", {})
-			end
-			hook.Run("AowlTargetCommand", player, "cleanup", player)
-			return
-		end
-
-		return false, "You cannot cleanup anyone but yourself!"
-	end
-
-	if targetent:IsPlayer() then
-		if cleanup and cleanup.CC_Cleanup then
-			cleanup.CC_Cleanup(targetent, "gmod_cleanup", {})
-		end
-		hook.Run("AowlTargetCommand", player, "cleanup", targetent)
-		return
-	end
-
-	if not line or line == "" then
-		aowl.CallCommand(player, "cleanupserver", "", {})
-		return
-	end
-
-	return false, aowl.TargetNotFound(target)
-end)
-
 --[[
 aowl.AddCommand("restart", function(player, line, seconds, reason)
 	local time = math.max(tonumber(seconds) or 20, 1)
@@ -151,5 +115,5 @@ end, "developers")
 ]]
 
 aowl.AddCommand("uptime",function()
-	PrintMessage(3,"Server uptime: "..string.NiceTime(SysTime()))
+	PrintMessage(3, "Server uptime: "..string.NiceTime(SysTime()))
 end)

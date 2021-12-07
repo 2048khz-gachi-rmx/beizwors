@@ -148,15 +148,44 @@ function ptr:GetPointDT(name)
 	return pd.DT
 end
 
+function ptr:GetPointDescription(name)
+	local id, name = self:_PointPair(name)
+	local pd = self.PointData[name] or {}
+	self.PointData[name] = pd
+
+	return pd.Description
+end
+
+function ptr:AddPointDescription(name, desc)
+	local id, name = self:_PointPair(name)
+	local pd = self.PointData[name] or {}
+	self.PointData[name] = pd
+
+	pd.Description = desc
+end
+
+
 function ptr:PaintPoint(name, y)
 	local id, name = self:_PointPair(name)
 
-	local font = "OS20"
+	local font = "OSB20"
 	local comp = self:IsCompleted(id)
+
+	local curDesc = not comp
+	if curDesc then
+		for i=1, id - 1 do
+			if not self:IsCompleted(i) then
+				curDesc = false
+				break
+			end
+		end
+	end
+
 	local dt = self:GetPointDT(name)
 	local pd = self.PointData[name]
 
 	local status = comp and "✓" or "✕"
+
 	local pc = dt._piece
 
 	if comp then
@@ -173,6 +202,8 @@ function ptr:PaintPoint(name, y)
 
 	draw.LerpColor(pd.CompFrac or 0, col, compColor, uncompCol)
 	self.Anims:MemberLerp(pd, "CompFrac", comp and 1 or 0, 0.3, 0, 0.3)
+	self.Anims:MemberLerp(pd, "DescFrac", curDesc and 1 or 0, 0.3, 0, 0.3)
+
 	pc:SetColor(col)
 
 	local tickWide = pc:GetWide()
@@ -180,9 +211,34 @@ function ptr:PaintPoint(name, y)
 	local lines = amtNewlines(tx) + 1
 	local th = draw.GetFontHeight(font)
 
+	local preY = y
+
 	pc:Paint(offset, y)
 	draw.DrawText(tx, font, offset + tickWide + 4, y, col)
-	return lines * th + 4
+	y = y + lines * th
+
+	local dfr = pd.DescFrac or 0
+
+	if self:GetPointDescription(name) and dfr > 0 then
+		local ty = y - 8 + 8 * dfr
+		local offset = offset + 4
+		local font = "BS16"
+		local desc = self:GetPointDescription(name)
+		local tx = offset + tickWide + 4
+		local dtx = cache:Wrap(desc, self:GetWide() - tx - offset, font)
+		local dlines = amtNewlines(dtx) + 1
+		local th = draw.GetFontHeight(font)
+
+		local preA = col.a
+		col.a = col.a * dfr
+		draw.DrawText(dtx, font, tx, ty, col)
+		col.a = preA
+
+		y = y + dlines * th
+	end
+
+	print(y - preY + 4)
+	return y - preY + 4
 end
 
 

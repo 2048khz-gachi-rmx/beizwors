@@ -57,34 +57,19 @@ aowl.AddCommand("ban", function(ply, line, target, length, reason)
 
 	if not length then length = 1440*3 end
 
-	if length==0 then return false,"invalid ban length" end
-        
-	local reason = "You have been banned for " .. (reason or "being fucking annoying") .. ". Welcome to the ban bubble. Duration of your stay: " .. ((length=="0" and "two eternities") or string.NiceTime(length*60)) .. "."
+	-- if length==0 then return false,"invalid ban length" end
+	length = tonumber(length) or 1440*3
+
+	local reason = ("You have been banned for %s.\n\n" ..
+		"Welcome to the ban bubble. Duration of your stay: %s.")
+
+		:format(
+			reason or "being fucking annoying",
+			(length == 0 and "two eternities") or string.NiceTime(length * 60)
+		)
 
 	if not id:IsPlayer() then return end
 
 	ULib.ban(id, length, reason, ply)
 
 end, "admins")
-
-aowl.AddCommand("exit", function(ply, line, target, reason)
-	local ent = easylua.FindEntity(target)
-
-	if not ply:IsAdmin() and ply ~= ent then
-		return false, "Since you are not an admin, you can only !exit yourself!"
-	end
-
-	if ent:IsPlayer() then
-		hook.Run("AowlTargetCommand", ply, "exit", ent, reason)
-
-		ent:SendLua([[RunConsoleCommand("gamemenucommand","quitnoconfirm")]])
-		timer.Simple(0.09+(ent:Ping()*0.001), function()
-			if not IsValid(ent) then return end
-			ent:Kick("Exit: "..(reason and string.Left(reason, 128) or "Leaving"))
-		end)
-
-		return
-	end
-
-	return false, aowl.TargetNotFound(target)
-end, "developers")
