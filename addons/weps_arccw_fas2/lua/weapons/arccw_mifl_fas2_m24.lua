@@ -256,9 +256,14 @@ SWEP.Attachments = {
 SWEP.Hook_SelectReloadAnimation = function(wep, anim)
     local nomen = (wep:GetBuff_Override("Override_FAS2NomenBackup") and "_nomen") or ""
 
-    local reloadtime = (wep.Primary.ClipSize - wep:Clip1())
+    local reloadtime = math.floor(wep.Primary.ClipSize - wep:Clip1())
+    local ret = "Reload" .. reloadtime .. nomen
 
-    return "Reload" .. reloadtime .. nomen
+    if not wep.Animations[ret] then
+    	return "Reload5"
+    end
+
+    return ret
 end
 
 
