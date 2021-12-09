@@ -50,6 +50,8 @@ local sizes = {12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 44, 48, 56, 64, 72, 96, 1
 for k,v in pairs(families) do
 
 	for _, size in pairs(sizes) do
+		Fonts[v] = k
+
 		if not Fonts[v .. size] then
 			surface.CreateFont(v .. size, {
 				font = k,
@@ -61,6 +63,44 @@ for k,v in pairs(families) do
 		end
 	end
 
+end
+
+-- PFX24[B2]
+-- PFX: prefix - font family
+-- 24: size - 24px
+-- B2: Blur 2
+
+function Fonts.GenerateBlur(nm, bsz)
+	local pref = Fonts.GetPrefix(nm)
+	local sz = Fonts.GetSize(nm)
+
+	local key = pref .. sz .. "B" .. bsz
+
+	if Fonts[key] then return key end
+
+	local family = Fonts.GetFamily(nm)
+
+	surface.CreateFont(key, {
+		font = family,
+		size = sz,
+		weight = 400,
+		blursize = bsz
+	})
+
+	Fonts[key] = family
+	return key
+end
+
+function Fonts.GetSize(f)
+	return tonumber(f:match("(%d+)") or "")
+end
+
+function Fonts.GetFamily(f)
+	return Fonts[f:match("^(%a+)")]
+end
+
+function Fonts.GetPrefix(f)
+	return f:match("^(%a+)")
 end
 
 -- only works with fonts made above ^
