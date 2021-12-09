@@ -20,47 +20,27 @@ local qries = {
 	sub_column_query = "UPDATE bw_plyData SET `%s` = `%s` - %s WHERE puid = %s",
 }
 
-function LoadData(ply)
+function BaseWars.PlayerData.Load(ply)
 	local sid64 = ply:SteamID64()
-	local q = db:query( qries.get_data_query:format(sid64) )
-
-	q.onSuccess = function(_, dat)
+	local q = MySQLQuery(
+		db:query( qries.get_data_query:format(sid64) ), true
+	):Then(function(_, _, dat)
 		local write = {}
 
 		hook.NHRun("BW_LoadPlayerData", ply, dat[1] or {}, write)
 		hook.NHRun("BW_LoadedPlayerData", ply)
-		-- todo: this is probably unnecessary
-
-		--[[if not table.IsEmpty(write) then
-
-			local columns = "puid, "
-			local values = sid64 .. ", "
-			for k,v in pairs(write) do
-				columns = columns .. db:escape(k) .. ", "
-				values = values .. db:escape(tostring(v)) .. ", "
-			end
-			columns = columns:sub(1, -3)
-			values = values:sub(1, -3)
-
-			local ups = qries.upsert_data_query:format(columns, values)
-			local q = db:query(ups)
-			q.onError = mysqloo.QueryError
-
-			q:start()
-		end]]
-	end
-	q.onError = mysqloo.QueryError
-
-	q:start()
+	end, mysqloo.CatchError)
 end
 
-hook.Add("PlayerAuthed", "BW_SQLDataFetch", LoadData)
+LoadData = BaseWars.PlayerData.Load
+
+hook.Add("PlayerAuthed", "BW_SQLDataFetch", BaseWars.PlayerData.Load)
 
 -- hook.NHAdd("PlayerDisconnected", "BW_SQLDataSave", SaveData)
 hook.NHAdd("PlayerInitialSpawn", "BW_SQLDataFetch_Bots", function(ply)
 	-- special hook for bots since they don't auth
 	if not ply:IsBot() then return end
-	LoadData(ply)
+	BaseWars.PlayerData.Load(ply)
 end)
 
 
@@ -102,10 +82,8 @@ function pd.SyncBWIntoSQL()
 
 			local qry = qTpl:format(name, second_arg, third_arg, fourth_arg, fucking_end_me)
 
-			local q = db:query(qry)
-
-			q.onError = mysqloo.QueryError
-			q:start()
+			MySQLQuery(db:query(qry), true)
+				:Catch(mysqloo.CatchError)
 		end
 
 		toSet[pi] = nil
@@ -146,10 +124,8 @@ function PLAYER:InitBWData(name, val)
 	local sid = pi:GetSteamID64()
 	local qry = qries.upsert_data_query:format(name, val, sid)
 
-	local q = db:query(qry)
-	q.onError = mysqloo.QueryError
-	q.onSuccess = print
-	q:start()
+	MySQLQuery(db:query(qry), true)
+		:Catch(mysqloo.CatchError)
 end
 
 local PInfo = LibItUp.PlayerInfo
@@ -174,8 +150,8 @@ local function onDB(masterdb)
 	CHANGE COLUMN `lvl` `lvl` INT UNSIGNED NOT NULL DEFAULT '1' ;
 	]])
 
-	q.onError = mysqloo.QueryError
-	q:start()
+	MySQLQuery(q, true)
+		:Catch(mysqloo.CatchError)
 
 	db = masterdb
 end

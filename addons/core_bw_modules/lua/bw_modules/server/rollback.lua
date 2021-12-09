@@ -20,8 +20,8 @@ local function onDB()
 	  UNIQUE INDEX `puid_UNIQUE` (`puid` ASC));
 	]])
 
-	q.onError = mysqloo.QueryError
-	q:start()
+	MySQLQuery(q, true)
+		:Catch(mysqloo.CatchError)
 end
 
 mysqloo.OnConnect(onDB)
@@ -75,8 +75,8 @@ hook.Add("BW_DataSyncWorth", "RollbackSync", function(pin, wth)
 	fmt = fmt:format(pin:SteamID64(), wth)
 
 	local q = db:query(fmt)
-	q.onError = mysqloo.QueryError
-	q:start()
+	MySQLQuery(q, true)
+		:Catch(mysqloo.CatchError)
 end)
 
 function rb.LoadPlayer(ply)
@@ -89,8 +89,10 @@ function rb.LoadPlayer(ply)
 	fmt = fmt:format(pin:SteamID64(), wth, pin:SteamID64())
 
 	local q = db:query(fmt)
-	q.onError = mysqloo.QueryError
-	q.onSuccess = function(_, data)
+
+	MySQLQuery(q, true)
+		:Catch(mysqloo.CatchError)
+		:Then(function(_, data)
 		if not data[1] then return end
 
 		local mon = data[1].money
@@ -116,9 +118,7 @@ function rb.LoadPlayer(ply)
 					tcol, "for unsold entities since last time.")
 			end)
 		end
-	end
-
-	q:start()
+	end)
 end
 
 hook.Add("BW_LoadPlayerData", "RollbackLoad", rb.LoadPlayer)

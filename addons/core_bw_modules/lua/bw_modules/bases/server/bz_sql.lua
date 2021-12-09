@@ -130,7 +130,7 @@ function bw.SQLResync()
 
 				FInc.AddState("BW_SQLAreasFetched")
 
-			end, mysqloo.QueryError)
+			end, mysqloo.CatchError)
 
 	end))
 end

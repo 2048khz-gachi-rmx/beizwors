@@ -66,6 +66,7 @@ end
 
 function MySQLQuery:onSuccess(qobj, data)
 	self.CurrentQuery = nil
+	self._Data = data
 
 	self:Emit("Success", qobj, data, self.CurrentStep)
 	self:Resolve(qobj, data)
@@ -74,12 +75,17 @@ end
 function MySQLQuery:onError(qobj, err, query)
 	local db = qobj:GetDB()
 
-	if err == "Lost connection to server during query" then -- !?
-		MySQLDatabase(db):Then(function()
-			self:Exec() -- you should reconnect... NOW!
-		end)
+
+	if err == "Lost connection to server during query" or err:match("^Can't connect to server") then -- !?
+		print ("!! Lost connection to DB during query !!")
+		printf("!! Query: %s !!", query)
+		printf("!! Error: %s !!", err)
+		print ("!! Restarting... !!")
+
+		self:Exec() -- you should restart the query... NOW!
 		return
 	end
+
 
 	self.CurrentQuery = nil
 
@@ -90,6 +96,10 @@ end
 function MySQLQuery:Catch(fn)
 	self:Then(nil, fn) -- bruh
 	return self
+end
+
+function MySQLQuery:GetData()
+	return self._Data
 end
 
 function MySQLQuery:Debug()
@@ -111,6 +121,7 @@ function MySQLQuery:Queue(q)
 end
 
 function MySQLQuery:Exec()
+	self._Data = nil
 	self.CurrentQuery:start()
 	return self
 end

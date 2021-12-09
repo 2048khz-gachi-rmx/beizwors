@@ -89,6 +89,11 @@ function mysqloo.QueryError(q, errstr, qstr)
 						errstr, 			qstr, 			debug.traceback())
 end
 
+function mysqloo.CatchError(_, q, errstr, qstr)
+	err("Query error!\n	\"%s\"\n\n	Query: \"%s\"\n	Trace: %s",
+						errstr, 			qstr, 			debug.traceback())
+end
+
 mysqloo.HookName = "OnMySQLReady"
 
 mysqloo.GetDatabase = mysqloo.GetDB
@@ -133,7 +138,7 @@ function mysqloo.CreateTable(db, name, ...)
 	q = q:format(name, qargs)
 
 	local em = MySQLEmitter(db:query(q), true)
-		:Catch(mysqloo.QueryError)
+		:Catch(mysqloo.CatchError)
 
 	return em
 end
