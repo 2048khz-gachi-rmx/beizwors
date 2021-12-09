@@ -29,7 +29,7 @@ SWEP.ViewModel = "models/weapons/arccw/fml/fas1/c_extra_akm15.mdl"
 SWEP.WorldModel = "models/weapons/arccw/fml/fas1/w_akm15.mdl"
 SWEP.ViewModelFOV = 70
 
-SWEP.Damage = 43
+SWEP.Damage = 34
 SWEP.DamageMin = 17 -- damage done at maximum range
 SWEP.Range = 90 -- in METRES
 SWEP.Penetration = 6
