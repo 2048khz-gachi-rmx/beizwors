@@ -15,6 +15,25 @@ function string.Random(len)
 end
 
 
+local letters = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"}
+local nums = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1}
+
+function string.ToRoman(num)
+	num = tonumber(num)
+	if not num then return "nani" end
+
+	local ret = ""
+
+	for k, char in ipairs(letters) do
+		local n = nums[k]
+		local sub = math.floor(num / n)
+		ret = ret .. string.rep(char, sub)
+
+		num = num - sub * n
+	end
+
+	return ret
+end
 
 function ValidString(v)
 	return isstring(v) and v ~= ""
