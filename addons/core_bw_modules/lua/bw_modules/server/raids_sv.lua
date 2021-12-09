@@ -412,6 +412,10 @@ hook.Add("PlayerSpawnObject", "RaidPropsPrevent", function(ply, mdl, skin)
 	if ply:InRaid() then return false end
 end)
 
+hook.Add("CanTool", "RaidToolsPrevent", function(ply)
+	if ply:InRaid() then return false end
+end)
+
 function ReportFail(ply, err)
 	local ns = netstack:new()
 	ns:WriteString(tostring(err))

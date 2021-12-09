@@ -1,6 +1,6 @@
 local PLAYER = FindMetaTable("Player")
 
-function PLAYER:BW_DropWeapon(wep, force)
+function PLAYER:BW_DropWeapon(wep, force, nostrip)
 	if not wep then return end
 
 	if IsValid(wep) and (force or not wep.DisallowDrop) then
@@ -37,6 +37,29 @@ function PLAYER:BW_DropWeapon(wep, force)
 		Ent:Activate()
 
 		hook.Run("BW_DropWeapon", self, wep, Ent)
-		self:StripWeapon(class)
+		if not nostrip then
+			self:StripWeapon(class)
+		end
+
+		return Ent
 	end
 end
+
+function PLAYER:ActiveWeaponWorkaround()
+	for k,v in ipairs(self:GetWeapons()) do
+		if v:GetInternalVariable("m_iState") == 2 then
+			return v
+		end
+	end
+end
+
+hook.Add("PlayerDeath", "DropWeapon", function(ply)
+	local wep = ply:ActiveWeaponWorkaround()
+	if IsValid(wep) then
+		local wp = ply:BW_DropWeapon(wep, nil, true)
+		wp:SetPos(ply:EyePos())
+		wp:SetAngles(ply:EyeAngles())
+		local vel = ply:GetVelocity()
+		wp:GetPhysicsObject():SetVelocity(vel + ply:GetAimVector() * 256)
+	end
+end)
