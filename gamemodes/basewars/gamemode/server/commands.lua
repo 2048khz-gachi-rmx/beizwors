@@ -274,53 +274,8 @@ BaseWars.Commands.AddCommand({"dropmoney", "give", "givemoney"}, function(ply)
 end, false)
 
 BaseWars.Commands.AddCommand({"dw", "dropwep", "drop", "dropweapon"}, function(ply)
-
 	local Wep = ply:GetActiveWeapon()
-
-	if IsValid(Wep) and not Wep.DisallowDrop then
-
-		local Model = Wep:GetModel()
-		local Class = Wep:GetClass()
-
-		if BaseWars.Config.WeaponDropBlacklist[Class] then return false end
-		local bkup = {}
-
-		for k,v in pairs(BackupWeaponKeys) do
-			if Wep[v] then
-				bkup[v] = Wep[v]
-			end
-		end
-
-		local tr = {}
-
-		tr.start = ply:EyePos()
-		tr.endpos = tr.start + ply:GetAimVector() * 85
-		tr.filter = ply
-
-		tr = util.TraceLine(tr)
-
-		local SpawnPos = tr.HitPos + BaseWars.Config.SpawnOffset
-		local SpawnAng = ply:EyeAngles()
-
-		SpawnAng.p = 0
-		SpawnAng.y = SpawnAng.y + 180
-		SpawnAng.y = math.Round(SpawnAng.y / 45) * 45
-
-		local Ent = ents.Create("bw_weapon")
-			Ent.WeaponClass = Class
-			Ent.Model = Model
-			Ent:SetPos(SpawnPos)
-			Ent:SetAngles(SpawnAng)
-			Ent.Backup = bkup
-			Ent.Dropped = true
-		Ent:Spawn()
-		Ent:Activate()
-
-		hook.Run("BW_DropWeapon", ply, Wep, Ent)
-		ply:StripWeapon(Class)
-
-	end
-
+	ply:BW_DropWeapon(Wep)
 end, false)
 
 util.AddNetworkString("CommandThing")
