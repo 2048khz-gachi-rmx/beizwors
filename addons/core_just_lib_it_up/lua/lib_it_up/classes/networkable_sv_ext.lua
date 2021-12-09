@@ -398,6 +398,7 @@ function nw:_SendNet(who, full, budget)
 		print(ns)
 		net.WriteNetStack(ns)
 		instances[nameID] = instBytes + (net.BytesWritten())
+		print("sending ", net.BytesWritten(), " bytes")
 	net.Send(who)
 
 	return ns, written, needRerun and changes
