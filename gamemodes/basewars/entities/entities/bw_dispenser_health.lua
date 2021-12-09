@@ -50,6 +50,9 @@ ENT.Levels = {
 	},
 }
 
+local RMB = Material("gui/rmb.png")
+local RMBSz = 24
+
 function ENT:GetStims()
 	return math.floor(self:GetCharge() / self.StimDrains)
 end
@@ -181,6 +184,10 @@ function ENT:OpenShit(qm, self, pnl)
 
 			DisableClipping(false)
 		end
+
+		surface.SetMaterial(RMB)
+		surface.SetDrawColor(255, 255, 255, 255 - (self.MouseFrac or 0) * 255)
+		surface.DrawTexturedRect(w / 2 - RMBSz / 2, h / 2 - RMBSz / 2, RMBSz, RMBSz)
 	end
 
 	canv:MemberLerp(blk, "a", 90, 0.3, 0, 0.3)
