@@ -43,5 +43,6 @@ end
 PLAYER.AddHealth = PLAYER.AddHP
 
 hook.Add("PostPlayerDeath", "EraseDeathVars", function(ply)
+	hook.Run("DeathVarsErase", ply, ply._deathVars)
 	ply._deathVars = nil
 end)

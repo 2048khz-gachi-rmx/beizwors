@@ -6,10 +6,27 @@ end
 
 util.AddNetworkString("ProcStim")
 
-net.Receive("ProcStim", function(_, ply)
-	if not ply:Alive() or ply:Health() >= ply:GetMaxHealth() then return end
-	if hook.Run("CanUseStimpak", ply) == false then return end
+local function reply(pr, b)
+	pr:ReplySend("ProcStim", false)
+end
 
+net.Receive("ProcStim", function(_, ply)
+	local pr = net.ReplyPromise(ply)
+
+	if not ply:Alive() then reply(pr, false) return end
+
+	if ply:Health() >= ply:GetMaxHealth() and
+		hook.Run("CanForceStimpak", ply) ~= true then
+		reply(pr, false)
+		return
+	end
+
+	if hook.Run("CanUseStimpak", ply) == false then
+		reply(pr, false)
+		return
+	end
+	
+	print("AEEEE done")
 	local dat = stim(ply)
 
 	if dat then
@@ -47,6 +64,8 @@ hook.Add("Think", "Stimpak", function()
 			t.HealStart = t.Started + t.WorkTime
 			t.HealLeft = t.Heal
 			t.HealSpent = 0
+
+			hook.Run("PlayerStimInjected", ply, t)
 		end
 
 		if t.Working then

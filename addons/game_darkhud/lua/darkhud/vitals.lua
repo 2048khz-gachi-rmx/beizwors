@@ -403,28 +403,62 @@ function DarkHUD.CreateVitals()
 	vls.ARFrac = 0
 
 	local gray = Colors.LightGray:Copy()
+	local grayBorder = Color(35, 35, 35)
 
 	local hpCol = Color(240, 70, 70)
 	local hpBorderCol = Color(150, 30, 30)
 
+	local venomCol = Color(180, 70, 160)
+	local venomBorderCol = Color(120, 30, 100)
+
 	local arCol = Color(40, 120, 255)
 	local arBorderCol = Color(30, 50, 225)
 
-	local borderCol = Color(35, 35, 35)
+	function vls:DrawBar(rad, x, y, w, h, col, borderCol, rightBord)
+		local round = w > h and math.Round(
+			math.Clamp(w - rad, 0, rad)
+		)
+
+		if not round then
+			local sx, sy = self:LocalToScreen(x, y)
+
+			if w < h then
+				render.SetScissorRect(sx, sy - 2,
+					sx + w, sy + h + 2, true)
+					draw.RoundedBox(rad, x, y, h, h, col)
+				render.SetScissorRect(0, 0, 0, 0, false)
+			else
+				draw.RoundedBox(rad, x, y - 1, w, h + 2, borderCol)
+				draw.RoundedBox(rad, x, y, w, h, col)
+			end
+
+		else
+			local borderRight = rightBord and 1 or 0
+
+			DarkHUD.RoundedBoxCorneredSize(rad, x, y - 1,
+				w + borderRight, h + 2, borderCol, rad, round, rad, round)
+			DarkHUD.RoundedBoxCorneredSize(rad, x, y,
+				w, h, col, rad, round, rad, round)
+		end
+	end
 
 	function vls:Paint(w, h)
 		local x, y = 12, barPad
 
 		--self:SetSize(f:GetWide(), f:GetTall() - hs)
 
-		local hpto = math.Clamp( me:Health() / me:GetMaxHealth(), 0, 1)
+		local venom = me:GetNWInt("Venom", 0)
+		local venomTo = math.Clamp( me:Health() / me:GetMaxHealth(), 0, 1)
+		local hpto = math.Clamp( (me:Health() - venom) / me:GetMaxHealth(), 0, 1)
+
 		local arto = math.min(me:Armor() / 100, 1)
 
 		self:To("HPFrac", hpto, 0.4, 0, 0.2)
+		self:To("VenomFrac", venomTo, 0.4, 0, 0.2)
 		self:To("ARFrac", arto, 0.4, 0, 0.2)
 
 		local hpfr, arfr = self.HPFrac, self.ARFrac
-
+		local vfr = self.VenomFrac
 
 		local rndrad = barH / 2
 
@@ -456,9 +490,17 @@ function DarkHUD.CreateVitals()
 					math.Clamp(barW * hpfr - rndrad, 0, rndrad)
 				)
 
-			draw.RoundedBox(rndrad, barX - 1, barY - 1, barW + 2, barH + 2, borderCol)
+			draw.RoundedBox(rndrad, barX - 1, barY - 1, barW + 2, barH + 2, grayBorder)
 			draw.RoundedBox(rndrad, barX, barY, barW, barH, gray)
 
+			local venomW = math.min(math.ceil(barW * vfr), barW)
+			self:DrawBar(rndrad, barX, barY,
+				venomW, barH, venomCol, venomBorderCol, vfr > 0)
+
+			self:DrawBar(rndrad, barX, barY,
+				math.ceil(barW * hpfr), barH, hpCol, hpBorderCol, vfr > 0)
+
+			--[[
 			if not round then
 				--draw.RoundedBox(8, avx, avy, hpw, 16, Color(240, 70, 70))
 				if barW * hpfr < barH then
@@ -474,13 +516,22 @@ function DarkHUD.CreateVitals()
 
 			elseif round then
 
+				if vfr > 0 then
+					DarkHUD.RoundedBoxCorneredSize(rndrad, barX, barY - 1,
+						math.ceil(barW * vfr), barH + 2, venomBorderCol, rndrad, round, rndrad, round)
+					DarkHUD.RoundedBoxCorneredSize(rndrad, barX, barY,
+						math.ceil(barW * vfr), barH, venomCol, rndrad, round, rndrad, round)
+				end
+
+				local borderRight = vfr > 0 and 1 or 0
+
 				DarkHUD.RoundedBoxCorneredSize(rndrad, barX, barY - 1,
-					math.ceil(barW * hpfr), barH + 2, hpBorderCol, rndrad, round, rndrad, round)
+					math.ceil(barW * hpfr) + borderRight, barH + 2, hpBorderCol, rndrad, round, rndrad, round)
 				DarkHUD.RoundedBoxCorneredSize(rndrad, barX, barY,
 					math.ceil(barW * hpfr), barH, hpCol, rndrad, round, rndrad, round)
 				
 			end
-
+			]]
 
 			draw.SimpleText(hpText, font,
 				barX + barW + 6, barY + barH/2 - 1, color_white, 0, 1)
@@ -493,7 +544,7 @@ function DarkHUD.CreateVitals()
 			barY = barY + barH + barPad
 			round = (barW * arfr > 16 and math.Round(math.Clamp(barW * arfr - rndrad, 0, rndrad)))
 
-			draw.RoundedBox(rndrad, barX - 1, barY - 1, barW + 2, barH + 2, borderCol)
+			draw.RoundedBox(rndrad, barX - 1, barY - 1, barW + 2, barH + 2, grayBorder)
 			draw.RoundedBox(rndrad, barX, barY, barW, barH, gray)
 
 			if not round then

@@ -2,9 +2,41 @@ local function stim(ply)
 	return Stims.Active[ply]
 end
 
-function Stims.UseStim()
+function Stims.PlayStimEffects(force)
+	local can = VManip:PlayAnim("stim_inject_start")
+	if not can and not force then return false end -- trust the client, YEET
+
+	VManip._PlayedStim = false
+
+	Stims.AddStim(ply)
+
+	ply:EmitSound(Stims.Sound("adrenaline_deploy_1"), 75)
+	ply:Timer("stim_cap_off", 0, 1, ply.EmitSound,
+		Stims.Sound("needle_open"), 80)
+
+	return true
+end
+
+function Stims.StopStim()
+	print("STOP STIMMM")
+
+	ply:RemoveTimer("stim_cap_off")
+	VManip:Remove()
+end
+
+net.Receive("ProcStim", function()
+	net.ReadPromise()
+end)
+
+function Stims.UseStim(force)
 	local ply = LocalPlayer()
-	if not ply:Alive() or ply:Health() >= ply:GetMaxHealth() then return end
+	if not ply:Alive() then return end
+
+	if ply:Health() >= ply:GetMaxHealth() and
+		hook.Run("CanForceStimpak", ply) ~= true then
+		return
+	end
+
 	if hook.Run("CanUseStimpak", ply) == false then return end
 
 	local dat = stim(ply)
@@ -26,19 +58,12 @@ function Stims.UseStim()
 		return
 	end
 
-	local can = VManip:PlayAnim("stim_inject_start")
-	if not can then return end -- trust the client, YEET
+	if Stims.PlayStimEffects() then
+		local pr = net.StartPromise("ProcStim")
+		net.SendToServer()
 
-	VManip._PlayedStim = false
-
-	net.Start("ProcStim")
-	net.SendToServer()
-
-	Stims.AddStim(ply)
-
-	ply:EmitSound(Stims.Sound("adrenaline_deploy_1"), 75)
-	ply:Timer("stim_cap_off", 0, 1, ply.EmitSound,
-		Stims.Sound("needle_open"), 80)
+		pr:Then(nil, Stims.StopStim)
+	end
 end
 
 
