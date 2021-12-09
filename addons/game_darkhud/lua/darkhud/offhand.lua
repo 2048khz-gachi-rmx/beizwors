@@ -47,6 +47,19 @@ surface.CreateFont("Darkhud_OffhandTip", {
 	weight = 600,
 })
 
+surface.CreateFont("Darkhud_OffhandTipSmall", {
+	font = "BreezeSans",
+	size = DarkHUD.Scale * 24,
+	weight = 600,
+})
+
+surface.CreateFont("Darkhud_OffhandTipSmallShadow", {
+	font = "BreezeSans",
+	size = DarkHUD.Scale * 24,
+	weight = 600,
+	blursize = 3,
+})
+
 surface.CreateFont("Darkhud_OffhandTipShadow", {
 	font = "BreezeSans",
 	size = DarkHUD.Scale * 28,
@@ -70,8 +83,16 @@ dh:On("Rescale", "OffhandFonts", function(_, sc)
 		blursize = 3,
 	})
 
+	surface.CreateFont("Darkhud_OffhandTipSmall", {
+		font = "BreezeSans",
+		size = DarkHUD.Scale * 24,
+		weight = 600,
+	})
+
 	DarkHUD.OffhandKeyFontSize = math.ceil(sc * 28)
 end)
+
+local holdTip = "(hold)"
 
 dh:On("AmmoPainted", "PaintOffhand", function(_, pnl, fw, h)
 	local x = pnl.OffhandX or 8
@@ -136,25 +157,46 @@ dh:On("AmmoPainted", "PaintOffhand", function(_, pnl, fw, h)
 		surface.DrawOutlinedRect(left, top,
 			rsz, rsz)]]
 
-		local txt = fmt:format(input.GetKeyName(bind.Key)):upper()
+		if pnl.OffhandFr > 0 then
+			local txt = fmt:format(input.GetKeyName(bind.Key)):upper()
 
-		surface.SetFont("Darkhud_OffhandTipShadow")
+			surface.SetFont("Darkhud_OffhandTipShadow")
 
-		local txW, txH = surface.GetTextSize(txt)
-		local txX, txY = math.floor(uleft + rsz / 2 - txW / 2),
-			math.floor(utop - 4 - txH)
+			local txW, txH = surface.GetTextSize(txt)
+			local txX, txY = math.floor(uleft + rsz / 2 - txW / 2),
+				math.floor(utop - 4 - txH)
 
-		surface.SetTextColor(0, 0, 0, (pnl.OffhandFr or 0) * 255)
+			if act:match("nothing") then
+				local font = "Darkhud_OffhandTipSmall"
+				surface.SetFont(font .. "Shadow")
+				surface.SetTextColor(0, 0, 0, (pnl.OffhandFr or 0) * 200)
+				local tipW, tipH = surface.GetTextSize(holdTip)
+				local tipX = uleft + rsz / 2 - tipW / 2
 
-		for i=1, 5 do
+				for i=1, 3 do
+					surface.SetTextPos(tipX, txY - tipH)
+					surface.DrawText(holdTip)
+				end
+
+				surface.SetFont(font)
+				surface.SetTextColor(160, 160, 160, (pnl.OffhandFr or 0) * 200)
+				surface.SetTextPos(tipX, txY - draw.GetFontHeight(font))
+				surface.DrawText(holdTip)
+			end
+
+			surface.SetFont("Darkhud_OffhandTipShadow")
+			surface.SetTextColor(0, 0, 0, (pnl.OffhandFr or 0) * 255)
+
+			for i=1, 5 do
+				surface.SetTextPos(txX, txY)
+				surface.DrawText(txt)
+			end
+
+			surface.SetFont("Darkhud_OffhandTip")
 			surface.SetTextPos(txX, txY)
+			surface.SetTextColor(255, 255, 255, (pnl.OffhandFr or 0) * 255)
 			surface.DrawText(txt)
 		end
-
-		surface.SetFont("Darkhud_OffhandTip")
-		surface.SetTextPos(txX, txY)
-		surface.SetTextColor(255, 255, 255, (pnl.OffhandFr or 0) * 255)
-		surface.DrawText(txt)
 
 		x = x + (add or w) + pad
 	end
