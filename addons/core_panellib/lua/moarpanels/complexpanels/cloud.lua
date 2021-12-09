@@ -478,6 +478,7 @@ function Cloud:AddSeparator(col, offx, offy, num)
 	end
 
 	local t = self.Separators[num or #self.DoneText] or {}
+
 	self.Separators[num or #self.DoneText] = t
 	t[#t + 1] =  {col = col or Color(70, 70, 70), offx = offx, offy = offy}
 
@@ -495,6 +496,8 @@ function Cloud:AddPanel(p, num)
 	p.IgnoreVisibility = true
 	p.prio = num or (#self.DoneText + 1)
 	self.DoneText[num or (#self.DoneText + 1)] = p
+
+	return p
 end
 
 function Cloud:SetAbsPos(x, y)

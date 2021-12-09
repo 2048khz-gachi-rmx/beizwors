@@ -332,7 +332,6 @@ function buf:WrapText(tx, width, font, wrapDat)
 		self:Offset(offX)
 		return txcache[1], tw, th + self:GetTextHeight(), txcache[3]
 	else
-
 		local wrapped, cur_wid, didwrap = string.WordWrap2(tx, {width - self.x, width}, font, wrapDat)
 
 		local offX = 0

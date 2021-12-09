@@ -1,5 +1,8 @@
 local tag = "BaseWars.UTIL"
 BaseWars.UTIL = {}
+BW = BaseWars
+bw = BaseWars
+Bw = BaseWars
 
 GM.Name 		= "BaseWars"
 
