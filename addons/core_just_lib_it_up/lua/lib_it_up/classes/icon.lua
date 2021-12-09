@@ -155,12 +155,20 @@ function Icon:_WHPreseveRatio(w, h)
 		elseif h and not w then
 			sc = h / mh
 		else
+
 			if mw >= mh then
-				-- align by width
-				return w, w * (mh / mw)
+				if w > h then
+					return h * (mw / mh), h
+				else
+					return w, w * (mh / mw)
+				end
 			else
-				-- align by height
-				return w * (mw / mh), w
+				-- untested
+				if w > h then
+					return h, h * (mh / mw)
+				else
+					return w * (mw / mh), w
+				end
 			end
 		end
 
