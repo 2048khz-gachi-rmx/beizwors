@@ -36,7 +36,7 @@ function ENT:FillNamePanel(name, dropper)
 	name:SetTall(draw.GetFontHeight(nameDT:GetFont()))
 end
 
-local dtFont = "OS24"
+local dtFont = "BS20"
 
 local function diffTable(self, cur, master)
 	local new, gone = {}, {}
@@ -88,7 +88,27 @@ function ENT:FillReqsPanel(reqs, itm)
 	local reqDTs = {}
 
 	function reqs:GenerateDisplay(reqID, reqAmt)
-		local dt = DeltaText():SetFont(dtFont)
+		local lbl = vgui.Create("DPanel", self)
+		lbl:Dock(TOP)
+		lbl:DockMargin(2, 0, 0, 2)
+		lbl:SetTall(draw.GetFontHeight(dtFont))
+		lbl.Color = color_white:Copy()
+		lbl.itemAmt = reqAmt
+		lbl.iid = reqID
+
+		local base = Inventory.Util.GetBase(reqID)
+
+		function lbl:Paint(w, h)
+			draw.SimpleText(base:GetName(), dtFont, 8, 0, base:GetColor() or Colors.Red,
+				0, 0)
+
+			surface.SetTextColor(255, 255, 255)
+			surface.DrawText(": ")
+
+			surface.SetTextColor(self.Color)
+			surface.DrawText("x" .. reqAmt)
+		end
+		--[[local dt = DeltaText():SetFont(dtFont)
 		local base = Inventory.Util.GetBase(reqID)
 		dt.piece = dt:AddText("")
 
@@ -104,15 +124,14 @@ function ENT:FillReqsPanel(reqs, itm)
 
 		dt.AlignY = 0
 		dt:CycleNext()
-		self:MemberLerp(dt, "inFr", 1, 0.3, 0, 0.3)
+		self:MemberLerp(dt, "inFr", 1, 0.3, 0, 0.3)]]
 
-		return dt
+		return lbl
 	end
 
 	local itReqs = itm:GetRecipe()
-	print(table.Count(itReqs))
+
 	for k,v in pairs(itReqs) do
-		print("genmerated display", k, v)
 		reqDTs[#reqDTs + 1] = reqs:GenerateDisplay(k, v)
 	end
 
@@ -120,7 +139,7 @@ function ENT:FillReqsPanel(reqs, itm)
 	local invs = iutil.GetUsableInventories(LocalPlayer())
 
 	function reqs:PaintReqs(w, h)
-		local reqs = itm:GetRecipe()
+		--[[local reqs = itm:GetRecipe()
 
 		local line_h = draw.GetFontHeight(dtFont)
 		local total_h = 0
@@ -134,7 +153,6 @@ function ENT:FillReqsPanel(reqs, itm)
 
 		for k,v in ipairs(reqDTs) do
 			local dt = v
-			print("painting", dt, dt.itemAmt)
 			local here = v.inFr or 0
 
 			dt.piece.Alpha = here * 255
@@ -150,6 +168,16 @@ function ENT:FillReqsPanel(reqs, itm)
 
 			dt:Paint(8, y)
 			y = y + line_h * here
+		end]]
+
+		for k,v in ipairs(reqDTs) do
+			local amt = 0
+			for _, inv in ipairs(invs) do
+				amt = amt + iutil.GetItemCount(inv, v.iid)
+			end
+
+			local enough = amt >= v.itemAmt
+			self:LerpColor(v.Color, enough and color_white or Colors.Red, 0.3, 0, 0.3)
 		end
 	end
 
@@ -243,26 +271,30 @@ function ENT:CreateBlueprintInfo(bp, info, old)
 	cv.X = 32
 	cv:MoveBy(-32, 0, 0.5, 0, 0.3)
 
-	local reqs = vgui.Create("InvisPanel", cv, "Reqs canvas")
+	local reqs = vgui.Create("FScrollPanel", cv, "Reqs canvas")
 	reqs:Dock(LEFT)
+	reqs.NoDraw = true
+	self:FillReqsPanel(reqs, bp)
+	reqs:SetSize(cv:GetWide() * 0.4 - 2, cv:GetTall())
 
 	local modScr = vgui.Create("FScrollPanel", cv, "Mods scroller")
 	modScr:Dock(RIGHT)
 	modScr.NoDraw = true
 	modScr.X = reqs:GetWide() + 3
+	modScr:SetSize(cv:GetWide() - reqs:GetWide() - 3, cv:GetTall())
 
-	local mods = vgui.Create("InvisPanel", modScr, "Mods canvas")
-	mods:Dock(FILL)
+	-- local mods = vgui.Create("InvisPanel", modScr, "Mods canvas")
+	-- mods:Dock(FILL)
 
 	function cv:PerformLayout()
 		reqs:SetSize(cv:GetWide() * 0.4 - 2, cv:GetTall())
 		modScr:SetSize(cv:GetWide() - reqs:GetWide() - 3, cv:GetTall())
-		mods:SetSize(modScr:GetWide(), modScr:GetTall())
+		--mods:SetSize(modScr:GetWide(), modScr:GetTall())
 	end
 
 	--cv:PerformLayout()
-	self:FillReqsPanel(reqs, bp)
-	self:FillModsPanel(mods, bp)
+	
+	self:FillModsPanel(modScr:GetCanvas(), bp)
 end
 
 function ENT:CraftFromBlueprintMenu(open, main)
@@ -370,7 +402,7 @@ function ENT:CraftFromBlueprintMenu(open, main)
 	}
 
 	function dropper:BlueprintScale(w, h, sz)
-		local iw, ih = ic:RatioSize(math.min(w * 0.9, origW), math.min(h * 0.9, origH))
+		local iw, ih = ic:RatioSize(w * 0.9, h * 0.9)
 		iw, ih = iw * sz, ih * sz
 
 		return iw, ih
