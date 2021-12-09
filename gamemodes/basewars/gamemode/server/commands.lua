@@ -3,9 +3,9 @@ BaseWars.Commands = {
 }
 
 if ulx or ulib then
-	BaseWars.Commands.Pattern = "[/|%.]"
+	BaseWars.Commands.Pattern = "[/|]"
 else
-	BaseWars.Commands.Pattern = "[!|/|%.]"
+	BaseWars.Commands.Pattern = "[!|/|]"
 end
 
 function BaseWars.Commands.ParseArgs(str)
