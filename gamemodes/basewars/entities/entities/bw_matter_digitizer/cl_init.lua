@@ -9,18 +9,25 @@ function ENT:Draw()
 	self:DrawModel()
 end
 
+function ENT:SendItem(slot, itm)
+	print("Sending item:", slot, itm)
+end
+
 function ENT:OpenMenu()
 	local frSize = ScrW() < 1200 and 500 or
 			ScrW() < 1900 and 550 or 650
 
+	local st = Inventory.Panels.PickSettings()
+	st.NoAutoSelect = true
+
 	local inv = Inventory.Panels.CreateInventory(LocalPlayer().Inventory.Backpack,
-		true, Inventory.Panels.PickSettings())
+		true, st)
 
 	--inv:SetTall(350)
 	inv:CenterVertical()
 
 	local vt = Inventory.Panels.CreateInventory(LocalPlayer().Inventory.Vault,
-		true, Inventory.Panels.PickSettings())
+		true, st)
 
 	--vt:SetSize(frSize, inv:GetTall())
 	--inv:SetWide(frSize)
@@ -38,19 +45,17 @@ function ENT:OpenMenu()
 
 	vt:MakePopup()
 	vt.Inventory = inv
-
+	vt:SetRetractedSize(0)
+	inv:SetRetractedSize(0)
 	Inventory.MatterDigitizerPanel = vt
 
-	print("add ems on")
-	print(vt)
-	print(inv)
-	print("----")
-	vt:On("ItemDropOn", "Send", function(self, rec, pnl, item)
-		print("Vault drop - ", self, rec, pnl, item)
+	vt:On("ItemDropOn", "Send", function(_, itmPnl, invPnl, item)
+		self:SendItem(itmPnl:GetSlot(), item)
+		return false
 	end)
 
-	inv:On("ItemDropFrom", "Send", function(self, rec, pnl, item)
-		print("From BP drop - ", self, rec, pnl, item)
+	inv:On("ItemDropFrom", "Send", function(_, itmPnl, invPnl, item)
+
 	end)
 end
 

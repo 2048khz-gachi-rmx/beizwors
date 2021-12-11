@@ -4,7 +4,7 @@ ENT.Base = "bw_base_electronics"
 ENT.Type = "anim"
 ENT.PrintName = "Matter Digitizer"
 
-ENT.Model = "models/props_combine/combine_mortar01b.mdl" -- forgor
+ENT.Model = "models/props_combine/combine_mortar01b.mdl"
 ENT.Skin = 0
 
 ENT.CanTakeDamage = true
