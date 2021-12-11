@@ -14,13 +14,19 @@ ENT.IsManualGen 	= true
 
 if SERVER then util.AddNetworkString("ManualGen") end
 
+local powerGen = 12
+
 function ENT:Init(...)
 	self.BaseClass.Init(self, ...)
 
 	--[[self.PowerGenerated2 = math.floor(
 		math.ceil(2 * 4 / BaseWars.Bases.PowerGrid.ThinkInterval) / 10
 	) * 10]]
-	self.PowerGenerated2 = 12
+	self.PowerGenerated2 = powerGen
+end
+
+function ENT:RateFormat()
+	return Language("PowerGenManual", powerGen)
 end
 
 function ENT:GenPower()

@@ -99,6 +99,12 @@ end
 local rayPos = Vector(2.4543991088867, -32.136005401611, 3.2566497325897)
 local ray = Material("trails/physbeam")
 
+function ENT:RateFormat(e)
+	return Language("PowerGen", ("%s-%s"):format(
+		BaseWars.Solar.SkylessPower, BaseWars.Solar.SkyPower
+	))
+end
+
 function ENT:Draw()
 	self:DrawModel()
 	local qm = self.IsQMInteracting
