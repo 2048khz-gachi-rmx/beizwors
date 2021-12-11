@@ -153,7 +153,13 @@ function pg:UpdateCapacity(con)
 		storage = storage + v.PowerCapacity
 	end
 
+	if storage > 10000 then
+		-- the 100 just ruins it,,,,,,,,,
+		storage = storage - pg.DefaultCapacity
+	end
+
 	self:SetCapacity(storage)
+	self:SetPower(math.min(self:GetPower(), self:GetCapacity()))
 end
 
 pg:On("AddedBattery", "UpdateCapacity", pg.UpdateCapacity)
