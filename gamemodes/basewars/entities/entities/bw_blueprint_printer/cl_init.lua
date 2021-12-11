@@ -182,15 +182,16 @@ function ENT:OpenMenu()
 
 	
 
-	local inv = Inventory.Panels.CreateInventory(LocalPlayer().Inventory.Backpack, nil, {
+	--[[local inv = Inventory.Panels.CreateInventory(LocalPlayer().Inventory.Backpack, nil, {
 		SlotSize = sz,
 		FitsItems = fits,
-	})
+	})]]
 
 	local frSize = ScrW() < 1200 and 350 or
 					ScrW() < 1900 and 450 or 500
 
-	local inv = Inventory.Panels.CreateInventory(LocalPlayer().Inventory.Backpack, nil, Inventory.Panels.PickSettings())
+	local inv = Inventory.Panels.CreateInventory(LocalPlayer().Inventory.Backpack,
+		nil, Inventory.Panels.PickSettings())
 
 	--inv:SetTall(350)
 	inv:CenterVertical()
