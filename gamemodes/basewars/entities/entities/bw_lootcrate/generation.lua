@@ -13,9 +13,9 @@ local lootInfo = {
 				blank_bp = {3, 9},
 				-- circuit_board = {1, 2, 0.3},
 				-- capacitor = {1, 4},
-				nutsbolts = {1, 2},
+				--nutsbolts = {1, 2},
+				--adhesive = {1, 1, 0.35},
 				lube = {1, 1, 0.2},
-				adhesive = {1, 1, 0.35},
 			}
 		},
 
@@ -28,8 +28,8 @@ local lootInfo = {
 				-- emitter = {1, 1, 0.3},
 				-- cpu = {1, 1, 0.2},
 				-- capacitor = {3, 7},
-				nutsbolts = {3, 7, 0.6},
-				adhesive = {1, 3, 0.5},
+				--nutsbolts = {3, 7, 0.6},
+				--adhesive = {1, 3, 0.5},
 				lube = {1, 2, 0.4},
 			}
 		}
