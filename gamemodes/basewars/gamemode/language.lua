@@ -1,8 +1,10 @@
 AddCSLuaFile()
 
 local KROMER = GetGlobalBool("KROMER")
+
 if SERVER then
-	SetGlobalBool("KROMER", KROMER or math.random() < 0.03)
+	_KROMER = (_KROMER == nil and math.random() < 0.03) or _KROMER
+	SetGlobalBool("KROMER", _KROMER)
 elseif not KROMER then
 	timer.Create("cringe network race", 1, 10, function()
 		if GetGlobalBool("KROMER") then
@@ -45,6 +47,9 @@ Strings.NoPower 		= "No power!"
 Strings.NoCharges 		= "No charges!"
 Strings.NoHealth 		= "Low health!"
 Strings.NoPrinters 	= "Target does not have enough printers!"
+Strings.PowerGen 	= "+%spw"
+Strings.PowerGenManual 	= "+%spw/use"
+Strings.PowerStored = "%spw"
 
 Strings.PayOutOwner 	= function(s, c)
 	if isnumber(s) then s = BaseWars.NumberFormat(s) end
@@ -83,18 +88,6 @@ Strings.UpgCost = function(pr)
 end
 
 Strings.WelcomeBackCrash 	= "Welcome back!"
-
-local KROMER = GetGlobalBool("KROMER")
-if SERVER then
-	SetGlobalBool("KROMER", math.random() < 0.03)
-elseif not KROMER then
-	timer.Create("cringe network race", 1, 10, function()
-		if GetGlobalBool("KROMER") then
-			include("language.lua")
-			timer.Remove("cringe network race")
-		end
-	end)
-end
 
 if KROMER then
 	Strings.Refunded			= function(s)

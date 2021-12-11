@@ -96,6 +96,94 @@ if CLIENT then
 	cRecreational.Icon = Icon("https://i.imgur.com/tKMbV5S.png", "gamepad56.png"):SetSize(28, 28)
 end
 
+local function onAddPrinter(t)
+	local class = t.ClassName
+
+	local tbl = scripted_ents.GetStored(class)
+	if not tbl then return end
+
+	local rate = tbl.t.DisplayPrintAmount or tbl.t.PrintAmount
+	if not rate then return end
+
+	t.GenerateCloudInfo = function(cl, btn)
+		cl:AddSeparator(nil, 16, 4)
+
+		local pnl = vgui.Create("InvisPanel", cl)
+		cl:AddPanel(pnl)
+
+		local txt = t.RateFormat and t.RateFormat(rate) or Language("Price", rate) .. "/s."
+		local font = "OS20"
+		surface.SetFont(font)
+
+		local tw, th = surface.GetTextSize(txt)
+		local icSz = th * 0.875
+		local fullW = tw + icSz + 4
+		pnl:SetTall(th)
+
+		local tw = surface.GetTextSizeQuick(txt, font)
+		cl:SetWide(math.max(cl:GetWide(), fullW + 8))
+
+		function pnl:Paint(w, h)
+			Icons.Money32:Paint(w / 2 - fullW / 2, h / 2 - icSz / 2,
+				icSz, icSz)
+			surface.SetTextPos(w / 2 - fullW / 2 + icSz + 2, h / 2 - th / 2)
+			surface.SetTextColor(150, 150, 150, 100)
+			surface.SetFont(font)
+			surface.DrawText(txt)
+		end
+	end
+end
+
+local function onAddPower(t)
+	local class = t.ClassName
+
+	t.GenerateCloudInfo = function(cl, btn)
+		local tbl = scripted_ents.GetStored(class).t
+		if not tbl then return end
+
+		local powGen = tbl.PowerGenerated or tbl.PowerCapacity
+		if not powGen then return end
+
+		cl:AddSeparator(nil, 16, 4)
+
+		local pnl = vgui.Create("InvisPanel", cl)
+		cl:AddPanel(pnl)
+
+		local txt
+
+		if tbl.RateFormat then
+			txt = tbl.RateFormat(powGen) or powGen
+		end
+
+		txt = txt or Language(class:match("_gen_") and "PowerGen" or "PowerStored", powGen)
+
+		local font = "OS20"
+		surface.SetFont(font)
+
+		local tw, th = surface.GetTextSize(txt)
+		local icSz = th * 0.875
+		local fullW = tw + icSz + 2
+		pnl:SetTall(th)
+
+		local tw = surface.GetTextSizeQuick(txt, font)
+		cl:SetWide(math.max(cl:GetWide(), fullW + 8))
+
+		function pnl:Paint(w, h)
+			Icons.Electricity:Paint(w / 2 - fullW / 2, h / 2 - icSz / 2,
+				icSz, icSz)
+			surface.SetTextPos(w / 2 - fullW / 2 + icSz + 2, h / 2 - th / 2)
+			surface.SetTextColor(150, 150, 150, 100)
+			surface.SetFont(font)
+			surface.DrawText(txt)
+		end
+	end
+end
+
+local onAddCBs = {
+	Printers = onAddPrinter,
+	Electricity = onAddPower
+}
+
 local add = BaseWars.AddToSpawn
 
 local sl = BaseWars.SpawnList
@@ -114,6 +202,8 @@ local curCat
 local function SetCat(t)
 	curCat = t
 end
+
+
 
 local function AddItem(cat, typ, class, name, price, mdl)
 	local t = {}
@@ -146,6 +236,10 @@ local function AddItem(cat, typ, class, name, price, mdl)
 
 	BaseWars.Catalogue[class] = t
 
+	if onAddCBs[cat] then
+		onAddCBs[cat] (t)
+	end
+
 	return t
 end
 
@@ -177,31 +271,6 @@ local function AddPrinters(typ, class, name, price, mdl, lim)
 
 	local rate = tbl.t.DisplayPrintAmount or tbl.t.PrintAmount
 	if not rate then return t end
-
-	t.GenerateCloudInfo = function(cl, btn)
-		cl:AddSeparator(nil, 16, 4)
-
-		local pnl = vgui.Create("InvisPanel", cl)
-		cl:AddPanel(pnl)
-
-		local txt = t.RateFormat and t.RateFormat(rate) or Language("Price", rate) .. "/s."
-		local font = "OS20"
-		surface.SetFont(font)
-
-		local tw, th = surface.GetTextSize(txt)
-		local icSz = th * 0.875
-		local fullW = tw + icSz + 4
-		pnl:SetTall(th)
-
-		function pnl:Paint(w, h)
-			Icons.Money32:Paint(w / 2 - fullW / 2, h / 2 - icSz / 2,
-				icSz, icSz)
-			surface.SetTextPos(w / 2 - fullW / 2 + icSz + 2, h / 2 - th / 2)
-			surface.SetTextColor(150, 150, 150, 100)
-			surface.SetFont(font)
-			surface.DrawText(txt)
-		end
-	end
 
 	return t
 end
@@ -347,17 +416,18 @@ SetType("Generators")
 			.Limit = 1
 		ReuseCat("bw_gen_solar", "Solar Panel", 1500, "models/props_lab/miniteleport.mdl")
 		ReuseCat("bw_gen_scrap", "Scrap Generator", k * 5, "models/props_c17/TrapPropeller_Engine.mdl")
-		ReuseCat("bw_gen_gas", "Gas Generator", k * 20, "models/xqm/hydcontrolbox.mdl")
+		ReuseCat("bw_gen_gas", "Gas Generator", k * 20)
 
 	SetTier(2)
-		ReuseCat("bw_gen_coalfired", "Coal Fired Generator", k * 75, "models/props_wasteland/laundry_washer003.mdl")
-		ReuseCat("bw_gen_fission", "Fission Reactor", k * 200, "models/props/de_nuke/equipment1.mdl")
-		ReuseCat("bw_gen_fusion", "Fusion Reactor", k * 500, "models/maxofs2d/thruster_propeller.mdl")
+		ReuseCat("bw_gen_coalfired", "Coal Fired Generator", k * 75)
+		ReuseCat("bw_gen_hydroelectric", "Hydroelectric Reactor", k * 300)
+		ReuseCat("bw_gen_combustion", "Combustion Reactor", k * 1200)
 
 	SetTier(3)
 		--ReuseCat("bw_gen_joke", "Numismatic Reactor", m * 150, "models/props_c17/cashregister01a.mdl")
-		ReuseCat("bw_gen_hydroelectric", "Hydroelectric Reactor", m * 1.5, "models/props_wasteland/laundry_washer001a.mdl")
-		ReuseCat("bw_gen_combustion", "Combustion Reactor", m * 20, "models/props_c17/substation_transformer01a.mdl")
+		ReuseCat("bw_gen_fission", "Fission Reactor", m * 5)
+		ReuseCat("bw_gen_fusion", "Fusion Reactor", m * 35)
+		ReuseCat("bw_gen_matter", "Matter Reactor", 150 * m)
 
 SetType("Batteries")
 	SetTier(1)
@@ -374,6 +444,7 @@ SetType("Batteries")
 		ReuseCat("bw_battery_minimatter", "Mini Matter Battery", 175 * m, nil, 2)
 		ReuseCat("bw_battery_matter", "Mattery Battery", 500 * m, nil, 2)
 		ReuseCat("bw_battery_antimatter", "Anti-Matter Battery", 3500 * m, nil, 2)
+
 
 SetType("Structures")
 

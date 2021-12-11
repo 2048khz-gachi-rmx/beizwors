@@ -245,7 +245,7 @@ function Cloud:Paint()
 		if not self:IsValid() then return end
 	end
 
-	local cw = math.min(math.max(self._MaxWidth, self.LabelWidth + 16, self.MinW), self.MaxW)
+	local cw = math.min(math.max(self._MaxWidth, self.LabelWidth + 16, self.MinW, self:GetWide()), self.MaxW)
 	local lab = self.wwrapped[self.Label] or "??"
 
 	surface.SetFont(self.Font)
