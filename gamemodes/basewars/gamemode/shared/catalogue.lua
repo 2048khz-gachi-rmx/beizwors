@@ -118,9 +118,12 @@ end
 local function AddItem(cat, typ, class, name, price, mdl)
 	local t = {}
 
+	local ent = scripted_ents.GetStored(class)
+	ent = ent and ent.t or {}
+
 	t.ClassName = class
 	t.Price = tonumber(price)
-	t.Model = mdl
+	t.Model = mdl or ent.Model
 	--t.Level = lv
 	t.Tier = curTier
 
@@ -359,7 +362,18 @@ SetType("Generators")
 SetType("Batteries")
 	SetTier(1)
 		ReuseCat("bw_battery_car", "Scrap Battery", 1000, "models/items/car_battery01.mdl", 2)
-		ReuseCat("bw_battery_capacitor", "Capacitor Battery", 50000, "models/props_lab/powerbox02b.mdl", 2)
+		ReuseCat("bw_battery_capacitor", "Capacitor Battery", 50 * k, "models/props_lab/powerbox02b.mdl", 2)
+		ReuseCat("bw_battery_flow", "Flow Battery", 400 * k, nil, 2)
+
+	SetTier(2)
+		ReuseCat("bw_battery_hydrogen", "Hydrogen Battery", 2.5 * m, nil, 2)
+		ReuseCat("bw_battery_fission", "Fission Battery", 15 * m, nil, 2)
+		ReuseCat("bw_battery_uranium", "Uranium Battery", 50 * m, nil, 2)
+
+	SetTier(3)
+		ReuseCat("bw_battery_minimatter", "Mini Matter Battery", 175 * m, nil, 2)
+		ReuseCat("bw_battery_matter", "Mattery Battery", 500 * m, nil, 2)
+		ReuseCat("bw_battery_antimatter", "Anti-Matter Battery", 3500 * m, nil, 2)
 
 SetType("Structures")
 
