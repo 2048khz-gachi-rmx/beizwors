@@ -102,9 +102,23 @@ function ENT:Think()
 
 		if CurTime() > fin then
 			local smTo = v:GetBase():GetSmeltsTo()
-			v:Delete()
-			if not smTo then print("didn't find what", v:GetName(), " smelts to") continue end --?
+			--?
+			if not smTo then
+				errorNHf("didn't find what %s smelts to", v:GetName())
+				continue
+			end
 
+			local smIt = Inventory.NewItem(smTo)
+			local has_left, ok = Inventory.GetInventoryStackInfo(self.OreOutput, smIt)
+
+			if not ok then
+				errorNHf("GetInventoryStackInfo returned 2 falses (invalid item?) %s", v)
+				v:Delete()
+				continue
+			end
+
+			if has_left then continue end
+			v:Delete()
 			fin_amt[smTo] = (fin_amt[smTo] or 0) + 1
 			changed = true
 		end
