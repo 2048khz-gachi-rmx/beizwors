@@ -313,7 +313,8 @@ function createFactionActions(f, fac, canv)
 			surface.SetDrawColor(col:Unpack())
 			local x = t.ArrX
 
-			surface.DrawMaterial("https://i.imgur.com/jFHSu7s.png", "arr_right.png", 4 + x, 4, arrSize, arrSize)
+			surface.DrawMaterial("https://i.imgur.com/jFHSu7s.png", "arr_right.png",
+				4 + x, 4, arrSize, arrSize)
 
 			if not self.Clicked then
 				if self:IsHovered() then

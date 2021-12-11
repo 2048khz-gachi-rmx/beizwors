@@ -80,6 +80,18 @@ function surface.GetTextSizeQuick(tx, font)
 	return surface_GetTextSize(tx)
 end
 
+function draw.GetFontHeights(...)
+	local ret = {}
+	local sum = 0
+	for k,v in ipairs({...}) do
+		local h = draw.GetFontHeight(v)
+		sum = sum + h
+		ret[k] = h
+	end
+
+	return sum, unpack(ret)
+end
+
 function surface.CharSizes(tx, font, unicode)
 	local szs = {}
 	surface_SetFont(font)

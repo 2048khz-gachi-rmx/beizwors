@@ -167,16 +167,40 @@ end)
 libTbl.LoadedDeps = libTbl.LoadedDeps or {}
 libTbl.DepsCallbacks = libTbl.DepsCallbacks or {}
 
-local depsCallback = libTbl.DepsCallbacks
+libTbl.Ready = libTbl.Ready or {}
+libTbl.ReadyCallbacks = libTbl.ReadyCallbacks or {}
+
 
 function libTbl.OnLoaded(file, cb, ...)
 	if libTbl.LoadedDeps[file] then
 		cb(...)
 	else
-		local t = depsCallback[file] or {}
-		depsCallback[file] = t
+		local t = libTbl.DepsCallbacks[file] or {}
+		libTbl.DepsCallbacks[file] = t
 		t[#t + 1] = {cb, ...}
 	end
+end
+
+function libTbl.ListenReady(id, cb, ...)
+	if libTbl.Ready[id] then
+		cb(...)
+	else
+		local t = libTbl.ReadyCallbacks[id] or {}
+		libTbl.ReadyCallbacks[id] = t
+		t[#t + 1] = {cb, ...}
+	end
+end
+
+function libTbl.MarkReady(id)
+	if libTbl.ReadyCallbacks[id] then
+		for k,v in ipairs(libTbl.ReadyCallbacks[id]) do
+			v[1](unpack(v, 2))
+		end
+
+		libTbl.ReadyCallbacks[id] = nil
+	end
+
+	libTbl.LoadedDeps[id] = true
 end
 
 include(path .. "classes.lua") -- base class goes first
@@ -213,12 +237,12 @@ local function onLoad(s)
 	--printf("Loaded %s %s %.2fs. after start...", s, Realm(true, true), SysTime() - s1)
 	local fn = file.GetFile(s)
 
-	if depsCallback[fn] then
-		for k,v in ipairs(depsCallback[fn]) do
+	if libTbl.DepsCallbacks[fn] then
+		for k,v in ipairs(libTbl.DepsCallbacks[fn]) do
 			v[1](unpack(v, 2))
 		end
 
-		depsCallback[fn] = nil
+		libTbl.DepsCallbacks[fn] = nil
 	end
 
 	libTbl.LoadedDeps[fn] = true

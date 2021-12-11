@@ -267,6 +267,8 @@ Icons.Edit = Icon("https://i.imgur.com/ZhVoxFk.png", "edit.png")
 Icons.Flag128 = Icon("https://i.imgur.com/DMgRjSC.png", "flag128.png")
 Icons.MagnifyingGlass128 = Icon("https://i.imgur.com/8NayKhl.png", "mag_glass128.png")
 Icons.Electricity = Icon("https://i.imgur.com/poRxTau.png", "electricity.png")
+Icons.Clock64 = Icon("https://i.imgur.com/kqObTVz.png", "clock64.png")
+Icons.Clock = Icon("https://i.imgur.com/ZGFDRJy.png", "clock32.png")
 Icons.Coins = Icon("https://i.imgur.com/vzrqPxk.png", "coins_pound64.png")
 Icons.Star = Icon("https://i.imgur.com/YYXglpb.png", "star.png")
 
