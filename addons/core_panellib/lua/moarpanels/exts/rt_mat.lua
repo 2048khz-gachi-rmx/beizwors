@@ -56,6 +56,22 @@ function draw.GetRTMat(name, w, h, shader)
 	return rt, mat
 end
 
+function draw.RenderOntoRT(rt, w, h, fn)
+
+	render.PushRenderTarget(rt)
+		render.OverrideAlphaWriteEnable(true, true)
+
+			render.ClearDepth()
+			render.Clear(0, 0, 0, 0)
+
+			cam.Start2D()
+			local ok, err = pcall(fn, w, h, rt)
+			cam.End2D()
+
+		render.OverrideAlphaWriteEnable(false)
+	render.PopRenderTarget()
+end
+
 function draw.RenderOntoMaterial(name, w, h, func, rtfunc, matfunc, pre_rt, pre_mat, has2d, x, y)
 
 	local rt
