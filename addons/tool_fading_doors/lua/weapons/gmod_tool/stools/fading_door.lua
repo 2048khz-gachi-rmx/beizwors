@@ -491,19 +491,19 @@ local function onRemove(self)
 	self.fadeMaterial = nil
 	if IsValid(self.FadingDoorDummy) then self.FadingDoorDummy:Remove() end
 	self.FadingDoorDummy = nil
-	self.fadeToggle = nil
+	-- self.fadeToggle = nil
 	self.fadeDoorMaterial = nil
 	self.fadeMoveable = nil
 	self.fadeCanDisableMotion = nil
 	self.fadeDoorOpenSound = nil
 	self.fadeDoorCloseSound = nil
 	self.fadeDoorLoopSound = nil
-	self.fadeDeactivate = nil
+	-- self.fadeDeactivate = nil
 	self.fadeUpNum = nil
 	self.fadeDownNum = nil
 	self.fadeToggleActive = nil
 	self.fadeReversed = nil
-	self.fadeActivate = nil
+	-- self.fadeActivate = nil
 	self.fadeKey = nil
 	if self.OnDieFunctions then
 		self.OnDieFunctions["UndoFadingDoor"..self:EntIndex()] = nil
@@ -543,9 +543,9 @@ local function dooEet(pl, Ent, stuff)
 		RemoveKeys(Ent)
 	else
 		Ent.isFadingDoor = true
-		Ent.fadeActivate = fadeActivate
-		Ent.fadeDeactivate = fadeDeactivate
-		Ent.fadeToggleActive = fadeToggleActive
+		--Ent.fadeActivate = fadeActivate
+		--Ent.fadeDeactivate = fadeDeactivate
+		--Ent.fadeToggleActive = fadeToggleActive
 		Ent:CallOnRemove("Fading Doors", RemoveKeys)
 		if WireLib then
 			doWireInputs(Ent)
@@ -578,6 +578,12 @@ local function dooEet(pl, Ent, stuff)
 	duplicator.StoreEntityModifier(Ent, "Fading Door", stuff)
 	return true
 end
+
+local ENTITY = FindMetaTable("Entity")
+
+ENTITY.fadeActivate = fadeActivate
+ENTITY.fadeDeactivate = fadeDeactivate
+ENTITY.fadeToggleActive = fadeToggleActive
 
 duplicator.RegisterEntityModifier("Fading Door", dooEet)
 hook.Add("Initialize", "FadingDoor1", function() duplicator.RegisterEntityModifier("Fading Door", dooEet) end)	-- No overwrite.
