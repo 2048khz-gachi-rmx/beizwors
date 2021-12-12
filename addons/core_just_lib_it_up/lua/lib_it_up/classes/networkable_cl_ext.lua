@@ -246,6 +246,7 @@ net.Receive("NetworkableInvalidated", function()
 
 		if _NetworkableCache[id] then
 			_NetworkableCache[id]:Invalidate()
+			self.InvalidatedCuz = "ServerSaidSo"
 		end
 	end
 

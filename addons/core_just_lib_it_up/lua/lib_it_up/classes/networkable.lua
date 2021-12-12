@@ -335,10 +335,11 @@ function nw:Bind(what)
 			if ent ~= what then return false end
 
 			if CLIENT then
-				timer.Simple(0.1, function()
+				--[[timer.Simple(0.1, function()
 					if IsValid(ent) then self:Bind(ent) return end --fullupdates :v
 					self:Invalidate()
-				end)
+					self.InvalidatedCuz = ("EntRemoved:%s,%s,%s"):format(ent, ent:EntIndex(), ent:IsValid())
+				end)]]
 			else
 				self:Invalidate()
 			end
