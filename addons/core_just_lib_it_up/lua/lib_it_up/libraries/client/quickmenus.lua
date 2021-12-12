@@ -330,7 +330,7 @@ function ENTITY:SetQuickInteractable(b)
 
 		local id = ("QuickMenus:%p"):format(self)
 
-		hook.OnceRet("EntityRemoved", id, function(ent)
+		hook.OnceRet("EntityActuallyRemoved", id, function(ent)
 			if ent ~= self then return false end
 			if qm.progress > 0 then
 				qm:Close()
