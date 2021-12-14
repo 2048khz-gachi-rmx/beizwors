@@ -380,7 +380,7 @@ function GM:CanProperty(ply, prop, ent, ...)
 	if prop == "ignite" 	then return false end
 	if prop == "extinguish" then return IsAdmin(ply, ent, Ret) end
 
-	if prop == "remover" and Class:find("bw_") then return IsAdmin(ply, ent, Ret) end
+	if prop == "remover" and (Class:find("bw_") or ent.IsBaseWars) then return IsAdmin(ply, ent, Ret) end
 
 	return BlockInteraction(ply, ent, Ret)
 

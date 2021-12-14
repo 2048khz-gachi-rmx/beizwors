@@ -14,7 +14,7 @@ function BaseWars.Printers.GetPrintRate(ent)
 	local t = mt[ent]
 	if not t then return false end
 
-	return t.rate * t.mult * ent.Level
+	return t.rate * t.mult * (ent.Level ^ 1.3)
 end
 
 BaseWars.Printers.Update = BaseWars.Printers.Add

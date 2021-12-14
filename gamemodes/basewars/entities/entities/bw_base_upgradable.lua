@@ -8,8 +8,13 @@ ENT.PrintName = "Base Upgradable"
 ENT.Levels = {
 	[1] = {
 		Cost = 0,
+		PowerMult = 1,
 	},
 }
+
+function ENT:Initialize()
+	self:BaseRecurseCall("Initialize")
+end
 
 -- for override:
 function ENT:OnUpgrade()
@@ -20,10 +25,24 @@ function ENT:OnFinalUpgrade()
 end
 
 function ENT:SetupDataTables()
-	baseclass.Get(base).SetupDataTables(self)
+	scripted_ents.GetStored(base).t.SetupDataTables(self)
 
 	self:NetworkVar("Int", 1, "Level")
 	self:SetLevel(1)
+	if CLIENT then
+		self:NetworkVarNotify("Level", function(self, key, old, new)
+			if old == new or new == 1 then return end
+			self:Timer("rubatfixWHEN", 0, 1, function()
+				if self:GetLevel() == 1 then return end
+				self:OnFinalUpgrade()
+			end)
+		end)
+	end
+
+	self:NetworkVar("Float", 1, "BoughtPrice")
+	if SERVER and self.BoughtCost then
+		self:SetBoughtPrice(self.BoughtCost)
+	end
 end
 
 function ENT:GetUpgradeCost(curLv)
@@ -44,7 +63,9 @@ end
 
 function ENT:GetLevelData(lv)
 	lv = lv or self:GetLevel()
-	local ent_base = baseclass.Get(self:GetClass()) -- autorefresh = goode
+
+	-- autorefresh = goode
+	local ent_base = scripted_ents.GetStored(self:GetClass()).t
 	return ent_base.Levels and ent_base.Levels[lv] or self.Levels[lv]
 end
 
@@ -58,6 +79,12 @@ function ENT:DoUpgrade(final)
 	self:SetLevel(lvl + 1)
 	self:OnUpgrade(lvl + 1)
 
+	local dat = self:GetLevelData()
+	-- get the current level's power mult or the last defined one
+	self._PowerMult = dat and dat.PowerMult or self._PowerMult or 1
+
+	self:SetConsumptionMult_Add("LevelPower", self._PowerMult)
+
 	if final then
 		self:OnFinalUpgrade(lvl + 1)
 	end
@@ -69,7 +96,6 @@ end
 
 function ENT:RequestUpgrade(ply, try, total)
 	if not ply then return end
-	print("req upgrade")
 	local ow = self:BW_GetOwner()
 
 	if GetPlayerInfo(ply) ~= ow then

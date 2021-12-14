@@ -110,6 +110,7 @@ end
 
 function an.AnnounceLeaveGame(name, sid64, reason)
 	local passed = getPlayTime(sid64)
+	spawnTimes[sid64] = nil
 
 	local dat = {
 		Colors.Red, "[Disconnect] ",

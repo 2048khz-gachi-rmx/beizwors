@@ -11,6 +11,7 @@ ENT.Sounds 			= {Sound("physics/flesh/flesh_squishy_impact_hard1.wav"), Sound("p
 ENT.Color			= Color(0, 0, 0, 255)
 
 ENT.IsManualGen 	= true
+ENT.MaxLevel = 1
 
 if SERVER then util.AddNetworkString("ManualGen") end
 

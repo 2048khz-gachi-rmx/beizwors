@@ -6,7 +6,7 @@ ENT.Skin = 0
 ENT.Capacity 		= 180000
 ENT.PrintInterval 	= 1
 ENT.PrintAmount		= 330
-ENT.PowerRequired = 50
+ENT.PowerRequired = 45
 
 ENT.PrintName = "Platinum Printer"
 

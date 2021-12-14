@@ -42,8 +42,6 @@ function ENT:DerivedDataTables()
 
 	self:MakeFloat("PrintAmount")
 
-	self:MakeFloat("BoughtPrice")
-
 	self:NetworkVar("Entity", 1, "PrinterRack") --ew
 
 	slot = 2

@@ -2,7 +2,6 @@ AddCSLuaFile()
 include("shared.lua")
 
 function ENT:CLInit()
-
 	if not self.FontColor then self.FontColor = color_white end
 	if not self.BackColor then self.BackColor = color_black end
 

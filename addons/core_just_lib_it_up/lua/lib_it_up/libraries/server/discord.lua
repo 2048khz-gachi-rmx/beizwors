@@ -1,4 +1,4 @@
-require("bromsock")
+require("gwsockets")
 
 local quipchance = 5
 
@@ -9,13 +9,12 @@ local quips = {
 }
 
 discord = discord or {}
+discord.Socket = discord.Socket
 
 --if discord.Enabled wasn't set, gets set to true
 --otherwise, keeps value
 
 discord.Enabled = (discord.Enabled == nil and true--[[jit.os:find("Windows")]]) or discord.Enabled
-
-dissocket = dissocket or BromSock()
 
 
 local log
@@ -37,84 +36,96 @@ hook.Add("PostGamemodeLoaded", "inventory_log", function()
 	discord.Log = log
 end)
 
-local socket = dissocket
-
-local pingport = 27025
-
 local silence = false
 
-discord.IP = Settings.GetStored("DiscordIP") or game.GetIPAddress():match("(.+):%d+$")
-discord.Port = tonumber(Settings.GetStored("DiscordPort") or game.GetIPAddress():match(".+:(%d+)$"))
+local function socketConnect(_, sock)
+	local msg = "Connected to Discord relay @ %s!\n"
+	msg = msg:format(sock.url)
 
-local function socketConnect(sock, connected, ip, port)
-
-	if (not connected) then
-		msg = "Unable to connect to Discord relay @ %s:%s.\n"
-		msg = msg:format(ip, port)
-
-		if not silence then MsgC(Color(250, 100, 100), msg) end
-
-		return
+	if not silence then
+		MsgC(Color(100, 250, 100), msg)
 	end
-
-	msg = "Connected to Discord relay @ %s:%s!\n"
-	msg = msg:format(ip, port)
-
-	if not silence then MsgC(Color(100, 250, 100), msg) end
-
-	socket:ReceiveUntil("\r\n");
 end
-socket:SetCallbackConnect(socketConnect);
+
+local function socketFailConnect(_, sock, err)
+	local msg = "Unable to connect to Discord relay @ %s.\n	Error: %s"
+	msg = msg:format(sock.url, err)
+
+	if not silence then
+		MsgC(Color(250, 100, 100), msg)
+	end
+end
 
 local function sockDisconnect(sock)
+	if sock.planned then return end
+
 	MsgC(Color(250, 100, 100), "Disconnected from IRC server.\n",
 		"Type discord_reconnect or DiscordReconnect() to attempt reconnection.\n",
 		"Right now, listening for messages.\n")
-
-	sock:Listen(discord.IP, discord.Port)
-	sock:SetCallbackConnect(socketConnect)
 end
-socket:SetCallbackDisconnect(sockDisconnect);
 
-local function socketReceive(sock, packet)
-
-	local full = packet:ReadLine():Trim()
-	local r, g, b = full:match("(%d+),(%d+),(%d+)|")
+local function socketReceive(sock, str)
+	local r, g, b = str:match("^(%d+),(%d+),(%d+)|")
 	r, g, b = tonumber(r), tonumber(g), tonumber(b)
 
-	full = full:gsub("%d+,%d+,%d+|", "")
+	if not r or not g or not b then
+		print("received incorrect discord relay format (no color) - ignoring")
+		printf("%d: ( %s )", #str, str)
+		return
+	end
+
+	str = str:gsub("^%d+,%d+,%d+|", "")
 
 	local col = Color(r, g, b)
 
-	local name = full:match("(.+[^\\|])|")
+	local nameLen = tonumber(str:match("^(%d+)|"))
+	if not nameLen then
+		print("received incorrect discord relay format (no namelen) - ignoring")
+		printf("%d: ( %s )", #str, str)
+		return
+	end
 
-	full = full:gsub("(.+[^\\|])|", "")
+	str = str:gsub("^%d+|", "")
 
-	ChatAddText(Color(70, 110, 220), "[Discord] ", col, name, Color(230, 230, 230), ": " .. full)
-	MsgC(Color(70, 110, 220), "[Discord] ", col, name, Color(230, 230, 230), ": " .. full .. "\n")
+	local name = str:sub(1, nameLen)
+	local msg = str:sub(nameLen + 1)
 
-	socket:ReceiveUntil("\r\n")
+	ChatAddText(Color(70, 110, 220), "[Discord] ", col, name, Color(230, 230, 230), ": " .. msg)
+	-- MsgC(Color(70, 110, 220), "[Discord] ", col, name, Color(230, 230, 230), ": " .. msg .. "\n")
 end
 
-socket:SetCallbackReceive(socketReceive);
-
-
-
 function DiscordReconnect()
-	socket:Close()
-	local ok = socket:Connect(discord.IP, discord.Port)
-	if not ok then
-		MsgC(Color(250, 100, 100), "Failed to connect to " .. discord.IP .. ":" .. discord.Port, "\n	",
-			socket:GetLastError())
-	else
-		print("connected discord :)")
+	discord.IP = Settings.GetStored("DiscordIP") or game.GetIPAddress():match("(.+):%d+$")
+	discord.Port = tonumber(Settings.GetStored("DiscordPort") or game.GetIPAddress():match(".+:(%d+)$"))
+
+	if discord.Socket then
+		discord.Socket.planned = true
+		discord.Socket:close()
 	end
+
+	discord.Socket = GWSockets.createWebSocket("ws://" .. discord.IP .. ":" .. discord.Port,
+		false)
+
+	local sock = discord.Socket
+	sock.url = "ws://" .. discord.IP .. ":" .. discord.Port
+
+	local pr = Promise()
+	sock.onError = pr:Rejector()
+	sock.onConnected = pr:Resolver()
+
+	pr:Then(socketConnect, socketFailConnect)
+
+	sock:open()
+	sock.onMessage = socketReceive
+	sock.onDisconnected = sockDisconnect
 end
 
 concommand.Add("discord_reconnect", function(ply)
 	if IsValid(ply) and not ply:IsSuperAdmin() then return end
 	DiscordReconnect()
 end)
+
+DiscordReconnect()
 
 --matches everything after a !, ., / until a first space
 local cmdptrn = "^[%./!](%w+)%s?"
@@ -188,10 +199,11 @@ setmetatable(Embed, Embed)
 
 local db
 
-if not mysqloo then include("mysql.lua") end
+if not mysqloo then
+	include("mysql.lua")
+end
 
 mysqloo.UseLiveDB():Then(function(self, db2)
-	print("discord: livedb connected")
 	db = db2
 	discord.DB = db2
 end, error)

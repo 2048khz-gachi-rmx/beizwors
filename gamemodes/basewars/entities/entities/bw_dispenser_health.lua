@@ -19,6 +19,7 @@ ENT.IsHealthDispenser = true
 ENT.MaxLevel = 4
 
 ENT.StimDrains = 75
+ENT.PowerRequired = 30
 
 ENT.Levels = {
 	[1] = {
@@ -33,6 +34,7 @@ ENT.Levels = {
 		HealRate = 10,
 		ChargeRate = 1.5,
 		MaxCharge = 100,
+		PowerMult = 2,
 	},
 
 	[3] = {
@@ -40,6 +42,7 @@ ENT.Levels = {
 		HealRate = 15,
 		ChargeRate = 2,
 		MaxCharge = 150,
+		PowerMult = 4,
 	},
 
 	[4] = {
@@ -47,6 +50,7 @@ ENT.Levels = {
 		HealRate = 15,
 		ChargeRate = 3,
 		MaxCharge = 300,
+		PowerMult = 8,
 	},
 }
 

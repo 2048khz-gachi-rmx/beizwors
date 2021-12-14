@@ -145,6 +145,28 @@ function ENTITY:OnCooldown(key)
 	return false
 end
 
+function ENTITY:BaseRecurseCall(methodName, ...)
+	self._recursing = self._recursing or {}
+	if self._recursing[methodName] then return end
+
+	self._recursing[methodName] = true
+	local base = scripted_ents.GetStored(self.Base).t
+	local lastBaseName = self.Base
+	clprint("Calling", base.PrintName, methodName)
+
+	while base do
+		clprint("Calling", base.PrintName, methodName)
+		if base[methodName] then
+			base[methodName] (self, ...)
+		end
+		if not base.Base or base.Base == lastBaseName then break end
+		lastBaseName = base.Base
+		base = scripted_ents.GetStored(lastBaseName).t
+	end
+
+	self._recursing[methodName] = nil
+end
+
 function ENTITY:GetSubscribersKeys()
 
 	local my_subs = ent_subs[self]

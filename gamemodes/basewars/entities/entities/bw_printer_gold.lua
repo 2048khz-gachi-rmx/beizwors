@@ -6,7 +6,7 @@ ENT.Skin = 0
 ENT.Capacity 		= 90000
 ENT.PrintInterval 	= 1
 ENT.PrintAmount		= 170
-ENT.PowerRequired = 35
+ENT.PowerRequired = 20
 ENT.PrintName = "Gold Printer"
 
 ENT.FontColor = Color(204, 153, 0)

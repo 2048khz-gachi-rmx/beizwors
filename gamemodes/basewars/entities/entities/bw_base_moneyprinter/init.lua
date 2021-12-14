@@ -32,7 +32,8 @@ function ENT:Initialize()
 		BaseWars.Printers.Add(self)
 	end
 
-	baseclass.Get("bw_base_electronics").Initialize(self)
+	self:BaseRecurseCall("Initialize")
+	--scripted_ents.Get("bw_base_upgradable").Initialize(self)
 end
 
 
@@ -55,6 +56,7 @@ function ENT:OnFinalUpgrade()
 	local amt = BaseWars.Printers.GetPrintRate(self)
 	if amt then
 		self:SetPrintAmount(amt)
+		self:SetConsumptionMult_Add("LevelPower", self:GetLevel())
 	end
 end
 

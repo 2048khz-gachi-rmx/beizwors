@@ -166,7 +166,7 @@ dh:On("AmmoPainted", "PaintOffhand", function(_, pnl, fw, h)
 			local txX, txY = math.floor(uleft + rsz / 2 - txW / 2),
 				math.floor(utop - 4 - txH)
 
-			if act:match("nothing") then
+			if not act or act:match("nothing") then
 				local font = "Darkhud_OffhandTipSmall"
 				surface.SetFont(font .. "Shadow")
 				surface.SetTextColor(0, 0, 0, (pnl.OffhandFr or 0) * 200)

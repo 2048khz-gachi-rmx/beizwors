@@ -334,7 +334,7 @@ function ENT:Draw()
 
 	local i = 0
 
-	for entKey, entID in ipairs(t) do
+	for entKey, entID in pairs(t) do
 		if IsValid(f.Buttons[entKey]) then continue end
 
 		local ent = Entity(entID)

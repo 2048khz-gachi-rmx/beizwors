@@ -10,6 +10,7 @@ ENT.Sound = Sound("HL1/fvox/blip.wav")
 
 ENT.Model = "models/props_c17/FurnitureToilet001a.mdl"
 ENT.MaxHealth = 250
+ENT.IdlePowerMult = 0.1
 
 ENT.Levels = {
 	{
@@ -31,13 +32,15 @@ ENT.Levels = {
 }
 
 function ENT:SetupDataTables()
-	baseclass.Get(base).SetupDataTables(self)
+	scripted_ents.GetStored(base).t.SetupDataTables(self)
 	self:NetworkVar("Float", 2, "DispenserCharge")
 	self:SetDispenserCharge(0)
 end
 
 function ENT:Initialize()
-	baseclass.Get(base).Initialize(self)
+	-- scripted_ents.GetStored(base).t.Initialize(self)
+	self:BaseRecurseCall("Initialize")
+
 	if SERVER then
 		self:SetUseType(CONTINUOUS_USE)
 	end
@@ -80,6 +83,12 @@ if SERVER then
 		local dat = self:GetLevelData()
 		local rate = dat.ChargeRate or 1
 		local max = dat.MaxCharge or 100
+
+		if self:GetDispenserCharge() == max then
+			self:SetConsumptionMult_Mult("DispenserIdle", self.IdlePowerMult)
+		else
+			self:SetConsumptionMult_Mult("DispenserIdle", 1)
+		end
 
 		self:SetDispenserCharge(math.min(self:GetDispenserCharge() + rate, max))
 		self:NextThink(CurTime() + 0.5)

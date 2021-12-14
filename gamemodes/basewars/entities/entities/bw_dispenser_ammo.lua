@@ -6,6 +6,7 @@ ENT.Type = "anim"
 ENT.PrintName = "Ammo Dispenser"
 ENT.Model = "models/props_lab/reciever_cart.mdl"
 ENT.MaxHealth = 500
+ENT.PowerRequired = 50
 
 ENT.Levels = {
 	{
@@ -20,12 +21,16 @@ ENT.Levels = {
 		ChargeRate = 0.5 / 14,
 		MaxCharge = 5,
 
+		PowerMult = 2,
+
 		DispenseMult = 1.2,
 		CapacityMult = 5,
 	}, {
 		Cost = 2.5e6,
 		ChargeRate = 0.5 / 10,
 		MaxCharge = 8,
+
+		PowerMult = 4,
 
 		DispenseMult = 1.5,
 		CapacityMult = 7,
@@ -34,6 +39,8 @@ ENT.Levels = {
 		ChargeRate = 0.5 / 7,
 		MaxCharge = 12,
 
+		PowerMult = 7,
+
 		DispenseMult = 2,
 		CapacityMult = 10,
 	}, {
@@ -41,12 +48,16 @@ ENT.Levels = {
 		ChargeRate = 0.5 / 5,
 		MaxCharge = 16,
 
+		PowerMult = 10,
+
 		DispenseMult = 2.5,
 		CapacityMult = 12,
 	}, {
 		Cost = 200e6,
 		ChargeRate = 0.5 / 3,
 		MaxCharge = 20,
+
+		PowerMult = 15,
 
 		DispenseMult = 3,
 		CapacityMult = 25,

@@ -6,6 +6,7 @@ ENT.Type = "anim"
 ENT.PrintName = "Armor Dispenser"
 
 ENT.Model = "models/props_combine/suit_charger001.mdl"
+ENT.PowerRequired = 75
 
 ENT.Levels = {
 	{
@@ -22,6 +23,7 @@ ENT.Levels = {
 
 		DispenseAmt = 10,
 		MaxArmor = 75,
+		PowerMult = 2,
 	}, {
 		Cost = 10e6,
 		ChargeRate = 1.5,
@@ -29,6 +31,7 @@ ENT.Levels = {
 
 		DispenseAmt = 15,
 		MaxArmor = 100,
+		PowerMult = 4,
 	}, {
 		Cost = 150e6,
 		ChargeRate = 2,
@@ -36,6 +39,7 @@ ENT.Levels = {
 
 		DispenseAmt = 20,
 		MaxArmor = 150,
+		PowerMult = 8,
 	},
 }
 

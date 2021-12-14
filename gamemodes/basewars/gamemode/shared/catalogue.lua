@@ -204,8 +204,7 @@ local function SetCat(t)
 end
 
 
-
-local function AddItem(cat, typ, class, name, price, mdl)
+local function AddItem(cat, typ, class, name, price, mdl, lim)
 	local t = {}
 
 	local ent = scripted_ents.GetStored(class)
@@ -233,6 +232,7 @@ local function AddItem(cat, typ, class, name, price, mdl)
 	t.Category = cat
 	t.CatID = #cat_t.Items
 	t.SubcatID = #subcat_t.Items
+	t.Limit = lim
 
 	BaseWars.Catalogue[class] = t
 
@@ -415,19 +415,19 @@ SetType("Generators")
 		ReuseCat("bw_gen_manual", "Manual Generator", 0, "models/props_c17/cashregister01a.mdl")
 			.Limit = 1
 		ReuseCat("bw_gen_solar", "Solar Panel", 1500, "models/props_lab/miniteleport.mdl")
-		ReuseCat("bw_gen_scrap", "Scrap Generator", k * 5, "models/props_c17/TrapPropeller_Engine.mdl")
-		ReuseCat("bw_gen_gas", "Gas Generator", k * 20)
+		ReuseCat("bw_gen_scrap", "Scrap Generator", k * 7.5, "models/props_c17/TrapPropeller_Engine.mdl")
+		ReuseCat("bw_gen_gas", "Gas Generator", k * 30)
 
 	SetTier(2)
-		ReuseCat("bw_gen_coalfired", "Coal Fired Generator", k * 75)
-		ReuseCat("bw_gen_hydroelectric", "Hydroelectric Reactor", k * 300)
-		ReuseCat("bw_gen_combustion", "Combustion Reactor", k * 1200)
+		ReuseCat("bw_gen_coalfired", "Coal Fired Generator", k * 200)
+		ReuseCat("bw_gen_hydroelectric", "Hydroelectric Reactor", k * 1200)
+		ReuseCat("bw_gen_combustion", "Combustion Reactor", m * 10)
 
 	SetTier(3)
 		--ReuseCat("bw_gen_joke", "Numismatic Reactor", m * 150, "models/props_c17/cashregister01a.mdl")
-		ReuseCat("bw_gen_fission", "Fission Reactor", m * 5)
-		ReuseCat("bw_gen_fusion", "Fusion Reactor", m * 35)
-		ReuseCat("bw_gen_matter", "Matter Reactor", 150 * m)
+		ReuseCat("bw_gen_fission", "Fission Reactor", m * 75)
+		ReuseCat("bw_gen_fusion", "Fusion Reactor", m * 250)
+		ReuseCat("bw_gen_matter", "Matter Reactor", 1.5 * b)
 
 SetType("Batteries")
 	SetTier(1)

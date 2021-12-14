@@ -1,5 +1,5 @@
 setfenv(1, _G)
-Fonts = {}
+Fonts = Fonts or {}
 
 --[[
 	TODO: delete fonts that you don't use
@@ -40,9 +40,7 @@ local families = {
 
 	["DejaVu Sans"] = "DV",
 
-	["Sydnie"] = "SYD",
-
-	["Remington Noiseless"] = "WEIRD",
+	["Sydnie"] = "SYD"
 }
 
 FontFamilies = families

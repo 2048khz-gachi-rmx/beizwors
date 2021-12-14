@@ -8,6 +8,7 @@ ENT.TransmitRadius 	= 200
 
 ENT.PowerGenerated 	= 0
 ENT.IsSolarPanel = true
+ENT.MaxLevel = 1
 
 BaseWars.Solar = BaseWars.Solar or {}
 BaseWars.Solar.SkylessPower = 4

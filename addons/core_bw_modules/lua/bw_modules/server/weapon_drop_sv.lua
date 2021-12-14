@@ -57,6 +57,8 @@ hook.Add("PlayerDeath", "DropWeapon", function(ply)
 	local wep = ply:ActiveWeaponWorkaround()
 	if IsValid(wep) then
 		local wp = ply:BW_DropWeapon(wep, nil, true)
+		if not wp then return end
+
 		wp:SetPos(ply:EyePos())
 		wp:SetAngles(ply:EyeAngles())
 		local vel = ply:GetVelocity()

@@ -165,8 +165,8 @@ function ENT:QueueRefine(ply, inv, item, slot, bulk)
 		local ins = 0
 
 		for i=1, self.OreInput.MaxItems do
-			if self.OreInput.Slots[i] then print("nope") continue end
-			if ins >= amt or not item:IsValid() then print("Item invalid") break end
+			if self.OreInput.Slots[i] then continue end
+			if ins >= amt or not item:IsValid() then break end
 
 			local ok, pr = xpcall(self.AddInputItem, GenerateErrorer("Refinery"),
 				self, inv, item, i)

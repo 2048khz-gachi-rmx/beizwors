@@ -31,6 +31,41 @@ end
 
 ENT.GetPower = ENT.IsPowered
 
+function ENT:GetBaseConsumption()
+	local ent_base = scripted_ents.GetStored(self:GetClass()).t
+	return ent_base.PowerRequired or self.PowerRequired
+end
+
+function ENT:SetConsumption(pw)
+	self.PowerRequired = math.floor(pw)
+
+	if self:GetPowerGrid() then
+		self:GetPowerGrid():UpdatePowerOut()
+	end
+end
+
+function ENT:SetConsumptionMult_Add(id, amt)
+	local old = self.ConsumptionMults[id] or 1
+	local new_total = self.CurConsumptionMult - old + amt
+	self.CurConsumptionMult = new_total
+	self.ConsumptionMults[id] = amt
+
+	self:SetConsumption(self:GetBaseConsumption() * self:GetTotalConsumptionMult())
+end
+
+function ENT:SetConsumptionMult_Mult(id, amt)
+	local old = self.ConsumptionMultsExp[id] or 1
+	local new_total = self.CurConsumptionExp - old + amt
+	self.CurConsumptionExp = new_total
+	self.ConsumptionMultsExp[id] = amt
+
+	self:SetConsumption(self:GetBaseConsumption() * self:GetTotalConsumptionMult())
+end
+
+function ENT:GetTotalConsumptionMult()
+	return self.CurConsumptionMult * self.CurConsumptionExp
+end
+
 function ENT:SetupDataTables()
 	baseclass.Get(base).SetupDataTables(self)
 
@@ -77,13 +112,19 @@ if SERVER then
 	end
 
 	function ENT:Initialize()
-		baseclass.Get("bw_base").Initialize(self)
+		self:BaseRecurseCall("Initialize")
+		--baseclass.Get("bw_base").Initialize(self)
+		self.ConsumptionMults = {}
+		self.ConsumptionMultsExp = {}
+		self.CurConsumptionMult = 1
+		self.CurConsumptionExp = 1
 	end
 
 else
 
 	function ENT:Initialize()
-		baseclass.Get("bw_base").Initialize(self)
+		self:BaseRecurseCall("Initialize")
+		--baseclass.Get("bw_base").Initialize(self)
 	end
 
 end
