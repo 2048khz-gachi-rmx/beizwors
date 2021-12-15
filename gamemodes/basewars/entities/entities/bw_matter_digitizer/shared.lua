@@ -1,6 +1,6 @@
 AddCSLuaFile()
 
-ENT.Base = "bw_base_electronics"
+ENT.Base = "bw_base_upgradable"
 ENT.Type = "anim"
 ENT.PrintName = "Matter Digitizer"
 
@@ -26,4 +26,8 @@ ENT.SubModels = {
 }
 function ENT:DerivedDataTables()
 
+end
+
+function ENT:GetTransferRate()
+	return 2 ^ self:GetLevel() * 250
 end

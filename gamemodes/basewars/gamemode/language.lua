@@ -47,6 +47,11 @@ Strings.NoPower 		= "No power!"
 Strings.NoCharges 		= "No charges!"
 Strings.NoHealth 		= "Low health!"
 Strings.NoPrinters 	= "Target does not have enough printers!"
+
+Strings.PerSecond = "/s."
+Strings.PerTick = "/t."
+
+Strings.Power = "%spw"
 Strings.PowerGen 	= "+%spw"
 Strings.PowerGenManual 	= "+%spw/use"
 Strings.PowerStored = "%spw"
@@ -118,7 +123,6 @@ else
 end
 
 Strings.Health 			= "Health: %s/%s"
-Strings.Power 				= "Power: %s/%s"
 
 Strings.Yes = "Yes"
 Strings.No = "No"

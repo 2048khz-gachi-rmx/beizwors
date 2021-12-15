@@ -14,6 +14,8 @@ function ENT:SendItem(slot, itm)
 end
 
 function ENT:MakeToFrom(width, vault, bp)
+	local ent = self
+
 	local toVt = vgui.Create("GradPanel")
 	toVt:Bond(vault)
 	toVt:SetColor(Colors.DarkGray)
@@ -21,7 +23,7 @@ function ENT:MakeToFrom(width, vault, bp)
 	toVt:CenterHorizontal()
 	toVt.Y = bp.Y + bp:GetTall() * 0.25
 
-	local arrSize = toVt:GetTall() * 0.75
+	local arrSize = toVt:GetTall() * 0.4
 	local total_h, hdH, pwH, tmH = draw.GetFontHeights("OSB24", "BS20", "OS18")
 
 	local ic = Icons.Electricity:Copy()
@@ -47,16 +49,29 @@ function ENT:MakeToFrom(width, vault, bp)
 
 		local iw, ih = ic:Paint(x, y, icSz, icSz)
 
-		draw.SimpleText("1337420pw", "BS20",
-			x + iw, y, Colors.LighterGray)
+		if self.Cost then
+			draw.SimpleText(Language("Power", self.Cost), "BS18",
+				x + iw, y, Colors.LighterGray)
+		end
+
 		y = y + pwH + 2
 
 		icSz = 16
 		x = x + 2
 		local iw, ih = clock:Paint(x, y + tmH / 2 - icSz / 2, icSz, icSz)
 
-		draw.SimpleText("99:99", "BS20",
-			x + iw + 2, y, Colors.LighterGray)
+		if self.Cost then
+			local time = self.Cost / ent:GetTransferRate() * BaseWars.Bases.PowerGrid.ThinkInterval
+			local tStr = string.FormattedTime(time, "%02d:%02d")
+			local rStr = ("    - %s%s"):format(Language("Power", ent:GetTransferRate()),
+				Language("PerTick"))
+
+			draw.SimpleText(tStr, "BS18",
+				x + iw + 2, y, Colors.LighterGray)
+			surface.SetFont("EXM16")
+			surface.DrawText(rStr)
+		end
+
 		y = y + tmH
 	end
 
@@ -84,22 +99,52 @@ function ENT:MakeToFrom(width, vault, bp)
 
 		local icSz = pwH
 
-		
-
 		local iw, ih = ic:Paint(x, y, icSz, icSz)
 
-		draw.SimpleText("1337420pw", "BS20",
-			x + iw, y, Colors.LighterGray)
+		if self.Cost then
+			draw.SimpleText(Language("Power", self.Cost), "BS18",
+				x + iw, y, Colors.LighterGray)
+		end
+
 		y = y + pwH + 2
 
 		icSz = 16
 		x = x + 2
 		local iw, ih = clock:Paint(x, y + tmH / 2 - icSz / 2, icSz, icSz)
 
-		draw.SimpleText("99:99", "BS20",
-			x + iw + 2, y, Colors.LighterGray)
+		if self.Cost then
+			local time = self.Cost / ent:GetTransferRate() * BaseWars.Bases.PowerGrid.ThinkInterval
+			local tStr = string.FormattedTime(time, "%02d:%02d")
+			local rStr = ("    - %s%s"):format(Language("Power", ent:GetTransferRate()),
+				Language("PerTick"))
+
+			draw.SimpleText(tStr, "BS18",
+				x + iw + 2, y, Colors.LighterGray)
+			surface.SetFont("EXM16")
+			surface.DrawText(rStr)
+		end
 		y = y + tmH
 	end
+
+	hook.Add("InventoryItemHovered", toVt, function(_, itFr, itm)
+		if not itm then return end
+
+		if itm:GetInventory().IsVault then
+			fromVt.Cost = itm:GetTransferCost()
+		elseif itm:GetInventory().IsBackpack then
+			toVt.Cost = itm:GetTransferCost()
+		end
+	end)
+
+	hook.Add("InventoryItemUnhovered", toVt, function(_, itFr, itm)
+		if not itm then return end
+
+		--[[if itm:GetInventory().IsVault then
+			fromVt.Cost = nil
+		elseif itm:GetInventory().IsBackpack then
+			toVt.Cost = nil
+		end]]
+	end)
 end
 function ENT:OpenMenu()
 	local frSize = ScrW() < 1200 and 500 or
