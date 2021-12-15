@@ -214,7 +214,8 @@ DarkHUD.RoundedBoxCorneredSize = RoundedBoxCorneredSize
 
 
 function DarkHUD.PaintBar(rad, x, y, w, h,
-	frac, col_empty, col_border, col_main, textData, allow_stencils)
+	frac, col_empty, col_border, col_main, textData, allow_stencils,
+	inverse)
 
 	frac = math.min(frac, 1)
 
@@ -224,9 +225,14 @@ function DarkHUD.PaintBar(rad, x, y, w, h,
 	h = math.ceil(h)
 
 	local bw = math.ceil(w * frac)
+	local orig_x = x
 
 	if frac ~= 1 and col_empty then
 		draw.RoundedBox(rad, x, y, w, h, col_empty or Colors.Gray)
+	end
+
+	if inverse then
+		x = x + w - bw
 	end
 
 	local stencil = false
@@ -263,7 +269,7 @@ function DarkHUD.PaintBar(rad, x, y, w, h,
 		local unfill = textData.Unfilled or color_black
 		local text = textData.Text or "??"
 
-		local tx, ty = math.floor(x + w / 2), math.floor(y + h / 2)
+		local tx, ty = math.floor(orig_x + w / 2), math.floor(y + h / 2)
 
 		draw.DrawOp(1)
 
