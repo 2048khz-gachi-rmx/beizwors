@@ -49,6 +49,8 @@ local lastDealt = CurTime()
 timer.Create("VenomThink", venomFreq, 0, function()
 	if table.IsEmpty(Venom.Tracker) then lastDealt = CurTime() return end
 
+	Venom.Active = true
+
 	local cur = CurTime()
 	local passed = cur - lastDealt
 	local fullDeal = passed * venomDPS
@@ -70,6 +72,8 @@ timer.Create("VenomThink", venomFreq, 0, function()
 
 		ply:TakeDamageInfo(din)
 	end
+
+	Venom.Active = false
 end)
 
 hook.Add("PlayerStimInjected", "DeVenom", function(ply, dat)
