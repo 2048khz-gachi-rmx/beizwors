@@ -84,30 +84,25 @@ end
 function dragndrop.StartDragging()
 
 	if ( !dragndrop.m_DragWatch:IsSelected() ) then
-
 		dragndrop.m_Dragging = { dragndrop.m_DragWatch }
-
 	else
-
 		local canvas = dragndrop.m_DragWatch:GetSelectionCanvas()
 		dragndrop.m_Dragging = {}
 
 		for k, v in pairs( canvas:GetSelectedChildren() ) do
-
 			if ( !v.m_DragSlot ) then continue end
-
 			table.insert( dragndrop.m_Dragging, v )
-
 		end
-
 	end
 
 	for k, v in pairs( dragndrop.m_Dragging ) do
-
 		if ( !IsValid( v ) ) then continue end
-
 		v:OnStartDragging()
+	end
 
+	-- cleared during callbacks?
+	if not dragndrop.m_Dragging then
+		return
 	end
 
 	dragndrop.m_DraggingMain = dragndrop.m_DragWatch

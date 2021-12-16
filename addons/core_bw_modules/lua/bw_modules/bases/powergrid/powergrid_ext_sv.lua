@@ -278,6 +278,12 @@ function pg:Think()
 			self:UnpowerEnt(ent)
 		end
 	end
+
+	for ent, _ in pairs(self._PoweredEnts) do
+		if ent.PoweredThink then
+			ent:PoweredThink(ent.PowerRequired)
+		end
+	end
 end
 
 function pg:UpdateNW(plys)
@@ -306,7 +312,7 @@ end)
 local lastThink = CurTime()
 
 hook.Add("Tick", "PowerGrid_Tick", function()
-	if CurTime() < lastThink + pg.ThinkInterval then return end
+	if CurTime() < lastThink then return end
 
 	lastThink = CurTime() + pg.ThinkInterval
 

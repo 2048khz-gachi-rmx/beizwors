@@ -23,6 +23,8 @@ end
 vgui.ToPrePostPaint(PANEL)
 
 function PANEL:Draw(w, h)
+	if self.NoDraw or self.NoDrawBG then return end
+
 	surface.SetDrawColor(self.Color:Unpack())
 	surface.DrawRect(0, 0, w, h)
 

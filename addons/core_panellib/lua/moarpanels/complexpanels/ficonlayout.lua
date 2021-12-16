@@ -7,7 +7,6 @@ FIconLayout
 local FIC = {}
 
 function FIC:Init()
-
 	self.PadX = 4 -- distance between the bounds and the insides
 	self.PadY = 8
 
@@ -16,7 +15,6 @@ function FIC:Init()
 
 	self.MarginX = 4 -- distance between panels inside
 	self.MarginY = 8
-	self.AutoMargin = false
 
 	self.IncompleteCenter = true
 
@@ -39,21 +37,6 @@ ChainAccessor(FIC, "MarginY", "SpaceY")
 
 function FIC:SetBorder(n)
 	self.PadX, self.PadY = n, n
-end
-
-function FIC:SetColor(col, g, b, a)
-	if IsColor(col) then self.Color = col return end
-
-	local c = self.Color
-	c.r = col or 70
-	c.g = g or 70
-	c.b = b or 70
-	c.a = a or 255
-end
-
-function FIC:Paint(w, h)
-	if self.NoDraw or self.NoDrawBG then return end
-	draw.RoundedBox(8, 0, 0, w, h, self.Color)
 end
 
 function FIC:ShiftPanel(pnl, x, y)
@@ -197,7 +180,7 @@ function FIC:Add(name)
 	return p
 end
 
-vgui.Register("FIconLayout", FIC, "Panel")
+vgui.Register("FIconLayout", FIC, "GradPanel")
 
 
 --[[if IsValid(_Pn) then _Pn:Remove() end

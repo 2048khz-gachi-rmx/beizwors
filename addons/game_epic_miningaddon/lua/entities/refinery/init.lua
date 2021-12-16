@@ -228,9 +228,11 @@ net.Receive("OreRefinery", function(len, ply)
 	if not ply:Alive() then return end
 
 	local ent = net.ReadEntity()
+	if ply:Distance(ent) > 192 then return end
+
 	local self = ent
 
-	local inv = Inventory.Networking.ReadInventory()
+	local inv = Inventory.Networking.ReadInventory(ply)
 	local item = Inventory.Networking.ReadItem(inv)
 
 	if not inv.IsBackpack then print("inventory is not a backpack") return end

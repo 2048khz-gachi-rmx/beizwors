@@ -8,7 +8,9 @@ ENT.Model = "models/props_combine/combine_mortar01b.mdl"
 ENT.Skin = 0
 
 ENT.CanTakeDamage = true
-ENT.NoHUD = false
+ENT.IsMatterDigitizer = true
+ENT.MaxQueues = 3
+ENT.IdleRate = 10
 
 ENT.SubModels = {
 	{
@@ -22,12 +24,84 @@ ENT.SubModels = {
 		Model    = "models/props_combine/combinebutton.mdl",
 		Pos      = Vector (-  0.28220677375793,    2.2998285293579 ,   42.15901184082   )
 	}
-
 }
+
+ENT.Levels = {
+	{
+		Cost = 0,
+	}, {
+		Cost = 75e6,
+	}, {
+		Cost = 600e6,
+	}, {
+		Cost = 2.5e9,
+	}, {
+		Cost = 50e9,
+	}
+}
+
+function ENT:OnFinalUpgrade()
+	self:BaseRecurseCall("OnFinalUpgrade")
+	self:UpdateState()
+end
+
 function ENT:DerivedDataTables()
 
 end
 
 function ENT:GetTransferRate()
-	return 2 ^ self:GetLevel() * 250
+	return 2 ^ (self:GetLevel() - 1) * 200
+end
+
+function ENT:UpdateState()
+	local has_its = false
+
+	for k,v in pairs(self.InVault:GetSlots()) do
+		if self.Status:Get(k) < v:GetTotalTransferCost() then
+			has_its = true
+			break
+		end
+	end
+
+	self.PowerRequired = has_its and self:GetTransferRate() or self.IdleRate
+
+	if self:GetPowerGrid() then
+		self:GetPowerGrid():UpdatePowerOut()
+	end
+end
+
+function ENT:CanFromBuf(inv, ply, itm, toInv)
+	if toInv.IsBackpack then return true end
+	if toInv.IsVault and self.Status:Get(itm:GetSlot(), 0) >= itm:GetTotalTransferCost() then
+		return true
+	end
+
+	return false
+end
+
+function ENT:CanToBuf(inv, ply, itm, toInv)
+	if toInv and not toInv.IsBackpack then return false end
+end
+
+function ENT:CreateInventories()
+	self.Inventory = {
+		Inventory.Inventories.Entity:new(self)
+	}
+
+	self.InVault = self.Inventory[1]
+	self.InVault.MaxItems = self.MaxQueues
+	self.InVault.SupportsSplit = false
+
+	self.InVault.ActionCanCrossInventoryFrom = function(...)
+		return self:CanFromBuf(...)
+	end
+
+	self.InVault.ActionCanCrossInventoryTo = function(inv, ply, ...)
+		return self:CanToBuf(...)
+	end
+
+	self.want = {}
+
+	self.Status = Networkable("MDig:" .. self:EntIndex())
+	self.Status:Bind(self)
 end

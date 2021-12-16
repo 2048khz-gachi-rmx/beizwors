@@ -89,7 +89,10 @@ net.Receive("Workbench", function(_, ply)
 
 	if bp then
 		-- crafting from blueprint
-		local it = nw.ReadItem(nw.ReadInventory())
+		local inv = nw.ReadInventory(ply)
+		if not inv.IsBackpack then print("inventory not backpack", ply, inv) return false end
+
+		local it = nw.ReadItem(inv)
 		if not it or not it.IsBlueprint then
 			print("not valid item", ply, it, it and it.Blueprint)
 			return

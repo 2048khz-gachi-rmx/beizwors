@@ -215,6 +215,16 @@ function PLAYER:IsSubscribed(ent)
 	return ent:IsSubscribed(self)
 end
 
+function PLAYER:GetSubscribedTo()
+	local ret = {}
+	for k,v in pairs(subs[self] or {}) do
+		if not v[1]:IsValid() then continue end
+		ret[#ret + 1] = v[1]
+	end
+
+	return ret
+end
+
 hook.Add("FinishMove", "EntitySubscriptions", function(pl, mv)
 	if not subs[pl] then return end
 
