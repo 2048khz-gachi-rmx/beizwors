@@ -23,6 +23,9 @@ local lookupCache = setmetatable({}, {__mode = "k"})
 EntTableLookup = lookupCache
 
 local ENTITY = FindMetaTable("Entity")
+local WEAPON = FindMetaTable("Weapon")
+
+local get_table = ENTITY.GetTable
 
 function ENTITY:__index( key )
 	local val = ENTITY[key]
@@ -31,7 +34,7 @@ function ENTITY:__index( key )
 	local tab = lookupCache[self]
 
 	if not tab then
-		tab = self:GetTable()
+		tab = get_table(self)
 		lookupCache[self] = tab
 	end
 
@@ -44,7 +47,6 @@ function ENTITY:__index( key )
 	if ( key == "Owner" ) then return ENTITY.GetOwner( self ) end
 
 	return nil
-
 end
 
 ENTITY._oldSetTable = ENTITY._oldSetTable or ENTITY.SetTable
@@ -52,6 +54,36 @@ function ENTITY:SetTable(t)
 	lookupCache[self] = t
 	ENTITY._oldSetTable(self, t)
 end
+
+function WEAPON:__index( key )
+	-- weapon meta
+	local val = WEAPON[key]
+	if ( val != nil ) then return val end
+
+	-- ent meta
+	local val = ENTITY[key]
+	if ( val != nil ) then return val end
+
+	-- cached instance table
+	local tab = lookupCache[self]
+
+	if !tab then
+		tab = get_table(self)
+		lookupCache[self] = tab
+	end
+
+	if ( tab != nil ) then
+		local val = tab[ key ]
+		if ( val != nil ) then return val end
+	end
+
+	-- shitfuck
+	if ( key == "Owner" ) then return entity.GetOwner( self ) end
+	
+	return nil
+end
+
+
 
 function ENTITY:Subscribe(ply, dist, onunsub, addtwice)
 

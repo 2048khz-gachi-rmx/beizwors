@@ -54,6 +54,7 @@ end
 	Desc: Quick trace
 -----------------------------------------------------------]]
 function util.QuickTrace( origin, dir, filter )
+
 	local trace = {}
 
 	trace.start = origin
@@ -61,6 +62,7 @@ function util.QuickTrace( origin, dir, filter )
 	trace.filter = filter
 
 	return util.TraceLine( trace )
+
 end
 
 
@@ -116,6 +118,7 @@ function util.StringToType( str, typename )
 	if ( typename == "int" )	then return math.Round( tonumber( str ) ) end
 	if ( typename == "bool" )	then return tobool( str ) end
 	if ( typename == "string" )	then return tostring( str ) end
+	if ( typename == "entity" )	then return Entity( str ) end
 
 	MsgN( "util.StringToType: unknown type \"", typename, "\"!" )
 
