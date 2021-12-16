@@ -61,7 +61,7 @@ function WEAPON:__index( key )
 	if ( val != nil ) then return val end
 
 	-- ent meta
-	local val = ENTITY[key]
+	val = ENTITY[key]
 	if ( val != nil ) then return val end
 
 	-- cached instance table
@@ -73,13 +73,13 @@ function WEAPON:__index( key )
 	end
 
 	if ( tab != nil ) then
-		local val = tab[ key ]
+		val = tab[ key ]
 		if ( val != nil ) then return val end
 	end
 
 	-- shitfuck
-	if ( key == "Owner" ) then return entity.GetOwner( self ) end
-	
+	if ( key == "Owner" ) then return ENTITY.GetOwner( self ) end
+
 	return nil
 end
 

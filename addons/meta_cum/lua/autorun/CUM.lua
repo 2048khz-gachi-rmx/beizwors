@@ -86,7 +86,7 @@ hook.Add("OnMySQLReady", "CUM", function()
 	end
 end)
 
-hook.Add("AowlCommandAdded", function(name)
+hook.Add("AowlCommandAdded", "CUM_Aowl", function(name)
 	if CUM.cmds[name] then aowl.cmds[name] = nil end
 end)
 
