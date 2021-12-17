@@ -4,8 +4,12 @@ local PLAYER = FindMetaTable("Player")
 local bw = BaseWars.Bases
 local nw = bw.NW
 
+local lp
+
 function PLAYER:BW_GetBase()
-	if self ~= LocalPlayer() then
+	lp = lp or LocalPlayerG
+
+	if self ~= LocalPlayerG then
 		errorf("You can only get base of LocalPlayer! (tried to get %s's base)", self)
 		return
 	end
@@ -17,7 +21,7 @@ function PLAYER:BW_GetBase()
 end
 
 function PLAYER:BW_GetZone()
-	if self ~= LocalPlayer() then
+	if self ~= LocalPlayerG then
 		errorf("You can only get zone of LocalPlayer! (tried to get %s's zone)", self)
 		return
 	end

@@ -310,3 +310,24 @@ function PLAYER:GetEyeTraceNoCursor()
 
 	return tr
 end
+
+local lp
+LocalPlayerG = LocalPlayerG
+
+function CachedLocalPlayer()
+	if not lp then
+		local clp = LocalPlayer()
+		lp = clp:IsValid() and clp
+		LocalPlayerG = lp
+	end
+
+	return lp
+end
+
+if CLIENT then
+	hook.Add("Think", "CacheLP", function()
+		if CachedLocalPlayer():IsValid() then
+			hook.Remove("Think", "CacheLP")
+		end
+	end)
+end
