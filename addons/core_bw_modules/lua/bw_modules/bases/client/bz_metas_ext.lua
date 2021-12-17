@@ -8,6 +8,7 @@ local lp
 
 function PLAYER:BW_GetBase()
 	lp = lp or LocalPlayerG
+	if not lp then return end
 
 	if self ~= LocalPlayerG then
 		errorf("You can only get base of LocalPlayer! (tried to get %s's base)", self)
@@ -21,6 +22,8 @@ function PLAYER:BW_GetBase()
 end
 
 function PLAYER:BW_GetZone()
+	if not lp then return end
+
 	if self ~= LocalPlayerG then
 		errorf("You can only get zone of LocalPlayer! (tried to get %s's zone)", self)
 		return
