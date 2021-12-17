@@ -38,3 +38,5 @@ end
 function ENTITY:BW_GetBase()
 	return BaseWars.Bases.EntIDToBase[self:EntIndex()]
 end
+
+print("abcdef")
