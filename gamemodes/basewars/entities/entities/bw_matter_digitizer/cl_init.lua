@@ -148,7 +148,14 @@ function ENT:MakeToFrom(width, vault, bp)
 		if not itm then return end
 
 		if itFr.IsBuffer then
-			vault:Highlight()
+			local it = itFr:GetItem(true)
+			local pwNeed = it:GetTotalTransferCost()
+			local fr = math.Remap(ent.Status:Get(itFr:GetSlot(), 0), 0, pwNeed, 0, 1)
+
+			if fr >= 1 then
+				vault:Highlight()
+				return
+			end
 		end
 
 		if not itm:GetInventory().IsBackpack then return end
@@ -214,13 +221,13 @@ function ENT:MakeItemFrames(betweenW, vault, bp, inVt, outVt)
 		end)
 
 		sl:On("CanDrag", "CanTransfer", function(self, w, h)
-			local it = self:GetItem(true)
+			--[[local it = self:GetItem(true)
 			local pwNeed = it:GetTotalTransferCost()
 			local fr = math.Remap(ent.Status:Get(i, 0), 0, pwNeed, 0, 1)
 
 			if fr ~= 1 then
 				return false
-			end
+			end]]
 		end)
 
 		sl.IsBuffer = true
@@ -331,7 +338,6 @@ function ENT:OpenMenu()
 		ent:SendItem(dropOn:GetSlot(), item)
 	end
 
-	printf("em on %p, %p", vt:GetInventoryPanel(), inv:GetInventoryPanel())
 	vt:GetInventoryPanel():On("CanSplit", "NoCross", function(self, itm, inv2)
 		if self:GetInventory() ~= inv2 then return false end
 	end)
@@ -352,7 +358,6 @@ function ENT:OpenMenu()
 		if itmPnl:GetInventory().IsBackpack then return end
 
 		if itmPnl:GetInventory().IsVault then
-			print("dropped from vault to inv", itmPnl:GetSlot())
 			self:FetchItem(itmPnl:GetSlot(), item)
 			return false
 		end

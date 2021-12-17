@@ -40,34 +40,12 @@ ENT.Levels = {
 	}
 }
 
-function ENT:OnFinalUpgrade()
-	self:BaseRecurseCall("OnFinalUpgrade")
-	self:UpdateState()
-end
-
 function ENT:DerivedDataTables()
 
 end
 
 function ENT:GetTransferRate()
-	return 2 ^ (self:GetLevel() - 1) * 200
-end
-
-function ENT:UpdateState()
-	local has_its = false
-
-	for k,v in pairs(self.InVault:GetSlots()) do
-		if self.Status:Get(k) < v:GetTotalTransferCost() then
-			has_its = true
-			break
-		end
-	end
-
-	self.PowerRequired = has_its and self:GetTransferRate() or self.IdleRate
-
-	if self:GetPowerGrid() then
-		self:GetPowerGrid():UpdatePowerOut()
-	end
+	return 1.5 ^ (self:GetLevel() - 1) * 750
 end
 
 function ENT:CanFromBuf(inv, ply, itm, toInv)

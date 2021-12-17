@@ -10,7 +10,8 @@ function ENT:Init(me)
 end
 
 function ENT:Think()
-	self:NextThink(CurTime() + 1)
+	self:NextThink(CurTime() + 5)
+	self:UpdateState()
 	return true
 end
 
@@ -104,7 +105,6 @@ hook.Add("Vault_CanMoveFrom", "Digitizer", function(inv, ply, itm, inv2, slot)
 
 	if not found then return end
 
-	print("moveFrom: amt", itm, itm:GetAmount())
 	local cost = itm:GetTotalTransferCost() --it.AttemptSplit)
 	local grid = found:GetPowerGrid()
 
@@ -113,18 +113,6 @@ hook.Add("Vault_CanMoveFrom", "Digitizer", function(inv, ply, itm, inv2, slot)
 
 	return true
 end)
-
-function ENT:RequestFromVault(ply)
-	local inv = Inventory.Networking.ReadInventory(ply)
-	local item = Inventory.Networking.ReadItem(inv)
-
-	if not inv.IsVault then print("vault > backpack: not vault") return false end
-	if not item then print("vault > backpack: no item") return false end
-
-	local bp = ply:GetBackpack()
-	local slot = net.ReadUInt(bp:GetSlotBits())
-	print("RequestFromVault", item, slot)
-end
 
 net.Receive("mdigitizer", function(len, ply)
 	if not ply:Alive() then return end
@@ -139,7 +127,30 @@ net.Receive("mdigitizer", function(len, ply)
 
 	if in_vault then
 		ent:RequestInVault(ply)
-	else
-		ent:RequestFromVault(ply)
+	--[[else
+		ent:RequestFromVault(ply)]]
 	end
 end)
+
+
+function ENT:OnFinalUpgrade()
+	self:BaseRecurseCall("OnFinalUpgrade")
+	self:UpdateState()
+end
+
+function ENT:UpdateState()
+	local has_its = false
+
+	for k,v in pairs(self.InVault:GetSlots()) do
+		if self.Status:Get(k, 0) < v:GetTotalTransferCost() then
+			has_its = true
+			break
+		end
+	end
+
+	self.PowerRequired = has_its and self:GetTransferRate() or self.IdleRate
+
+	if self:GetPowerGrid() then
+		self:GetPowerGrid():UpdatePowerOut()
+	end
+end
