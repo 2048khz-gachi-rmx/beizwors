@@ -1,3 +1,4 @@
+setfenv(1, _G)
 LibItUp.SetIncluded()
 
 --[[
@@ -116,7 +117,10 @@ function benchmark:__tostring(...)
 
 	if self.Frames then
 		local st = ST()
-		str = str .. (" (avg. across %d calls: %.3fms, time since last print: %.3fms)"):format(self.Frames, ms / self.Frames, InMS(st - self._LastPrint))
+		local sinceLast = InMS(st - self._LastPrint)
+		str = str .. (" (avg. across %d calls: %.3fms, since print: %.3fms; %.3f%%)"):format(
+			self.Frames, ms / self.Frames, sinceLast, ms / sinceLast * 100
+		)
 	end
 
 	return str
