@@ -50,7 +50,7 @@ hook.Add("PostDrawTranslucentRenderables", "DrawBWZones", function(b, s)
 		k:Draw()
 	end
 
-	if CurTime() - lastPaintUpdate > 0.1 then
+	if CurTime() - lastPaintUpdate > 1 then
 		lastPaintUpdate = CurTime()
 		for k,v in pairs(bw.Zones) do
 			v:UpdatePainted()
