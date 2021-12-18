@@ -143,6 +143,25 @@ function tag:Run(buffer, ...)
 	self.Ended = false
 end
 
+function tag:RunModify(buffer, ...)
+
+	local args = {}
+
+	for k, arg in pairs(self.Args) do
+		if isfunction(arg) then
+			args[#args + 1] = eval_exp(self, k, arg, ...)
+		else
+			args[#args + 1] = arg
+		end
+	end
+
+	if self.BaseTag.ModifyBuffer then
+		self.BaseTag.ModifyBuffer(self.TagBuffer, buffer, args, self.Panel)
+	end
+
+	self.Ended = false
+end
+
 function tag:End(buffer)
 	local args = {}
 
@@ -234,6 +253,7 @@ function buf:Initialize(w)
 	self.y = 0
 
 	self.width = w
+	self.Line = 1
 	self:SetAlignment(0)
 end
 
@@ -254,11 +274,12 @@ function buf:GetFont()
 	return self.Font
 end
 
-ChainAccessor(buf, "TextHeight", "TextHeight")
+ChainAccessor(buf, "TextHeight", "TextHeight", true)
 
 function buf:Reset()
 	self.LastY = self.y + self:GetTextHeight()
 	self:SetPos(0, 0)
+	self.Line = 1
 	self:Emit("Reset")
 end
 
@@ -283,15 +304,24 @@ function buf:AllocateSpace(w, h)
 		self:Newline(1, math.max(h / 2, self:GetTextHeight()))
 	end
 
+	self.x = self.x + w
 	self.TempHeight = math.max(h, self:GetTextHeight())
+	print("set height", self.TempHeight)
 end
 
 function buf:Newline(times, h)
+	
 	times = times or 1
-	local y = times * (h or self:GetTextHeight())
+	local lH = h or self:GetTextHeight()
+	local y = times * lH
 	self.TempHeight = nil
 	self:Offset(0, y)
-	self:Emit("Newline", y)
+
+	for i=1, times do
+		self:Emit("Newline", lH, self.Line)
+		self.Line = self.Line + 1
+	end
+
 	return y
 end
 
@@ -462,8 +492,6 @@ col:SetEnd(function(tag, buf, args)
 	buf:GetTextColor():Set(tag.curColor[1], tag.curColor[2], tag.curColor[3])
 end)
 
-
-
 local chtr = MarkupBaseTag("chartranslate")
 
 chtr:AddArg("number", 0)	--x
@@ -508,11 +536,8 @@ emote:AddArg("number", 32) --width
 emote:AddArg("number", 32) --height
 
 emote:SetDraw(function(tag, buf, args)
-
 	local emote = chathud.Emotes[args[1]]
 	if not emote then return end
-
-	buf:AllocateSpace(args[2], args[3])
 
 	surface.SetDrawColor(255, 255, 255)
 
@@ -520,6 +545,9 @@ emote:SetDraw(function(tag, buf, args)
 	emote:Paint(x, y, args[2], args[3])
 end)
 
+emote:SetModifyBuffer(function(tag, buf, args)
+	buf:AllocateSpace(args[2], args[3])
+end)
 
 local sc = MarkupBaseTag("scale")
 

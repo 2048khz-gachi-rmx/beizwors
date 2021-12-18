@@ -6,6 +6,7 @@ function PANEL:Init()
 	self.Elements = {}
 	self.Lines = {}			-- [lineNum] = startX
 	self.LineWidths = {}	-- [lineNum] = textWidth
+	self.LineHeights = {}
 
 	self.DrawQueue = {}
 	self.Texts = {}
@@ -22,10 +23,15 @@ function PANEL:Init()
 		buf:SetFont(self.Font)
 	end)
 
+	self.Buffer:On("Newline", self, function(buf, y, l)
+		self.LineHeights[l] = y
+	end)
+
 	self.Font = "OS24"
 
 	self.curX = 0
 	self.curY = 0
+	self._halign = 0
 
 	self.Selectable = true
 	self.Color = color_white:Copy()
@@ -121,7 +127,6 @@ end
 function PANEL:_GetDatSize(str, dat)
 	local wd = dat.WrapData
 	local tw, th = surface.GetTextSize(str)
-
 	if wd and wd.ScaleW then tw = tw * wd.ScaleW end
 	if wd and wd.ScaleH then th = th * wd.ScaleH end
 
@@ -134,6 +139,10 @@ end
 
 function PANEL:GetAlignment(al)
 	return self.Buffer:GetAlignment()
+end
+
+function PANEL:SetHAlignment(al) -- experimental
+	self._halign = al
 end
 
 function PANEL:Recalculate()
@@ -173,7 +182,6 @@ function PANEL:Recalculate()
 			end
 
 			local curX, curY = buf.x, buf.y
-			--print("calc:", v.text, curX, ownWide)
 			local wrapped, tw, th, times = self:CalculateTextSize(v)
 
 			local t = table.Copy(v)
@@ -254,7 +262,8 @@ function PANEL:Recalculate()
 				end
 			}
 
-		else
+		elseif IsTag(v) then
+			v:RunModify(buf)
 			self.DrawQueue[#self.DrawQueue + 1] = v --no custom handler; just add it
 		end
 
@@ -467,7 +476,9 @@ end
 
 
 function PANEL:PaintText(dat, buf, col)
-	surface.SetTextPos(dat.x, dat.y)
+	local h = self.LineHeights[dat.line] or dat.h
+
+	surface.SetTextPos(dat.x, (h - dat.h) * self._halign / 2 + dat.y)
 	if col then
 		surface.SetTextColor(col)
 	end
