@@ -23,20 +23,6 @@ function ENT:SendItem(slot, itm)
 	net.SendToServer()
 end
 
-function ENT:FetchItem(slot, itm)
-	print("Transferring item vault -> BP:", slot, itm)
-	local ns = Inventory.Networking.Netstack()
-
-	net.Start("mdigitizer")
-		net.WriteEntity(self)
-		net.WriteBool(false)
-		ns:WriteInventory(itm:GetInventory())
-		ns:WriteItem(itm)
-		ns:WriteUInt(slot, 8)
-		ns()
-	net.SendToServer()
-end
-
 local overlap = 8
 
 function ENT:MakeToFrom(width, vault, bp)
@@ -46,7 +32,7 @@ function ENT:MakeToFrom(width, vault, bp)
 
 	local toVt = vgui.Create("GradPanel")
 	toVt:Bond(vault)
-	toVt:SetColor(Colors.DarkGray)
+	toVt:SetColor(Colors.Gray)
 	toVt:SetSize(width, height + overlap)
 	toVt:CenterHorizontal()
 	toVt.Y = bp.Y + bp:GetTall() * 0.25
@@ -112,7 +98,7 @@ function ENT:MakeToFrom(width, vault, bp)
 
 	local fromVt = vgui.Create("GradPanel")
 	fromVt:Bond(vault)
-	fromVt:SetColor(Colors.DarkGray)
+	fromVt:SetColor(Colors.Gray)
 	fromVt:SetSize(width, 64)
 	fromVt:CenterHorizontal()
 	fromVt.Y = vault.Y + vault:GetTall() * 0.75 - fromVt:GetTall()
@@ -195,6 +181,9 @@ function ENT:MakeItemFrames(betweenW, vault, bp, inVt, outVt)
 	hold:Bond(vault)
 	hold:SetSize(betweenW - 16, 80)
 	hold:Center()
+	hold:DockPadding(8, 8 + 4, 8, 28)
+	hold:SetColor(Colors.DarkGray)
+	hold.UseDockProperties = true
 	hold.MarginX = 8
 
 	hold.Y = inVt.Y + inVt:GetTall() - overlap
@@ -230,22 +219,27 @@ function ENT:MakeItemFrames(betweenW, vault, bp, inVt, outVt)
 			end]]
 		end)
 
+		-- vault <- digitizer -> backpack
 		sl:On("Click", "Transfer", function(self)
 			if not self:GetItem(true) then return end
 
 			if input.IsControlDown() then
 				local it = self:GetItem(true)
-				it:SetInventory(nil)
 
-				local left, a, b = LocalPlayer():GetBackpack()
-					:StackInfo(self:GetItem(true))
+				local pw = ent.Status:Get(self:GetSlot(), 0) == it:GetTotalTransferCost()
 
-				print("Ret:", left, a, b)
-				if left then
-					it:SetInventory(self:GetInventory())
+				if pw then
+					-- charged items go to vault
+					LocalPlayer():GetVault()
+						:RequestPickup(self:GetItem(true))
 				else
-					self:GetInventory():RemoveItem(it)
+					-- uncharged items go to backpack
+					LocalPlayer():GetBackpack()
+						:RequestPickup(self:GetItem(true))
 				end
+
+				--[[LocalPlayer():GetBackpack()
+					:StackInfo(self:GetItem(true))]]
 			end
 		end)
 		sl.IsBuffer = true
@@ -262,7 +256,6 @@ function ENT:MakeItemFrames(betweenW, vault, bp, inVt, outVt)
 		local cost = itm:GetTotalTransferCost()
 		local grid = ent:GetPowerGrid()
 
-		print(grid, cost, grid:HasPower(cost))
 		if not grid then return false end
 		if not grid:HasPower(cost) then return false end
 
@@ -279,6 +272,12 @@ function ENT:MakeItemFrames(betweenW, vault, bp, inVt, outVt)
 	function hold:Dehighlight()
 		self:LerpColor(self.GradColor, color_black, 0.2, 0, 0.3)
 		self:To("GradSize", 4, 0.1, 0, 0.3)
+	end
+
+	function hold:PostPaint(w, h)
+		for k,v in pairs(self.Panels) do
+			print(v)
+		end
 	end
 
 	return hold
@@ -321,7 +320,7 @@ function ENT:OpenMenu()
 
 	local fromVt, inVt = self:MakeToFrom(betweenW, vt, inv)
 	local itQ = self:MakeItemFrames(betweenW, vt, inv, inVt, fromVt)
-
+	itQ:SetZPos(fromVt:GetZPos() - 1)
 	-- inv:DoAnim()
 
 	vt:MakePopup()
@@ -365,19 +364,30 @@ function ENT:OpenMenu()
 		if self:GetInventory() ~= inv2 then return false end
 	end)
 
+	-- backpack -> digitizer
+	inv:GetInventoryPanel():On("Click", "Transfer", function(_, ifr, slot, itm)
+		local sl = ent.InVault:GetFreeSlot()
+		if not sl or not input.IsControlDown() then return end
+
+		ent:SendItem(sl, itm)
+	end)
+
+	vt:GetInventoryPanel():On("Click", "Transfer", function(vtInv, ifr, slot, itm)
+		local sl = LocalPlayer():GetBackpack():GetFreeSlot()
+		if not sl or not input.IsControlDown() then return end
+
+		LocalPlayer():GetBackpack()
+			:RequestPickup(itm)
+
+		--vtInv:MoveItem(inv:GetInventoryPanel():GetSlot(sl), ifr, itm)
+
+		--[[local ok = itm:GetInventory()
+			:RequestCrossInventoryMove(itm, LocalPlayer():GetBackpack(), sl)]]
+	end)
+
 	vt:On("ItemDropFrom", "Send", function(_, itmPnl, invPnl, item)
 		if not invPnl:GetInventory() then return false end
 		if invPnl:GetInventory() ~= vt:GetInventory() and not invPnl:GetInventory().IsBackpack then
-			return false
-		end
-	end)
-
-	inv:On("ItemDropFrom", "Send", function(_, itmPnl, invPnl, item)
-		if not invPnl:GetInventory() then return false end
-		if itmPnl:GetInventory().IsBackpack then return end
-
-		if itmPnl:GetInventory().IsVault then
-			self:FetchItem(itmPnl:GetSlot(), item)
 			return false
 		end
 	end)

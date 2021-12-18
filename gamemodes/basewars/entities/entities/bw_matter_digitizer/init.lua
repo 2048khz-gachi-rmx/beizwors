@@ -32,11 +32,19 @@ function ENT:RequestInVault(ply)
 	-- im pretty sure like all of this is redundant; i could just
 	-- use crossinv and hook onto pre/post, lol
 
-	local inv = Inventory.Networking.ReadInventory(ply)
-	local item = Inventory.Networking.ReadItem(inv)
 
-	if not inv.IsBackpack then print("vault < backpack: not backpack") return false end
-	if not item then print("vault < backpack: no item") return false end
+	local inv, why1 = Inventory.Networking.ReadInventory(ply)
+	local item, why2 = Inventory.Networking.ReadItem(inv)
+
+	if not item then
+		print("vault < backpack: no item", why1, why2)
+		return false
+	end
+
+	if not inv.IsBackpack then
+		print("vault < backpack: not backpack")
+		return false
+	end
 
 	local slNum = net.ReadUInt(8)
 	local slot = self.InVault:ValidateSlot( slNum )
@@ -50,6 +58,7 @@ function ENT:RequestInVault(ply)
 	inv:CrossInventoryMove(item, self.InVault, into):Then(function()
 		self.want[into] = slot
 		self.Status:Set(into, 0)
+		self.Status:Network()
 		ply:UpdateInventory(inv)
 		self:SendInfo(ply)
 		self:UpdateState()
