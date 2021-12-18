@@ -18,7 +18,7 @@ function PLAYER:BW_GetBase()
 	local nw = nw.PlayerData
 	if not nw then return end --???
 
-	return bw.GetBase(nw:Get("CurrentBase"))
+	return bw.GetBaseNumber( nw:Get("CurrentBase") )
 end
 
 function PLAYER:BW_GetZone()
