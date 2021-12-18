@@ -1,99 +1,182 @@
+require("mysqloo")
+
+local DATABASE_HOST = "51.178.211.29"
+local DATABASE_PORT = 3306
+local DATABASE_NAME = "s34696_main"
+local DATABASE_USERNAME = "u34696_8lGPVh7Gv6"
+local DATABASE_PASSWORD = "8Q7geFIU3eYrOe2C"
+local DATABASE_TABLE = "ulib_sql"
+
+ULib.ucl.saveiterationtime = 0.25
+
+function ULib_SQL_Connect()
+
+	if not ULib.ucl.db then
+		ULib_SQL_ConnectToDatabase()
+		return
+	end
+
+	if not ( ULib.ucl.db:status() == 0 ) then
+		ULib_SQL_ConnectToDatabase()
+		return
+	end
+
+end
+
+
+function ULib_SQL_Format( str )
+	if not str then return "NULL" end
+	return string.format( "%q", str )
+end
+
+function Escape( str )
+	if not ULib.ucl.db then
+		Msg( "Not connected to DB.\n" )
+		return
+	end
+
+	if not str then return end
+
+	local esc = ULib.ucl.db:escape( str )
+	if not esc then
+		return nil
+	end
+	return esc
+end
+
+
+function ULib_SQL_ConnectToDatabase()
+	ULib.ucl.db = mysqloo.connect( DATABASE_HOST, DATABASE_USERNAME, DATABASE_PASSWORD, DATABASE_NAME, DATABASE_PORT )
+	ULib.ucl.db.onConnectionFailed = function( db, Error )
+		ServerLog("Connection to database failed\n")
+		ServerLog("Error: " .. Error .. "\n")
+		timer.Simple( 3, ULib_SQL_ConnectToDatabase )
+	end
+	ULib.ucl.db.onConnected  = function( db )
+		ULib_SQL_CreateTable()
+	end
+	ULib.ucl.db:connect()
+end
+
+
+function ULib_SQL_CreateTable()
+	if ULib.ucl.db:status() == 0 then
+		local query = ULib.ucl.db:query("CREATE TABLE IF NOT EXISTS " .. DATABASE_TABLE .. " ( uid varchar(255), accessblob text, PRIMARY KEY( uid ) )")
+		function query:onSuccess( data )
+			ServerLog("SUCCESSFULLY CREATED TABLE OR TABLE ALREADY EXISTED\n")
+		end
+		function query:onError( Q, E )
+			ServerLog("FAILED CREATING DATABASE TABLE\n")
+			ServerLog("Error: " .. E .. "\n")
+			timer.Simple(3, ULib_SQL_CreateTable )
+		end
+		query:start()
+	else
+		ServerLog("Database unexpectedly offline, attempting to reconnect\n")
+		ULib_SQL_ConnectToDatabase()
+	end
+end
+
+
+function ULib_SQL_SaveAll( tbl )
+	if ULib.ucl.db:status() == 0 then
+		for k, v in pairs( tbl ) do
+			local query = ULib.ucl.db:query("REPLACE INTO " .. DATABASE_TABLE .. " (uid, accessblob) VALUES ('" .. k .. "', '" .. Escape(util.TableToJSON(v)) .. "')")
+			function query:onSuccess( data )
+				ServerLog("SUCCESSFULLY ADDED/UPDATED (" .. k .. ") to the database\n")
+			end
+			function query:onError( Q, E )
+				ServerLog("FAILED ADDING/UPDATING (" .. k .. ") to the database\n")
+				ServerLog(E .. "\n")
+			end
+			query:start()
+		end
+	else
+		ServerLog("Database unexpectedly offline, attempting to reconnect\n")
+		ULib_SQL_ConnectToDatabase()
+	end
+end
+
+function ULib_SQL_SaveUser( id )
+	local tbl = ULib.ucl.users[ id ]
+	if not tbl then return end
+	if ULib.ucl.db:status() == 0 then
+		local query = ULib.ucl.db:query("REPLACE INTO " .. DATABASE_TABLE .. " (uid, accessblob) VALUES ('" .. id .. "', '" .. Escape(util.TableToJSON(tbl)) .. "')")
+		function query:onSuccess( data )
+			ServerLog("SUCCESSFULLY ADDED/UPDATED (" .. id .. ") to the database\n")
+		end
+		function query:onError( E )
+			ServerLog("FAILED ADDING/UPDATING (" .. id .. ") to the database\n")
+			ServerLog(E .. "\n")
+		end
+		query:start()
+	else
+		ServerLog("Database unexpectedly offline, attempting to reconnect\n")
+		ULib_SQL_ConnectToDatabase()
+	end
+end
+
+function ULib_SQL_WriteUsers( tbl )
+	for k, v in pairs( tbl ) do
+		ULib_SQL_SaveUser( k )
+		tbl[k] = nil
+		break
+	end
+
+	if table.Count( tbl ) > 0 then
+		timer.Simple( ULib.ucl.saveiterationtime, function() ULib_SQL_WriteUsers( tbl ) end )
+	else
+		tbl = nil
+		ULib.ucl.tempusers = nil
+		ULib.ucl.saving = false
+	end
+end
+
+function ULib_SQL_Load()
+	if ULib.ucl.db:status() == 0 then
+		local query = ULib.ucl.db:query("SELECT * FROM " .. DATABASE_TABLE .. "")
+		function query:onSuccess( data )
+			ULib.ucl.users = {}
+			ServerLog("Loading UCL Users List from Database\n")
+			for k, v in pairs( data ) do
+				ULib.ucl.users[v.uid] = util.JSONToTable(v.accessblob)
+			end
+		end
+		function query:onError( Q, E )
+
+		end
+		query:start()
+	else
+		ServerLog("Database unexpectedly offline, attempting to reconnect\n")
+		ULib_SQL_ConnectToDatabase()
+	end
+end
+
+function ULib_SQL_TryLoad()
+	if ULib.ucl.db:status() == 0 then
+		ULib_SQL_Load()
+	else
+		timer.Simple( 1, ULib_SQL_TryLoad )
+	end
+end
+
+ULib_SQL_Connect()
+ULib_SQL_TryLoad()
+
+-------------------------------------------------------------------
 --[[
 	Title: UCL
 
 	ULib's Access Control List
-
-	Formatting Details:
-
-		Format of admin account in users.txt--
-		"<steamid|ip|unique id>"
-		{
-			"group" "superadmin"
-			"allow"
-			{
-				"ulx kick"
-				"ulx ban"
-			}
-			"deny"
-			{
-				"ulx cexec"
-			}
-		}
-
-		Example of a superadmin--
-		"STEAM_0:1:123456"
-		{
-			"group" "superadmin"
-			"allow"
-			{
-			}
-			"deny"
-			{
-			}
-		}
-
-		Format of group that gets the same allows as a superadmin in groups.txt--
-		"<group_name>"
-		{
-			"allow"
-			{
-				"ulx kick"
-				"ulx ban"
-			}
-			"inherit_from" "superadmin"
-		}
 ]]
+
 
 local ucl = ULib.ucl -- Make it easier for us to refer to
-
-local defaultGroupsText = -- To populate initially or when the user deletes it
-[["operator"
-{
-	"allow"
-	{
-	}
-	"can_target"    "!%admin"
-}
-
-"admin"
-{
-	"allow"
-	{
-	}
-	"inherit_from"	"operator"
-	"can_target"    "!%superadmin"
-}
-
-"superadmin"
-{
-	"allow"
-	{
-	}
-	"inherit_from"	"admin"
-}
-
-"user"
-{
-	"allow"
-	{
-	}
-}
-]]
 
 local accessStrings = ULib.parseKeyValues( ULib.fileRead( ULib.UCL_REGISTERED ) or "" ) or {}
 local accessCategories = {}
 ULib.ucl.accessStrings = accessStrings
 ULib.ucl.accessCategories = accessCategories
-
-if not ULib.fileExists( ULib.UCL_GROUPS, true ) then
-	ULib.fileWrite( ULib.UCL_GROUPS, defaultGroupsText )
-
-	if ULib.fileExists( ULib.UCL_REGISTERED ) then
-		ULib.fileDelete( ULib.UCL_REGISTERED ) -- Since we're regnerating we'll need to remove this
-	end
-	table.Empty( accessStrings )
-	table.Empty( accessCategories )
-end
 
 -- Helper function to save access string registration to misc_registered.txt
 local function saveAccessStringRegistration()
@@ -110,43 +193,54 @@ function ucl.saveGroups()
 end
 
 function ucl.saveUsers()
+	if ucl.saving then
+		return
+	end
+
+	ucl.saving = true
+
 	for _, userInfo in pairs( ucl.users ) do
 		table.sort( userInfo.allow )
 		table.sort( userInfo.deny )
 	end
 
-	ULib.fileWrite( ULib.UCL_USERS, ULib.makeKeyValues( ucl.users ) )
-end
+	ucl.tempusers = table.Copy( ucl.users )
 
-local function reloadGroups()
-	-- Try to read from the safest locations first
-	local noMount = true
-	local path = ULib.UCL_GROUPS
-	if not ULib.fileExists( path, noMount ) then
-		ULib.fileWrite( path, defaultGroupsText )
-
-		if ULib.fileExists( ULib.UCL_REGISTERED ) then
-			ULib.fileDelete( ULib.UCL_REGISTERED ) -- Since we're regnerating we'll need to remove this
-		end
-		table.Empty( accessStrings )
-		table.Empty( accessCategories )
+	if table.Count( ucl.tempusers ) > 0 then
+		ULib_SQL_WriteUsers( ucl.tempusers )
 	end
 
+	--ULib.fileWrite( ULib.UCL_USERS, ULib.makeKeyValues( ucl.users ) )
+	--ULib_SQL_SaveAll( ucl.users )
+end
+
+function ucl.saveUser( id )
+	ULib_SQL_SaveUser( id )
+end
+
+function reloadGroups()
 	local needsBackup = false
 	local err
-	ucl.groups, err = ULib.parseKeyValues( ULib.removeCommentHeader( ULib.fileRead( path, noMount ) or "", "/" ) )
+	ucl.groups, err = ULib.parseKeyValues( ULib.removeCommentHeader( ULib.fileRead( ULib.UCL_GROUPS ), "/" ) )
 
 	if not ucl.groups or not ucl.groups[ ULib.ACCESS_ALL ] then
 		needsBackup = true
 		-- Totally messed up! Clear it.
-		local err2
-		ucl.groups, err2 = ULib.parseKeyValues( ULib.removeCommentHeader( defaultGroupsText, "/" ) )
-
+		local f = "addons/ulib/" .. ULib.UCL_GROUPS
+		if not ULib.fileExists( f ) then
+			Msg( "ULIB PANIC: groups.txt is corrupted and I can't find the default groups.txt file!!\n" )
+		else
+			local err2
+			ucl.groups, err2 = ULib.parseKeyValues( ULib.removeCommentHeader( ULib.fileRead( f ), "/" ) )
+			if not ucl.groups or not ucl.groups[ ULib.ACCESS_ALL ] then
+				Msg( "ULIB PANIC: default groups.txt is corrupt!\n" )
+				err = err2
+			end
+		end
 		if ULib.fileExists( ULib.UCL_REGISTERED ) then
 			ULib.fileDelete( ULib.UCL_REGISTERED ) -- Since we're regnerating we'll need to remove this
 		end
-		table.Empty( accessStrings )
-		table.Empty( accessCategories )
+		accessStrings = {}
 
 	else
 		-- Check to make sure it passes a basic validity test
@@ -213,22 +307,29 @@ end
 reloadGroups()
 
 local function reloadUsers()
-	-- Try to read from the safest locations first
-	local noMount = true
-	local path = ULib.UCL_USERS
-	if not ULib.fileExists( path, noMount ) then
-		ULib.fileWrite( path, "" )
-	end
-
 	local needsBackup = false
 	local err
-	ucl.users, err = ULib.parseKeyValues( ULib.removeCommentHeader( ULib.fileRead( path, true ) or "", "/" ) )
+	ucl.users, err = ULib.parseKeyValues( ULib.removeCommentHeader( ULib.fileRead( ULib.UCL_USERS ), "/" ) )
 
 	-- Check to make sure it passes a basic validity test
 	if not ucl.users then
 		needsBackup = true
 		-- Totally messed up! Clear it.
-		ucl.users = {}
+		local f = "addons/ulib/" .. ULib.UCL_USERS
+		if not ULib.fileExists( f ) then
+			Msg( "ULIB PANIC: users.txt is corrupted and I can't find the default users.txt file!!\n" )
+		else
+			local err2
+			ucl.users, err2 = ULib.parseKeyValues( ULib.removeCommentHeader( ULib.fileRead( f ), "/" ) )
+			if not ucl.users then
+				Msg( "ULIB PANIC: default users.txt is corrupt!\n" )
+				err = err2
+			end
+		end
+		if ULib.fileExists( ULib.UCL_REGISTERED ) then
+			ULib.fileDelete( ULib.UCL_REGISTERED ) -- Since we're regnerating we'll need to remove this
+		end
+		accessStrings = {}
 
 	else
 		for id, userInfo in pairs( ucl.users ) do
@@ -290,13 +391,52 @@ local function reloadUsers()
 	if needsBackup then
 		Msg( "Users file was not formatted correctly. Attempting to fix and backing up original\n" )
 		if err then
-			Msg( "Error while reading users file was: " .. err .. "\n" )
+			Msg( "Error while reading groups file was: " .. err .. "\n" )
 		end
 		Msg( "Original file was backed up to " .. ULib.backupFile( ULib.UCL_USERS ) .. "\n" )
-		ucl.saveUsers()
+		--ucl.saveUsers()
 	end
 end
-reloadUsers()
+--reloadUsers()
+
+function ULib_SQL_LoadLegacy()
+end
+
+ULib_SQL_LoadLegacy = reloadUsers
+
+concommand.Add( "ulib_loadlegacy", function( ply, com, args )
+	if IsValid(ply) and ply:IsSuperAdmin() then
+		ULib_SQL_LoadLegacy()
+		ucl.saveUsers() --Saving all entries (Loading from Legacy file)
+	else
+		if not IsValid( ply ) then
+			ULib_SQL_LoadLegacy()
+			ucl.saveUsers() --Saving all entries (Loading from Legacy file)
+		end
+	end
+end )
+
+concommand.Add( "ulib_loadlegacy_nousers", function( ply, com, args )
+	if IsValid(ply) and ply:IsSuperAdmin() then
+		ULib_SQL_LoadLegacy()
+		ULib_SQL_DumpUsers()
+		ucl.saveUsers() --Saving all entries (Loading from Legacy file)
+	else
+		if not IsValid( ply ) then
+			ULib_SQL_LoadLegacy()
+			ULib_SQL_DumpUsers()
+			ucl.saveUsers() --Saving all entries (Loading from Legacy file)
+		end
+	end
+end )
+
+function ULib_SQL_DumpUsers()
+	for k, v in pairs( ULib.ucl.users ) do
+		if v.group == "user" then
+			ULib.ucl.users[k] = nil
+		end
+	end
+end
 
 
 --[[
@@ -309,15 +449,13 @@ reloadUsers()
 		name - A string of the group name. (IE: superadmin)
 		allows - *(Optional, defaults to empty table)* The allowed access for the group.
 		inherit_from - *(Optional)* A string of a valid group to inherit from
-		from_CAMI - *(Optional)* An indicator for this group coming from CAMI.
 
 	Revisions:
 
 		v2.10 - acl is now an options parameter, added inherit_from.
 		v2.40 - Rewrite, changed parameter list around.
-		v2.60 - Added CAMI support and parameter.
 ]]
-function ucl.addGroup( name, allows, inherit_from, from_CAMI )
+function ucl.addGroup( name, allows, inherit_from )
 	ULib.checkArg( 1, "ULib.ucl.addGroup", "string", name )
 	ULib.checkArg( 2, "ULib.ucl.addGroup", {"nil","table"}, allows )
 	ULib.checkArg( 3, "ULib.ucl.addGroup", {"nil","string"}, inherit_from )
@@ -336,13 +474,7 @@ function ucl.addGroup( name, allows, inherit_from, from_CAMI )
 	ucl.groups[ name ] = { allow=allows, inherit_from=inherit_from }
 	ucl.saveGroups()
 
-	hook.Call( ULib.HOOK_GROUP_CREATED, _, name, ucl.groups[ name ] )
 	hook.Call( ULib.HOOK_UCLCHANGED )
-
-	-- CAMI logic
-	if not from_CAMI and not ULib.findInTable( {"superadmin", "admin", "user"}, name ) then
-		CAMI.RegisterUsergroup( {Name=name, Inherits=inherit_from}, CAMI.ULX_TOKEN )
-	end
 end
 
 
@@ -415,7 +547,6 @@ function ucl.groupAllow( name, access, revoke )
 
 		ucl.saveGroups()
 
-		hook.Call( ULib.HOOK_GROUP_ACCESS_CHANGE, _, name, access, revoke )
 		hook.Call( ULib.HOOK_UCLCHANGED )
 	end
 
@@ -436,7 +567,6 @@ end
 	Revisions:
 
 		v2.40 - Initial.
-		v2.60 - Added CAMI support.
 ]]
 function ucl.renameGroup( orig, new )
 	ULib.checkArg( 1, "ULib.ucl.renameGroup", "string", orig )
@@ -449,6 +579,7 @@ function ucl.renameGroup( orig, new )
 	for id, userInfo in pairs( ucl.users ) do
 		if userInfo.group == orig then
 			userInfo.group = new
+			ucl.saveUser( id )
 		end
 	end
 
@@ -472,19 +603,10 @@ function ucl.renameGroup( orig, new )
 		end
 	end
 
-	ucl.saveUsers()
+	--ucl.saveUsers() --Group was changed, saving all users to reflect
 	ucl.saveGroups()
 
-	hook.Call( ULib.HOOK_GROUP_RENAMED, _, orig, new )
 	hook.Call( ULib.HOOK_UCLCHANGED )
-
-	-- CAMI logic
-	if not ULib.findInTable( {"superadmin", "admin", "user"}, orig ) then
-		CAMI.UnregisterUsergroup( orig, CAMI.ULX_TOKEN )
-	end
-	if not ULib.findInTable( {"superadmin", "admin", "user"}, new ) then
-		CAMI.RegisterUsergroup( {Name=new, Inherits=ucl.groups[ new ].inherit_from}, CAMI.ULX_TOKEN )
-	end
 end
 
 
@@ -497,19 +619,19 @@ end
 
 		group - A string of the group name. (IE: superadmin)
 		inherit_from - Either a string of the new inheritance group name or nil to remove inheritance. (IE: admin)
-		from_CAMI - *(Optional)* An indicator for this group coming from CAMI.
 
 	Revisions:
 
 		v2.40 - Initial.
-		v2.60 - Added CAMI support and parameter.
 ]]
-function ucl.setGroupInheritance( group, inherit_from, from_CAMI )
+function ucl.setGroupInheritance( group, inherit_from )
 	ULib.checkArg( 1, "ULib.ucl.renameGroup", "string", group )
 	ULib.checkArg( 2, "ULib.ucl.renameGroup", {"nil","string"}, inherit_from )
-	inherit_from = inherit_from or "user"
+	if inherit_from then
+		if inherit_from == ULib.ACCESS_ALL then inherit_from = nil end -- Implicitly inherited
+	end
 
-	if group == ULib.ACCESS_ALL then return error( "This group (" .. group .. ") cannot have its inheritance changed!", 2 ) end
+	if group == ULib.ACCESS_ALL then return error( "This group (" .. group .. ") cannot have it's inheritance changed!", 2 ) end
 	if not ucl.groups[ group ] then return error( "Group does not exist (" .. group .. ")", 2 ) end
 	if inherit_from and not ucl.groups[ inherit_from ] then return error( "Group for inheritance does not exist (" .. inherit_from .. ")", 2 ) end
 
@@ -539,14 +661,7 @@ function ucl.setGroupInheritance( group, inherit_from, from_CAMI )
 
 	ucl.saveGroups()
 
-	hook.Call( ULib.HOOK_GROUP_INHERIT_CHANGE, _, group, inherit_from, old_inherit )
 	hook.Call( ULib.HOOK_UCLCHANGED )
-
-	-- CAMI logic
-	if not from_CAMI and not ULib.findInTable( {"superadmin", "admin", "user"}, group ) then
-		CAMI.UnregisterUsergroup( group, CAMI.ULX_TOKEN )
-		CAMI.RegisterUsergroup( {Name=group, Inherits=inherit_from}, CAMI.ULX_TOKEN )
-	end
 end
 
 
@@ -570,10 +685,8 @@ function ucl.setGroupCanTarget( group, can_target )
 	if not ucl.groups[ group ] then return error( "Group does not exist (" .. group .. ")", 2 ) end
 
 	if ucl.groups[ group ].can_target == can_target then return end -- Nothing to change
-	local old = ucl.groups[ group ].can_target
-	ucl.groups[ group ].can_target = can_target
 
-	hook.Call( ULib.HOOK_GROUP_CANTARGET_CHANGE, _, group, can_target, old )
+	ucl.groups[ group ].can_target = can_target
 
 	ucl.saveGroups()
 
@@ -589,15 +702,13 @@ end
 	Parameters:
 
 		name - A string of the group name. (IE: superadmin)
-		from_CAMI - *(Optional)* An indicator for this group coming from CAMI.
 
 	Revisions:
 
 		v2.10 - Initial.
 		v2.40 - Rewrite, removed write parameter.
-		v2.60 - Added CAMI support and parameter.
 ]]
-function ucl.removeGroup( name, from_CAMI )
+function ucl.removeGroup( name )
 	ULib.checkArg( 1, "ULib.ucl.removeGroup", "string", name )
 
 	if name == ULib.ACCESS_ALL then return error( "This group (" .. name .. ") cannot be removed!", 2 ) end
@@ -609,6 +720,7 @@ function ucl.removeGroup( name, from_CAMI )
 	for id, userInfo in pairs( ucl.users ) do
 		if userInfo.group == name then
 			userInfo.group = inherits_from
+			ucl.saveUsers( id )
 		end
 	end
 
@@ -622,7 +734,7 @@ function ucl.removeGroup( name, from_CAMI )
 			end
 		end
 	end
-	local oldgroup = table.Copy( ucl.groups[ name ] )
+
 	ucl.groups[ name ] = nil
 	for _, groupInfo in pairs( ucl.groups ) do
 		if groupInfo.inherit_from == name then
@@ -630,16 +742,10 @@ function ucl.removeGroup( name, from_CAMI )
 		end
 	end
 
-	ucl.saveUsers()
+	--ucl.saveUsers() --Group was removed, saving all users to reflect
 	ucl.saveGroups()
 
-	hook.Call( ULib.HOOK_GROUP_REMOVED, _, name, oldgroup )
 	hook.Call( ULib.HOOK_UCLCHANGED )
-
-	-- CAMI logic
-	if not from_CAMI and not ULib.findInTable( {"superadmin", "admin", "user"}, name ) then
-		CAMI.UnregisterUsergroup( name, CAMI.ULX_TOKEN )
-	end
 end
 
 --[[
@@ -653,7 +759,7 @@ end
 
 	Revisions:
 
-		v2.41 - Initial.
+		2.41 - Initial.
 ]]
 
 function ucl.getUserRegisteredID( ply )
@@ -669,29 +775,6 @@ function ucl.getUserRegisteredID( ply )
 end
 
 --[[
-	Function: ucl.getUserInfoFromID
-
-	Returns a table containing the name and group of a player in the UCL table of users if they exist.
-
-	Parameters:
-
-		id - The SteamID, IP, or UniqueID of the user you wish to check.
-]]
-
-function ucl.getUserInfoFromID( id )
-
-	ULib.checkArg( 1, "ULib.ucl.addUser", "string", id )
-	id = id:upper() -- In case of steamid, needs to be upper case
-
-	if ucl.users[ id ] then
-		return ucl.users[ id ]
-	else
-		return nil
-	end
-
-end
-
---[[
 	Function: ucl.addUser
 
 	Adds a user to the UCL. Automatically probes for the user, automatically saves.
@@ -701,16 +784,14 @@ end
 		id - The SteamID, IP, or UniqueID of the user you wish to add.
 		allows - *(Optional, defaults to empty table)* The list of access you wish to give this user.
 		denies - *(Optional, defaults to empty table)* The list of access you wish to explicitly deny this user.
-		group - *(Optional)* The string of the group this user should belong to. Must be a valid group.
-		from_CAMI - *(Optional)* An indicator for this information coming from CAMI.
+		group - *(Optional)* The sting of the group this user should belong to. Must be a valid group.
 
 	Revisions:
 
-		v2.10 - No longer makes a group if it doesn't exist.
-		v2.40 - Rewrite, changed the arguments all around.
-		v2.60 - Added support for CAMI and parameter.
+		2.10 - No longer makes a group if it doesn't exist.
+		2.40 - Rewrite, changed the arguments all around.
 ]]
-function ucl.addUser( id, allows, denies, group, from_CAMI )
+function ucl.addUser( id, allows, denies, group )
 	ULib.checkArg( 1, "ULib.ucl.addUser", "string", id )
 	ULib.checkArg( 2, "ULib.ucl.addUser", {"nil","table"}, allows )
 	ULib.checkArg( 3, "ULib.ucl.addUser", {"nil","table"}, denies )
@@ -727,27 +808,18 @@ function ucl.addUser( id, allows, denies, group, from_CAMI )
 	for k, v in ipairs( allows ) do allows[ k ] = v end
 	for k, v in ipairs( denies ) do denies[ k ] = v end
 
-	local name, oldgroup
+	local name
 	if ucl.users[ id ] and ucl.users[ id ].name then name = ucl.users[ id ].name end -- Preserve name
-	if ucl.users[ id ] and ucl.users[ id ].group then oldgroup = ucl.users[ id ].group end
 	ucl.users[ id ] = { allow=allows, deny=denies, group=group, name=name }
 
-	ucl.saveUsers()
+	--ucl.saveUsers() --User was added, only need to save that one user.
+	ucl.saveUser(id)
 
 	local ply = ULib.getPlyByID( id )
 	if ply then
-		if not from_CAMI then
-			CAMI.SignalUserGroupChanged( ply, oldgroup, group or "user", CAMI.ULX_TOKEN )
-		end
-
-		hook.Call( ULib.HOOK_USER_GROUP_CHANGE, _, id, allows, denies, group, oldgroup )
 		ucl.probe( ply )
 	else -- Otherwise this gets called twice
-		if not from_CAMI then
-			CAMI.SignalSteamIDUserGroupChanged( id, oldgroup, group or "user", CAMI.ULX_TOKEN )
-		end
 		hook.Call( ULib.HOOK_UCLCHANGED )
-		hook.Call( ULib.HOOK_USER_GROUP_CHANGE, _, id, allows, denies, group, oldgroup )
 	end
 end
 
@@ -864,9 +936,9 @@ function ucl.userAllow( id, access, revoke, deny )
 			ULib.queueFunctionCall( hook.Call, ULib.HOOK_UCLAUTH, _, ply ) -- Inform the masses
 		end
 
-		ucl.saveUsers()
+		--ucl.saveUsers() --User's accesses are changed, need only save that one user.
+		ucl.saveUser( id )
 
-		hook.Call( ULib.HOOK_USER_ACCESS_CHANGE, _, id, access, revoke, deny )
 		hook.Call( ULib.HOOK_UCLCHANGED )
 	end
 
@@ -883,14 +955,12 @@ end
 
 		id - The SteamID, IP, or UniqueID of the user you wish to remove. Must be a valid, existing ID.
 			The unique id of a connected user is always valid.
-		from_CAMI - *(Optional)* An indicator for this information coming from CAMI.
 
 	Revisions:
 
 		v2.40 - Rewrite, removed the write argument.
-		v2.60 - Added CAMI support and parameter.
 ]]
-function ucl.removeUser( id, from_CAMI )
+function ucl.removeUser( id )
 	ULib.checkArg( 1, "ULib.ucl.addUser", "string", id )
 	id = id:upper() -- In case of steamid, needs to be upper case
 
@@ -898,6 +968,7 @@ function ucl.removeUser( id, from_CAMI )
 	if not userInfo then return error( "User id does not exist for removing (" .. id .. ")", 2 ) end
 
 	local changed = false
+	local q_id = nil --Query Index
 
 	if ucl.authed[ id ] and not ucl.users[ id ] then -- Different ids between offline and authed
 		local ply = ULib.getPlyByID( id )
@@ -910,31 +981,41 @@ function ucl.removeUser( id, from_CAMI )
 			if ucl.users[ index ] then
 				changed = true
 				ucl.users[ index ] = nil
+				q_id = index
 				break -- Only match the first one
 			end
 		end
 	else
 		changed = true
 		ucl.users[ id ] = nil
+		q_id = id
 	end
 
 	if changed then -- If the user is only added to the default garry file, then nothing changed
-		ucl.saveUsers()
-		hook.Call( ULib.HOOK_USER_REMOVED, _, id, userInfo )
+		--ucl.saveUsers() -- user was removed, need to remove them from the database
+		if q_id then
+			if ULib.ucl.db:status() == 0 then
+				local query = ULib.ucl.db:query("DELETE FROM " .. DATABASE_TABLE .. " WHERE uid='" .. Escape(q_id) .. "'")
+				function query:onSuccess( data )
+					ServerLog("SUCCESSFULLY REMOVED (" .. q_id .. ") from the database\n")
+				end
+				function query:onError( Q, E )
+					ServerLog("FAILED REMOVING (" .. q_id .. ") from the database\n")
+					ServerLog(E .. "\n")
+				end
+				query:start()
+			else
+				ServerLog("Database unexpectedly offline, attempting to reconnect\n")
+				ULib_SQL_ConnectToDatabase()
+			end
+		end
 	end
 
 	local ply = ULib.getPlyByID( id )
 	if ply then
-		if not from_CAMI then
-			CAMI.SignalUserGroupChanged( ply, ply:GetUserGroup(), ULib.ACCESS_ALL, CAMI.ULX_TOKEN )
-		end
-
 		ply:SetUserGroup( ULib.ACCESS_ALL, true )
 		ucl.probe( ply ) -- Reprobe
 	else -- Otherwise this is called twice
-		if not from_CAMI then
-			CAMI.SignalSteamIDUserGroupChanged( id, userInfo.group, ULib.ACCESS_ALL, CAMI.ULX_TOKEN )
-		end
 		hook.Call( ULib.HOOK_UCLCHANGED )
 	end
 end
@@ -990,11 +1071,7 @@ function ucl.registerAccess( access, groups, comment, category )
 			table.insert( ucl.groups[ group ].allow, access )
 		end
 
-		timer.Create( "ULibSaveGroups", 1, 1, function() -- 1 sec delay, 1 rep
-			ucl.saveGroups()
-			hook.Call( ULib.HOOK_UCLCHANGED )
-			hook.Call( ULib.HOOK_ACCESS_REGISTERED )
-		end )
+		timer.Create( "ULibSaveGroups", 1, 1, ucl.saveGroups ) -- 1 sec delay, 1 rep
 	end
 end
 
@@ -1031,7 +1108,8 @@ function ucl.probe( ply )
 
 			-- Update their name
 			ucl.authed[ uid ].name = ply:Nick()
-			ucl.saveUsers()
+			--ucl.saveUsers() -- Save only the probed player to account for a name change
+			ucl.saveUser( index )
 
 			match = true
 			break
@@ -1051,20 +1129,11 @@ function ucl.probe( ply )
 end
 -- Note that this function is hooked into "PlayerAuthed", below.
 
-local function setupBot( ply )
-	if not ply or not ply:IsValid() then return end
-
-	if not ucl.authed[ ply:UniqueID() ] then
-		ply:SetUserGroup( ULib.ACCESS_ALL, true ) -- Give it a group!
-		ucl.probe( ply )
-	end
-end
 
 local function botCheck( ply )
-	if ply:IsBot() then
-		-- We have to call this twice because the uniqueID will change for NextBots
-		setupBot( ply )
-		ULib.queueFunctionCall( setupBot, ply )
+	if ply:IsBot() and not ucl.authed[ ply:UniqueID() ] then
+		ply:SetUserGroup( ULib.ACCESS_ALL, true ) -- Give it a group!
+		ucl.probe( ply )
 	end
 end
 hook.Add( "PlayerInitialSpawn", "ULibSendAuthToClients", botCheck, HOOK_MONITOR_HIGH )
