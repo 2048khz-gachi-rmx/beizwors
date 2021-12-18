@@ -2,15 +2,8 @@ local color_white = Color(255, 255, 255, 255) -- if something goes wrong we're n
 
 chathud = chathud or {}
 
-chathud.CollectionDescriptions = {
-	["MadeInAbyss"] = {
-		{txt = "Emotes from Made in Abyss discord."},
-		{txt = "https://discord.gg/madeinabyss", col = Color(60, 130, 170)}
-	}
-}
-chathud.CollectionNames = {
-	["MadeInAbyss"] = "Made in Abyss emotes",
-}
+chathud.CollectionDescriptions = {}
+chathud.CollectionNames = {}
 
 chathud.Emotes = chathud.Emotes or {}
 
