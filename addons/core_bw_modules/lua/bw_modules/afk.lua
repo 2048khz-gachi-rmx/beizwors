@@ -40,23 +40,9 @@ if CLIENT then
 		end
 	end
 
-	local tickclear = function()
-		local ply = LocalPlayer()
-
-		if not ply:IsValid() then
-			return
-		end
-
-		if ply.IsAFK and ply:IsAFK() and ply:GetAngles() ~= oa then
-			clear()
-		end
-
-		oa = ply:GetAngles()
-	end
-
 	hook.Add("PlayerBindPress", "AFKClear", clear)
 	hook.Add("CreateMove", "AFKClear", cmdclear)
-	hook.Add("Tick", "AFKClear", tickclear)
+	-- hook.Add("Tick", "AFKClear", tickclear)
 	hook.Add("StartChat", "AFKClear", clear)
 	hook.Add("VGUIMousePressed", "AFKClear", clear)
 

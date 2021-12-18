@@ -427,12 +427,17 @@ end
 	Utils
 ---------------------------------------------------------------------------]]
 
+-- guaranteed by number (+perf)
+function bw.GetBaseNumber(id)
+	return BaseWars.Bases.Bases[id]
+end
+
 function bw.GetBase(id)
 	if isnumber(id) then
-		return BaseWars.Bases.Bases[id]
+		return bw.GetBaseNumber(id)
 	elseif bw.IsBase(id) then
 		return id
-	else
+	elseif isstring(id) then
 		for k,v in pairs(BaseWars.Bases.Bases) do
 			if v:GetName() == id then
 				return v

@@ -8,8 +8,19 @@ function ENT:GetPlugClass()
 end
 
 if CLIENT then
+	local sockets = {}
+
+	hook.Add("NotifyShouldTransmit", "Wire_IHateU", function(ent, enter)
+		if ent:GetClass() ~= "gmod_wire_datasocket" then return end
+
+		if enter then
+			table.RemoveByValue(sockets, ent)
+		else
+			table.insert(sockets, ent)
+		end
+	end)
+
 	hook.Add("HUDPaint","Wire_DataSocket_DrawLinkHelperLine",function()
-		local sockets = ents.FindByClass("gmod_wire_datasocket")
 		for k,self in pairs( sockets ) do
 			local Pos, _ = self:GetLinkPos()
 
