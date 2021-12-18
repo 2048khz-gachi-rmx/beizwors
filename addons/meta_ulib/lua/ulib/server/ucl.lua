@@ -61,7 +61,7 @@ end
 
 function ULib_SQL_CreateTable()
 	if ULib.ucl.db:status() == 0 then
-		local query = ULib.ucl.db:query("CREATE TABLE IF NOT EXISTS " .. DATABASE_TABLE .. " ( uid varchar(255), accessblob text, PRIMARY KEY( uid ) )")
+		local query = ULib.ucl.db:query("CREATE TABLE IF NOT EXISTS " .. DATABASE_TABLE .. " ( uid varchar(255), accessblob blob, PRIMARY KEY( uid ) )")
 		function query:onSuccess( data )
 			ServerLog("SUCCESSFULLY CREATED TABLE OR TABLE ALREADY EXISTED\n")
 		end
@@ -85,7 +85,7 @@ function ULib_SQL_SaveAll( tbl )
 			function query:onSuccess( data )
 				ServerLog("SUCCESSFULLY ADDED/UPDATED (" .. k .. ") to the database\n")
 			end
-			function query:onError( Q, E )
+			function query:onError( E )
 				ServerLog("FAILED ADDING/UPDATING (" .. k .. ") to the database\n")
 				ServerLog(E .. "\n")
 			end
@@ -108,6 +108,7 @@ function ULib_SQL_SaveUser( id )
 		function query:onError( E )
 			ServerLog("FAILED ADDING/UPDATING (" .. id .. ") to the database\n")
 			ServerLog(E .. "\n")
+			print(Escape(util.TableToJSON(tbl)))
 		end
 		query:start()
 	else
