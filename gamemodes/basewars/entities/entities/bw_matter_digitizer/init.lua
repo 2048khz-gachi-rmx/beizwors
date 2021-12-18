@@ -46,7 +46,6 @@ function ENT:RequestInVault(ply)
 	if cur == self.InVault.MaxSlots then print("cant fit") return end]]
 
 	local into = slot
-	print("request: into", into)
 
 	inv:CrossInventoryMove(item, self.InVault, into):Then(function()
 		self.want[into] = slot

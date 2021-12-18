@@ -158,7 +158,7 @@ function ENT:MakeToFrom(width, vault, bp)
 			end
 		end
 
-		if not itm:GetInventory().IsBackpack then return end
+		if not itm:GetInventory() or not itm:GetInventory().IsBackpack then return end
 
 		vault:Dehighlight()
 	end)
@@ -230,6 +230,24 @@ function ENT:MakeItemFrames(betweenW, vault, bp, inVt, outVt)
 			end]]
 		end)
 
+		sl:On("Click", "Transfer", function(self)
+			if not self:GetItem(true) then return end
+
+			if input.IsControlDown() then
+				local it = self:GetItem(true)
+				it:SetInventory(nil)
+
+				local left, a, b = LocalPlayer():GetBackpack()
+					:StackInfo(self:GetItem(true))
+
+				print("Ret:", left, a, b)
+				if left then
+					it:SetInventory(self:GetInventory())
+				else
+					self:GetInventory():RemoveItem(it)
+				end
+			end
+		end)
 		sl.IsBuffer = true
 	end
 
@@ -244,6 +262,7 @@ function ENT:MakeItemFrames(betweenW, vault, bp, inVt, outVt)
 		local cost = itm:GetTotalTransferCost()
 		local grid = ent:GetPowerGrid()
 
+		print(grid, cost, grid:HasPower(cost))
 		if not grid then return false end
 		if not grid:HasPower(cost) then return false end
 
