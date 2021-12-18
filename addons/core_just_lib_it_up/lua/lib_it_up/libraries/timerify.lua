@@ -24,7 +24,7 @@ function META:Timer(name, sec, reps, func, ...)
 	if not func then error("Nice function") return end --ya idiot
 
 	name = name or uniq.Seq("__Timerified:" .. hex(self))
-	local id = (name and "__Timerified:" .. hex(self) .. ":" .. name)
+	local id = (name and "__Timerified:" .. hex(self) .. ":" .. tostring(name))
 
 	if reps == 0 then
 		ErrorNoHalt("created a 0 rep timer:" .. debug.traceback())
@@ -40,8 +40,8 @@ end
 
 function META:RemoveTimer(name)
 	if not name then error("Nice ID") return false end
-	local ex = timer.Exists("__Timerified:" .. hex(self) .. ":" .. name)
-	timer.Remove("__Timerified:" .. hex(self) .. ":" .. name)
+	local ex = timer.Exists("__Timerified:" .. hex(self) .. ":" .. tostring(name))
+	timer.Remove("__Timerified:" .. hex(self) .. ":" .. tostring(name))
 
 	return ex
 end

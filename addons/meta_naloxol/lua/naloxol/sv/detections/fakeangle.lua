@@ -57,7 +57,7 @@ hook.Add("SetupMove", "NX_Fakeangles", function(ply, mv, cmd)
 
 	if math.abs(ang[1]) > 90 then
 		dt:Detect(ply, "invalid_pitch:" .. ang[1])
-	elseif math.abs(ang[2]) > 180 then
+	elseif math.abs(ang[2]) > 181 then
 		dt:Detect(ply, "invalid_yaw:" .. ang[2])
 	end
 
