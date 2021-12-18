@@ -10,7 +10,6 @@ function ENT:Draw()
 end
 
 function ENT:SendItem(slot, itm)
-	print("Sending item:", slot, itm)
 	local ns = Inventory.Networking.Netstack()
 
 	net.Start("mdigitizer")
@@ -192,7 +191,7 @@ function ENT:MakeItemFrames(betweenW, vault, bp, inVt, outVt)
 
 	for i=1, self.MaxQueues do
 		local sl = hold:Add("ItemFrame")
-		sl:SetSize(56, 56)
+		sl:SetSize(64, 64)
 
 		sl.Inventory = self.InVault
 		sl:SetSlot(i)
@@ -275,8 +274,23 @@ function ENT:MakeItemFrames(betweenW, vault, bp, inVt, outVt)
 	end
 
 	function hold:PostPaint(w, h)
-		for k,v in pairs(self.Panels) do
-			print(v)
+		local has_active = false
+
+		for k,v in ipairs(self.Panels) do
+			local it = v:GetItem(true)
+			if not it then continue end
+
+			local pwNeed = it:GetTotalTransferCost()
+			local fr = math.Remap(ent.Status:Get(k, 0), 0, pwNeed, 0, 1)
+
+			draw.SimpleText(("%d%%"):format(fr * 100),
+				"MR20", v.X + v:GetWide() / 2, v.Y + v:GetTall(),
+				has_active and Colors.Gray or Colors.LighterGray,
+				1)
+
+			if fr < 1 then
+				has_active = true
+			end
 		end
 	end
 
