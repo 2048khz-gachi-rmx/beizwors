@@ -113,11 +113,14 @@ end
 
 		if bw.BasePresence[ent] == base then
 			bw.BasePresence[ent] = nil
+			if base:IsValid() then
+				base:EntityExit(ent, ent._ForceBaseRemove)
+			end
+
+			return true
 		end
 
-		if base:IsValid() then
-			base:EntityExit(ent, ent._ForceBaseRemove)
-		end
+		return false
 	end
 
 function ENTITY:BW_ExitBase(base)
@@ -163,7 +166,8 @@ local function removeBase(ent, base)
 
 	-- if we're removing the current base, also remove us from being current
 	--if getBase(ent) == base then
-		exitBase(ent, base)
+
+	local was = exitBase(ent, base)
 	--end
 
 	local baseID = base:GetID()
@@ -171,9 +175,11 @@ local function removeBase(ent, base)
 	for k,v in ipairs(t) do
 		if baseID == v:GetID() then
 			table.remove(t, k)
+
+			-- PrintTable(t)
 			-- there was an another base in queue and we were the current base;
 			-- make that one the new current base
-			if t[1] and k == 1 then
+			if t[1] and was then
 				enterBase(ent, t[1])
 			end
 			return
