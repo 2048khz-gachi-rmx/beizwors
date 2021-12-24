@@ -6,6 +6,6 @@
 [submodule "addons/game_inventory"]
 	path = addons/game_inventory
 	url = https://github.com/qraxes/inventory2
-[submodule "ImprovedAdminPhysgun"]
+[submodule "addons/meta_adminphysgun"]
 	path = addons/meta_adminphysgun
 	url = https://github.com/2048khz-gachi-rmx/ImprovedAdminPhysgun
