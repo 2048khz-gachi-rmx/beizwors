@@ -306,11 +306,9 @@ function buf:AllocateSpace(w, h)
 
 	self.x = self.x + w
 	self.TempHeight = math.max(h, self:GetTextHeight())
-	print("set height", self.TempHeight)
 end
 
 function buf:Newline(times, h)
-	
 	times = times or 1
 	local lH = h or self:GetTextHeight()
 	local y = times * lH
