@@ -6,7 +6,7 @@ ENT.Skin = 0
 ENT.Capacity 		= 500000
 ENT.PrintInterval 	= 1
 ENT.PrintAmount		= 1050
-ENT.PowerRequired 	= 150
+ENT.PowerRequired 	= 120
 
 ENT.PrintName = "Nuclear Printer"
 

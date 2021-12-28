@@ -3,11 +3,10 @@ ENT.Base = "bw_base_moneyprinter"
 
 ENT.Skin = 0
 
-ENT.PowerRequired = 190
-
 ENT.Capacity 		= 1.8e6
 ENT.PrintInterval 	= 1
 ENT.PrintAmount		= 3500
+ENT.PowerRequired = 190
 
 ENT.PrintName = "Mobius Printer"
 

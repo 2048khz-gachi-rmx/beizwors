@@ -6,7 +6,7 @@ ENT.Skin = 0
 ENT.Capacity 		= 15000
 ENT.PrintInterval 	= 1
 ENT.PrintAmount		= 35
-ENT.PowerRequired = 8
+ENT.PowerRequired = 10
 ENT.PrintName = "Copper Printer"
 
 ENT.FontColor = Color(200, 117, 51)
