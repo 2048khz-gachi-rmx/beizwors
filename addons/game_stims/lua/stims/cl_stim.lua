@@ -18,8 +18,6 @@ function Stims.PlayStimEffects(force)
 end
 
 function Stims.StopStim()
-	print("STOP STIMMM")
-
 	ply:RemoveTimer("stim_cap_off")
 	VManip:Remove()
 end
@@ -73,9 +71,9 @@ hook.Add("Offhand_GenerateSelection", "ShowStim", function(bind, wheel)
 		Icon("https://i.imgur.com/1aEZv3d.png", "adrenaline_shot128.png"):
 			SetSize(64, 64))
 
-	stim:On("Select", function()
+	--[[stim:On("Select", function()
 		Offhand.SetBindAction(bind, Stims.ActionName)
-	end)
+	end)]]
 end)
 
 hook.Add("Offhand_GenerateSelection", "ShowNothing", function(bind, wheel)
@@ -84,9 +82,9 @@ hook.Add("Offhand_GenerateSelection", "ShowNothing", function(bind, wheel)
 		Icon("https://i.imgur.com/6se0gFC.png", "none64_gray.png"):
 			SetSize(64, 64))
 
-	stim:On("Select", function()
+	--[[stim:On("Select", function()
 		Offhand.SetBindAction(bind, "fucking nothing")
-	end)
+	end)]]
 end)
 
 hook.Add("VManipPlaySegment", "Stims", function()

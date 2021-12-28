@@ -2,6 +2,7 @@ Offhand = Offhand or {}
 
 Offhand.Binds = Offhand.Binds or {}
 Offhand.CurrentActions = Offhand.CurrentActions or {}
+Offhand.InactiveColor = Colors.LightGray:Copy()
 
 -- defaults
 local keys = {
@@ -38,7 +39,7 @@ local function fillBind(bind)
 			-- errorNHf("Offhand action not found! %q", action)
 			return
 		elseif isfunction(action.Use) then
-			action.Use ()
+			action.Use(LocalPlayer())
 		end
 
 		--[[else
@@ -131,6 +132,10 @@ if CLIENT then
 		wh:On("RightClick", "Hide", function()
 			bind:Deactivate()
 		end)
+
+		function wh:OnSelect(opt)
+			Offhand.SetBindAction(bind, opt.ActionName)
+		end
 	end
 
 	function Offhand.HideChoices(bind)
@@ -141,6 +146,7 @@ if CLIENT then
 
 	function Offhand.AddChoice(id, ...)
 		local ch = curWheel:AddOption(...)
+		ch.ActionName = id
 
 		local action = Offhand.GetBindAction(curBind)
 		if id and id == action then
@@ -149,4 +155,45 @@ if CLIENT then
 
 		return ch
 	end
+
+	function Offhand.RequestAction(act, ns)
+		-- nooooo you cant just network a string instead of
+		-- making a 200 lines encoder for stringName <-> numberID
+
+		net.Start("OffhandAction")
+			local pr = net.StartPromise()
+			net.WriteString(act)
+			if IsNetStack(ns) then
+				ns:Write()
+			end
+		net.SendToServer()
+
+		return pr
+	end
+
+	net.Receive("OffhandAction", function()
+		net.ReadPromise()
+	end)
+else
+	util.AddNetworkString("OffhandAction")
+
+	net.Receive("OffhandAction", function(len, ply)
+
+		local pr = net.ReplyPromise(ply)
+
+		local name = net.ReadString()
+		if not name then pr:ReplySend("OffhandAction", false) return false end
+
+		local act = Offhand.Actions[name]
+		if not act then pr:ReplySend("OffhandAction", false) return false end
+
+		if isfunction(act.Use) then
+			local out = act.Use(ply)
+
+			if out ~= nil then
+				print("promise reply:", out)
+				pr:ReplySend("OffhandAction", out)
+			end
+		end
+	end)
 end

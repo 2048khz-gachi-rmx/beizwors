@@ -180,7 +180,7 @@ function ENT:MakeItemFrames(betweenW, vault, bp, inVt, outVt)
 	hold:Bond(vault)
 	hold:SetSize(betweenW - 16, 80)
 	hold:Center()
-	hold:DockPadding(8, 8 + 4, 8, 28)
+	hold:DockPadding(8, 8 + 4, 8, 24)
 	hold:SetColor(Colors.DarkGray)
 	hold.UseDockProperties = true
 	hold.MarginX = 8
@@ -273,6 +273,8 @@ function ENT:MakeItemFrames(betweenW, vault, bp, inVt, outVt)
 		self:To("GradSize", 4, 0.1, 0, 0.3)
 	end
 
+	hold.widths = {}
+
 	function hold:PostPaint(w, h)
 		local has_active = false
 
@@ -282,11 +284,19 @@ function ENT:MakeItemFrames(betweenW, vault, bp, inVt, outVt)
 
 			local pwNeed = it:GetTotalTransferCost()
 			local fr = math.Remap(ent.Status:Get(k, 0), 0, pwNeed, 0, 1)
+			local left = (pwNeed - ent.Status:Get(k, 0)) / ent:GetTransferRate() * BaseWars.Bases.PowerGrid.ThinkInterval
+			local txt = ("%d%% (%s)"):format(
+				fr * 100, string.FormattedTime(left, "%01d:%02d")
+			)
 
-			draw.SimpleText(("%d%%"):format(fr * 100),
-				"MR20", v.X + v:GetWide() / 2, v.Y + v:GetTall(),
-				has_active and Colors.Gray or Colors.LighterGray,
-				1)
+			surface.SetFont("MR16")
+			local tw, th = surface.GetTextSize(txt)
+			self.widths[k] = self.widths[k] or tw
+			self:MemberLerp(self.widths, k, tw, 0.2, 0, 0.3)
+
+			draw.SimpleText2(txt, nil,
+				v.X + v:GetWide() / 2 - self.widths[k] / 2, v.Y + v:GetTall(),
+				has_active and Colors.Gray or Colors.LighterGray)
 
 			if fr < 1 then
 				has_active = true

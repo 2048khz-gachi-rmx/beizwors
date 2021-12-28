@@ -66,6 +66,10 @@ function math.Sign(n)
 	return n >= 0 and 1 or -1
 end
 
+function math.RandomSign(min, max)
+	return (math.random(0, 1) - 0.5) * 2 * (min and math.random(max and min or 0, max or min) or 1)
+end
+
 function math.Ratio(ratio, w, h)
 	if ratio < 1 then
 		-- ratio < 1 = align by height

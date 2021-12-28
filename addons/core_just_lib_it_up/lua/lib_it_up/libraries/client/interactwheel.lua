@@ -8,12 +8,14 @@ wheel.Matrix = Matrix()
 
 wheel.Frac = 0
 
+function wheel:OnSelect(opt, name) end
+
 function wheel:Initialize()
 	self.Options = {}
 	self.Frac = 0
 
-	self.BlurAmount = 2
-	self.Dim = 0.5
+	self.BlurAmount = 1
+	self.Dim = 0.75
 end
 
 
@@ -424,8 +426,8 @@ function InteractWheelOption:Initialize(name, desc, icon, cb)
 	self.Title = name or "Unnamed"
 	self.Description = desc
 
-	self.DescriptionFont = "OS20"
-	self.TitleFont = "OSB32"
+	self.DescriptionFont = "BS20"
+	self.TitleFont = "MRM36"
 
 	self:SetDescriptionColor(color_white:Copy())
 	self:SetTitleColor(color_white:Copy())
@@ -546,7 +548,10 @@ function InteractWheelOption:_Select()
 	self.Circle:MemberLerp(self, "SelectedFrac", 1, dur, 0, ease)
 	self.Circle:MemberLerp(self, "HoveredFrac", 0, 0.2, 0.1, 5)
 
-	self:Emit("Select")
+	local proc = self:Emit("Select")
+	if proc == nil then
+		self:GetWheel():OnSelect(self, self.Title)
+	end
 end
 
 function InteractWheelOption:_Hover()
@@ -691,13 +696,13 @@ function InteractWheelOption:_Paint(x, y, w, h, prevMatrix, innerCircle)
 
 			local rx, ry = math.floor( x + smX + math.cos(segMidRad) * off ),
 							math.floor( y + smY + math.sin(segMidRad) * off )
-			local icang = -segMid
+			local icang = 0 -- -segMid
 
-			if flip < 0 then
+			--[[if flip < 0 then
 				icang = math.Clamp(icang, -180 - 45, -180 + 15)
 			else
 				icang = math.Clamp(icang, -15, 45)
-			end
+			end]]
 
 			local iw, ih = ic:GetSize()
 
@@ -819,7 +824,7 @@ function InteractWheelOption:_Paint(x, y, w, h, prevMatrix, innerCircle)
 	local mtrx = self.Matrix
 		mtrx:Reset()
 		mtrx:TranslateNumber(trX, trY)
-		local scale = (fr ^ 0.7) * 1
+		local scale = (fr ^ 0.7) * 0.2 + 0.8
 		mtrx:SetScaleNumber(scale, scale)
 		mtrx:TranslateNumber(-trX, -trY)
 

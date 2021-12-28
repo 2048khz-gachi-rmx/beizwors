@@ -60,3 +60,20 @@ function Timerify(what)
 	what.Timer = META.Timer
 	what.RemoveTimer = META.RemoveTimer
 end
+
+local PLAYER = FindMetaTable("Player")
+
+function PLAYER:LiveTimer(id, ...)
+	self._timers = self._timers or {}
+	self._timers[id] = self:Timer(id, ...)
+end
+
+hook.Add("PlayerDeath", "ResetTimers", function(ply)
+	if not ply._timers then return end
+
+	for k,v in pairs(ply._timers) do
+		timer.Remove(v)
+	end
+
+	ply._timers = {}
+end)
