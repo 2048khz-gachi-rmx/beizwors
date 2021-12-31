@@ -30,9 +30,11 @@ mysqloo.OnConnect(onDB)
 hook.Add("EntityOwnershipChanged", "RollbackTracker", function(ply, ent, old)
 	if old then
 		local opi = GetPlayerInfo(old)
-		local prevOwWorth = opi:GetWorth() or 0
-		opi:SetWorth(math.max(prevOwWorth - BaseWars.Worth.Get(ent), 0))
-		opi:SetBWData("Worth", opi:GetWorth())
+		if opi then
+			local prevOwWorth = opi:GetWorth() or 0
+			opi:SetWorth(math.max(prevOwWorth - BaseWars.Worth.Get(ent), 0))
+			opi:SetBWData("Worth", opi:GetWorth())
+		end
 	end
 
 	local ow = GetPlayerInfo(ply)

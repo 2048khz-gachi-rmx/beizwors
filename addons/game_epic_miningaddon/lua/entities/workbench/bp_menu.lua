@@ -560,6 +560,8 @@ function ENT:CraftFromBlueprintMenu(open, main)
 
 	function doeet:Think()
 		if not CurItem then self:SetEnabled(false) return end
+		if not ent:BW_IsOwner(LocalPlayer()) then self:SetEnabled(false) return end
+
 		local reqs = CurItem:GetRecipe()
 		local invs = iutil.GetUsableInventories(LocalPlayer())
 

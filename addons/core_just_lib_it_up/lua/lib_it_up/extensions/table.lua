@@ -52,6 +52,11 @@ function table.IsEmpty(t)
 	return next(t) == nil
 end
 
+function table.PackUp(t) -- for lack of a better word
+	if istable(t) then return t end
+	return {t}
+end
+
 --[[
 	Weak tables
 ]]
