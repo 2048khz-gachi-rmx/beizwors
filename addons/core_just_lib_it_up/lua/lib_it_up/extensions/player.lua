@@ -331,3 +331,37 @@ if CLIENT then
 		end
 	end)
 end
+
+local allPlayers = player.GetAll()
+
+hook.Add("PlayerInitialSpawn", "TrackAll", function(ply)
+	table.Empty(allPlayers)
+
+	local has = false -- ??? i dont know if i need it and dont feel like testing
+	for k,v in ipairs(player.GetAll()) do
+		allPlayers[k] = v
+		has = has or v == ply
+	end
+
+	if not has then
+		table.insert(allPlayers, ply)
+	end
+end)
+
+hook.Add("PlayerDisconnected", "TrackAll", function(ply)
+	table.Empty(allPlayers)
+
+	local has = false -- ??? i dont know if i need it and dont feel like testing
+	for k,v in ipairs(player.GetAll()) do
+		allPlayers[k] = v
+		has = has or v == ply
+	end
+
+	if has then
+		table.RemoveByValue(allPlayers, ply)
+	end
+end)
+
+function player.GetConstAll()
+	return allPlayers
+end

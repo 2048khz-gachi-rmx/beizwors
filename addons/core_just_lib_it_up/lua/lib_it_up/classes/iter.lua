@@ -4,6 +4,7 @@ ValidIterable = ValidIterable or Object:callable()
 ValidIterable._iter = pairs
 ValidSeqIterable = ValidSeqIterable or Object:callable()
 
+-- this shouldnt work wtf
 
 local function validSeqIterator(self)
 	local i = 0
@@ -50,6 +51,16 @@ function ValidIterable:len()
 	end
 
 	return len
+end
+
+function ValidSeqIterable:isEmpty()
+	-- cant use next here, have to actually clean
+	for _, v in self:_iter() do
+		print("ismpety:", v)
+		return true
+	end
+
+	return false
 end
 
 function ValidSeqIterable:len()

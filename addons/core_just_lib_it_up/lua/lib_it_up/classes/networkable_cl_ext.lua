@@ -219,6 +219,7 @@ net.Receive("NetworkableSync", function(len)
 			changes[k] = {obj.Networked[k], v}
 			obj.Networked[k] = v
 			obj:Emit("NetworkedVarChanged", k, changes[k][1], v) -- key, old, new
+			hook.Run("NetworkableVarChanged", obj, k, changes[k][1], v)
 		else
 
 			idData:Set(v, NumberToID(num_id), k)
@@ -229,6 +230,7 @@ net.Receive("NetworkableSync", function(len)
 
 	if obj then
 		obj:Emit("NetworkedChanged", changes)
+		hook.Run("NetworkableChanged", obj, changes)
 	end
 end)
 

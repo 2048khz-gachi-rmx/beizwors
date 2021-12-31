@@ -68,12 +68,25 @@ function PLAYER:LiveTimer(id, ...)
 	self._timers[id] = self:Timer(id, ...)
 end
 
-hook.Add("PlayerDeath", "ResetTimers", function(ply)
-	if not ply._timers then return end
+function PLAYER:ResetLiveTimers()
+	if not self._timers then return end
 
-	for k,v in pairs(ply._timers) do
+	for k,v in pairs(self._timers) do
 		timer.Remove(v)
 	end
 
-	ply._timers = {}
-end)
+	self._timers = {}
+end
+
+hook.Add("PlayerDeath", "ResetTimers", PLAYER.ResetLiveTimers)
+
+if CLIENT then
+	gameevent.Listen("entity_killed")
+	hook.Add("entity_killed", "ResetTimers", function(dat)
+		local eid = dat.entindex_killed
+		local ent = Entity(eid)
+		if not ent:IsPlayer() then return end
+
+		ent:ResetLiveTimers()
+	end)
+end

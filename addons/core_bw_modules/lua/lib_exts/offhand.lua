@@ -188,11 +188,10 @@ else
 		if not act then pr:ReplySend("OffhandAction", false) return false end
 
 		if isfunction(act.Use) then
-			local out = act.Use(ply)
+			local out, ns = act.Use(ply)
 
 			if out ~= nil then
-				print("promise reply:", out)
-				pr:ReplySend("OffhandAction", out)
+				pr:ReplySend("OffhandAction", out, ns)
 			end
 		end
 	end)

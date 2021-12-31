@@ -257,9 +257,13 @@ local function WriteChange(key, val, obj, ...)
 	local key_typ = type(key):lower()
 	local val_typ = type(val):lower()
 
+	obj.__LastNetworked[key] = val
 	if val == fakeNil then val = nil end
 
 	local unAliased = obj.__AliasesBack[key] or key
+
+	print("WriteChange", key, val, obj)
+
 	local res = obj:Emit("WriteChange", unAliased, val, ...)
 	if res == false then printf("WriteChangeValue asked to not write key/value (%s = %s)", unAliased, val) return end
 
@@ -677,6 +681,21 @@ end
 
 function nw:_ServerSet(k, v)
 	if self.Networked[k] == v and not istable(v) then --[[adios]] return end
+
+	if (v ~= nil and self.__LastNetworked[k] == v) or (v == nil and self.__LastNetworked[k] == fakeNil) then
+		self.Networked[k] = v
+
+		-- last networked is what we just set;
+		-- set the var like normal but dont network it (cuz everyone already knows)
+		_NetworkableChanges:Set(nil, self.NetworkableID, k) -- clear this change
+
+		local ch = _NetworkableChanges:Get(self.NetworkableID)
+		if table.IsEmpty(ch) then -- no changes left; remove us from changes entirely
+			_NetworkableChanges:Set(nil, self.NetworkableID)
+		end
+
+		return
+	end
 
 	self.Networked[k] = v
 	if v == nil then v = fakeNil end

@@ -60,14 +60,14 @@ function PI:Initialize(id, is_sid64) -- we can't know that the id is a steamID64
 		return
 	end
 
-	print(sid .. " new PlayerInfo created.", self:GetPublicNW(), self:GetPublicNW() and self:GetPublicNW():IsValid())
-	print(PIT.Player[ply], PIT.Player[sid], PIT.Player[sid64])
-
 	if ply then self:SetPlayer(ply) end
 	self:SetSteamID(sid)
 	self:SetSteamID64(sid64)
 
 	self:ValidateNW()
+
+	print(sid .. " new PlayerInfo created.", self:GetPublicNW(), self:GetPublicNW() and self:GetPublicNW():IsValid())
+	print(PIT.Player[ply], PIT.Player[sid], PIT.Player[sid64])
 
 	self._StartedSession = CurTime()
 	self._EndedSession = nil
@@ -86,6 +86,7 @@ ChainAccessor(PI, "_SteamID", "SteamID")	-- 	  !! Using SteamID's is not advised
 											-- Use SteamID64 instead since it has a hack to work on bots on both realms
 ChainAccessor(PI, "_SteamID64", "SteamID64")
 ChainAccessor(PI, "_PubNW", "PublicNW")
+ChainAccessor(PI, "_PrivNW", "PrivateNW")
 
 function PI:SetSteamID64(id)
 	self._SteamID64 = id
@@ -220,6 +221,17 @@ end
 function PI:ValidateNW()
 	if not self:GetPublicNW() or not self:GetPublicNW():IsValid() then
 		self:SetPublicNW( Networkable("PI:" .. self:SteamID64()) )
+		local pub = self:GetPublicNW()
+		pub.PlayerInfoNW = self
+		pub.IsPublicNW = self
+
+		self:SetPrivateNW( Networkable("PI_Priv:" .. self:SteamID64()) )
+
+		local priv = self:GetPrivateNW()
+		priv.Filter = function(_, ply) return ply:SteamID64() == self:GetSteamID64() end
+		priv.PlayerInfoNW = self
+		priv.IsPrivateNW = self
+
 		hook.NHRun("PlayerInfoNWCreate", self)
 	end
 end
@@ -489,6 +501,7 @@ function PInfoAccessor(k)
 end
 
 hook.Add("NetworkableAttemptCreate", "PlayerInfo", function(nwID)
+	-- we only need to do this for public NW's; private should be fine
 	if nwID:match("PI:(%d+)") then
 		local sid64 = nwID:match("PI:(%d+)")
 
@@ -500,10 +513,10 @@ hook.Add("NetworkableAttemptCreate", "PlayerInfo", function(nwID)
 			for k,v in pairs(PIT.Player) do
 
 				if v:IsValid() and v:SteamID64() == sid64 then -- updated steamid64?
-					pin:SetSteamID64(sid64)
-					pin:SetSteamID(util.SteamIDFrom64(sid64))
-					pin:GetPublicNW():SetNetworkableID(nwID)
-					return pin:GetPublicNW()
+					v:SetSteamID64(sid64)
+					v:SetSteamID(util.SteamIDFrom64(sid64))
+					v:GetPublicNW():SetNetworkableID(nwID)
+					return v:GetPublicNW()
 					-- AAAAAAAAAAAAAAAAAAAAAAAAA
 				end
 			end

@@ -7,10 +7,10 @@ MoarPanelsRTMats = mats
 local function CreateRT(name, w, h)
 
 	return GetRenderTargetEx(
-		name,
+		name .. "_lbu",
 		w,
 		h,
-		RT_SIZE_OFFSCREEN,
+		RT_SIZE_LITERAL,
 		MATERIAL_RT_DEPTH_SEPARATE, 	-- https://github.com/Facepunch/garrysmod-issues/issues/5039
 		2, 	--texture filtering, the enum doesn't work
 		0,	-- no hdr
@@ -56,7 +56,7 @@ function draw.GetRTMat(name, w, h, shader)
 	return rt, mat
 end
 
-function draw.RenderOntoRT(rt, w, h, fn)
+function draw.RenderOntoRT(rt, w, h, fn, ...)
 
 	render.PushRenderTarget(rt)
 		render.OverrideAlphaWriteEnable(true, true)
@@ -65,11 +65,15 @@ function draw.RenderOntoRT(rt, w, h, fn)
 			render.Clear(0, 0, 0, 0)
 
 			cam.Start2D()
-			local ok, err = pcall(fn, w, h, rt)
+			local ok, err = pcall(fn, w, h, rt, ...)
 			cam.End2D()
 
 		render.OverrideAlphaWriteEnable(false)
 	render.PopRenderTarget()
+
+	if not ok then
+		errorNHf("error while rendering onto rt %s:\n%s", rt:GetName(), err)
+	end
 end
 
 function draw.RenderOntoMaterial(name, w, h, func, rtfunc, matfunc, pre_rt, pre_mat, has2d, x, y)

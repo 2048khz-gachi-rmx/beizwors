@@ -143,7 +143,8 @@ end
 
 function nw:Initialize(id, ...)
 	self.Networked = {}
-
+	
+	self.__LastNetworked = {}
 	self.__Aliases = {}			-- [name] = alias
 	self.__AliasesBack = {}		-- [alias] = name
 
