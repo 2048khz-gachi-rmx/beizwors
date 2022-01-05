@@ -82,8 +82,16 @@ end)
 
 hook.Add("BW_CanDealEntityDamage", "ResidenceCheck", function(atk, ent, imfl, dmg)
 	-- stuff on the street can be shot down but only with a fraction of the damage
+
+	local cfg = BaseWars.Config
+
+	local time = CurTime() - ent:GetCreationTime()
+	local fr = math.TimeFraction(cfg.BulletPropDamageTime, 0, time)
+
+	local recent_frac = Lerp(fr, cfg.BulletPropDamageMin, cfg.BulletPropDamageMax)
+
 	if not ent:BW_GetBase() then
-		dmg:ScaleDamage(0.5)
+		dmg:ScaleDamage(recent_frac)
 		return true
 	end
 
@@ -92,10 +100,9 @@ hook.Add("BW_CanDealEntityDamage", "ResidenceCheck", function(atk, ent, imfl, dm
 	-- stuff in bases not claimed by the ent owner can be shot down
 	if not base:IsEntityOwned(ent) then
 
-		-- base owner deals 3x bullet damage to others' props in his base
-		if IsPlayer(atk) and base:IsOwner(atk)
-			and not base:IsEntityOwned(ent) then
-			dmg:ScaleDamage(3)
+		-- base owner deals 20x bullet damage to others' props in his base
+		if IsPlayer(atk) and base:IsOwner(atk) then
+			dmg:ScaleDamage(20 * math.max(1, recent_frac))
 			return true
 		end
 

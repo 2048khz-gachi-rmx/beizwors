@@ -14,7 +14,11 @@ BaseWars.Config = {
 
 	ReFadeDelay = 0.75,
 
-	Raid_BulletPropDamage = 0.4,
+	Raid_BulletPropDamage = 0.5,
+
+	BulletPropDamageMin = 0.5,
+	BulletPropDamageMax = 5,
+	BulletPropDamageTime = 10,
 
 	SpawnWeps = {
 		"weapon_physcannon",
