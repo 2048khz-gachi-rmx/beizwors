@@ -1059,7 +1059,10 @@ function SWEP:Think()
 	if self.HoldToAim then
 		if (SP and SERVER) or not SP then
 			if self.dt.State == CW_AIMING then
-				if not self.Owner:OnGround() or Length(GetVelocity(self.Owner)) >= self.Owner:GetWalkSpeed() * self.LoseAimVelocity or not self.Owner:KeyDown(IN_ATTACK2) then
+				if --not self.Owner:OnGround() or
+					--Length(GetVelocity(self.Owner)) >= self.Owner:GetWalkSpeed() * self.LoseAimVelocity or
+					not self.Owner:KeyDown(IN_ATTACK2) then
+
 					self.dt.State = CW_IDLE
 					self:SetNextSecondaryFire(CT + 0.2)
 					self:EmitSound("CW_LOWERAIM")
@@ -1086,7 +1089,7 @@ function SWEP:Think()
 	if CT > self.GlobalDelay then
 		wl = self.Owner:WaterLevel()
 
-		if self.Owner:OnGround() then
+		if true then --self.Owner:OnGround() then
 			-- prone mod compatibility starts
 			if self:isPlayerEnteringProne() then
 				self.dt.State = CW_PRONE_BUSY
@@ -1424,9 +1427,9 @@ function SWEP:addFireSpread(CT)
 	local mul, mulMax = self:getSpreadModifiers()
 
 	if self.BurstAmount > 0 then
-		self.AddSpread = math.Clamp(self.AddSpread + self.SpreadPerShot * self.BurstSpreadIncMul * mul, 0, self.MaxSpreadInc * mulMax)
+		self.AddSpread = math.Clamp(self.AddSpread + self.SpreadPerShot * self.BurstSpreadIncMul * mul / 3, 0, self.MaxSpreadInc * mulMax)
 	else
-		self.AddSpread = math.Clamp(self.AddSpread + self.SpreadPerShot * mul, 0, self.MaxSpreadInc * mulMax)
+		self.AddSpread = math.Clamp(self.AddSpread + self.SpreadPerShot * mul / 3, 0, self.MaxSpreadInc * mulMax)
 	end
 
 	-- decrease spread restore speed per each shot
@@ -1761,10 +1764,14 @@ function SWEP:MakeRecoil(mod)
 	local mod = self:GetRecoilModifier(mod)
 	local IFTP = IsFirstTimePredicted()
 	
+	local offVMult = self.dt.State == CW_AIMING and 0.75 or 0.25
+	local offHMult = self.dt.State == CW_AIMING and 0.2 or 0.7
+	local visMult = self.dt.State == CW_AIMING and 0.6 or 1.1
+
 	if (SP and SERVER) or (not SP and CLIENT and IFTP) then
 		ang = self.Owner:EyeAngles()
-		ang.p = ang.p - self.Recoil * 0.5 * mod
-		ang.y = ang.y + math.Rand(-1, 1) * self.Recoil * 0.5 * mod
+		ang.p = ang.p - self.Recoil * offVMult * mod
+		ang.y = ang.y + math.Rand(-1, 1) * self.Recoil * offHMult * mod
 	
 		self.Owner:SetEyeAngles(ang)
 	end
@@ -1772,7 +1779,7 @@ function SWEP:MakeRecoil(mod)
 	local freeAimOn = self:isFreeAimOn()
 	
 	if not freeAimOn or (freeAimOn and self.dt.BipodDeployed) then
-		self.Owner:ViewPunch(Angle(-self.Recoil * 1.25 * mod, 0, 0))
+		self.Owner:ViewPunch(Angle(-self.Recoil * visMult * mod, 0, 0))
 	end
 	
 	if CLIENT and IFTP then
@@ -1847,21 +1854,21 @@ function SWEP:SecondaryAttack()
 		end
 	end
 	
-	if not self.Owner:OnGround() or Length(GetVelocity(self.Owner)) >= self.Owner:GetWalkSpeed() * self.RunStateVelocity then
+	--[[if not self.Owner:OnGround() or Length(GetVelocity(self.Owner)) >= self.Owner:GetWalkSpeed() * self.RunStateVelocity then
 		return
-	end
+	end]]
 	
 	CT = CurTime()
 	
 	if self.dt.State ~= CW_AIMING then
 		self.dt.State = CW_AIMING
-		
+
 		if self:filterPrediction() then
 			self:EmitSound("CW_TAKEAIM")
 		end
 	else
 		self.dt.State = CW_IDLE
-		
+
 		if self:filterPrediction() then
 			self:EmitSound("CW_LOWERAIM")
 		end

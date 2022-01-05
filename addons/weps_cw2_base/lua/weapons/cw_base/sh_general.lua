@@ -32,9 +32,9 @@ function SWEP:canCustomize()
 		return false
 	end
 	
-	if not self.Owner:OnGround() then
+	--[[if not self.Owner:OnGround() then
 		return false
-	end
+	end]]
 	
 	return true
 end
@@ -564,9 +564,9 @@ function SWEP:getFinalSpread(vel, maxMultiplier)
 	if aiming then
 		-- irl the accuracy of your weapon goes to shit when you start moving even if you aim down the sights, so when aiming, player movement will impact the spread even more than it does during hip fire
 		-- but we're gonna clamp it to a maximum of the weapon's hip fire spread, so that even if you aim down the sights and move, your accuracy won't be worse than your hip fire spread
-		final = math.min(final + (vel / 10000 * self.VelocitySensitivity) * self.AimMobilitySpreadMod, self.HipSpread)
+		final = math.min(final + (vel / 50000 * self.VelocitySensitivity) * self.AimMobilitySpreadMod, self.HipSpread)
 	else
-		final = final + (vel / 10000 * self.VelocitySensitivity)
+		final = final + (vel / 50000 * self.VelocitySensitivity)
 	end
 	
 	if self.ShootWhileProne and self:isPlayerProne() then
@@ -678,9 +678,9 @@ function SWEP:canOpenInteractionMenu()
 		return false
 	end
 	
-	if not self.Owner:OnGround() then
+	--[[if not self.Owner:OnGround() then
 		return false
-	end
+	end]]
 	
 	return true
 end
