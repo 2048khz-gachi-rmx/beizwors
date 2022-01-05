@@ -24,6 +24,8 @@ hook.Add("PostRender", "a", function()
 	cam.End2D()
 end)
 
+do return end
+
 --[[hook.Call = _HCALL
 local reg = debug.getregistry()
 for k,v in pairs(reg) do

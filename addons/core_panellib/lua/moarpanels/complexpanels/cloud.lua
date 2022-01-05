@@ -311,7 +311,7 @@ function Cloud:Paint()
 	local am = surface.GetAlphaMultiplier()
 	surface.SetAlphaMultiplier(self:GetAlpha() / 255)
 
-	DisableClipping(true)
+	local clip = DisableClipping(true)
 
 		if self.Shadow and self.DrawShadow then
 			BSHADOWS.BeginShadow()
@@ -405,7 +405,7 @@ function Cloud:Paint()
 
 		end
 
-	DisableClipping(false)
+	DisableClipping(clip)
 	surface.SetAlphaMultiplier(am)
 
 	self:PostPaint()
