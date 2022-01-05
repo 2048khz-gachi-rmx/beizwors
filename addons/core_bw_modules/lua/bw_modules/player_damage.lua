@@ -4,11 +4,22 @@ if CLIENT then
 	end)
 end
 
-hook.Add("PostEntityTakeDamage", "NoViewpunch", function(ent, dmg)
+hook.Add("EntityTakeDamage", "NoViewpunch", function(ent, dmg)
 	if not ent:IsPlayer() then return end
 
-	ent:SetViewPunchAngles(angle_zero)
-	ent:SetViewPunchVelocity(angle_zero)
+	ent._preVP = ent:GetViewPunchAngles()
+	ent._preVPV = ent:GetViewPunchVelocity()
+end)
+
+hook.Add("PostEntityTakeDamage", "NoViewpunch", function(ent, dmg)
+	if not ent:IsPlayer() then return end
+	if not ent._preVP then return end
+
+	ent:SetViewPunchAngles(ent._preVP)
+	ent:SetViewPunchVelocity(ent._preVPV)
+
+	ent._preVP = nil
+	ent._preVPV = nil
 end)
 
 hook.Add("PlayerSpawn", "NoForce", function(ply)
