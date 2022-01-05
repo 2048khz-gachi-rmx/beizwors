@@ -9,3 +9,6 @@
 [submodule "addons/meta_adminphysgun"]
 	path = addons/meta_adminphysgun
 	url = https://github.com/2048khz-gachi-rmx/ImprovedAdminPhysgun
+[submodule "addons/core_wsmount"]
+	path = addons/core_wsmount
+	url = https://github.com/2048khz-gachi-rmx/WSMount
