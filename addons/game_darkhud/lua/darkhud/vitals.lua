@@ -338,11 +338,14 @@ function DarkHUD.CreateVitals()
 	local circle = LibItUp.Circle()
 	circle:SetSegments(16)
 
+	local avRnd = 8
+
 	local function Mask(av, x, y, w2, h2)
 		draw.NoTexture()
 		surface.SetDrawColor(0, 0, 0, 255)
-		circle:SetRadius(w2 / 2 + 2)
-		circle:Paint(x + w2 / 2, y + h2 / 2)
+		draw.RoundedStencilBox(avRnd, x, y, w2, h2, color_white)
+		--circle:SetRadius(w2 / 2 + 2)
+		--circle:Paint(x + w2 / 2, y + h2 / 2)
 	end
 
 	local function Paint(av)
@@ -392,9 +395,19 @@ function DarkHUD.CreateVitals()
 
 		draw.Masked(Mask, Paint, nil, nil, av, x, y, w2, h2)
 
+		local bordSz = 2
 
-		surface.SetDrawColor(curTeamCol:Unpack())
-		surface.DrawMaterial("https://i.imgur.com/VMZue2h.png", "circle_outline.png", x-3, y-3, w2+6, h2+6)
+		draw.BeginMask()
+		render.PerformFullScreenStencilOperation()
+		draw.DeMask()
+			draw.RoundedStencilBox(avRnd, x, y, w2, h2, color_white)
+		draw.DrawOp()
+			draw.RoundedBox(avRnd, x - bordSz, y - bordSz,
+				w2 + bordSz * 2, h2 + bordSz * 2, curTeamCol)
+		draw.FinishMask()
+		--[[surface.SetDrawColor(curTeamCol:Unpack())
+		surface.DrawMaterial("https://i.imgur.com/VMZue2h.png",
+			"circle_outline.png", x-3, y-3, w2+6, h2+6)]]
 
 		DarkHUD:Emit("VitalsFramePainted", w, h)
 	end
