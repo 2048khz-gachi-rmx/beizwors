@@ -12,10 +12,13 @@ function Safezones.StartTouch(brush, ent)
 		ent:SetNWFloat("Safezone", CurTime())
 	end
 
-	if first and ent.IsBaseWars then
-		if IsValid(ent:CPPIGetOwner()) then
+	if first and IsValid(ent:CPPIGetOwner()) then
+		if ent.IsBaseWars then
 			ent:CPPIGetOwner():ChatPrint("Remove your " .. (ent.PrintName or ent:GetClass()) .. " from spawn or it will be removed!")
 			rtrk[ent] = CurTime()
+		elseif ent:GetClass() == "prop_physics" then
+			SafeRemoveEntityDelayed(ent, 0)
+			ent:CPPIGetOwner():ChatPrint("Props in safezones aren't allowed.")
 		end
 	end
 end
