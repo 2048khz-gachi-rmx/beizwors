@@ -64,17 +64,16 @@ end
 
 function dtc:Detect(ply, addData)
 	local cd = self:GetCooldown()
+	local pin = GetPlayerInfoGuarantee(ply)
 
 	if not cd:Put(ply, 3) then
-		self:Timer(("%p"):format(ply), 3, 1, function()
-			self:Detect(ply, addData)
+		self:Timer(("nalox_detect:%s"):format(self:GetName()), 3, 1, function()
+			self:Detect(pin:SteamID64(), addData)
 		end)
 		return
 	end
 
-	local pin = GetPlayerInfoGuarantee(ply)
-
-	NX.AddInfraction(ply, self:GetID(), addData)
+	NX.AddInfraction(pin, self:GetID(), addData)
 	hook.NHRun("NX_Detection", pin, self, addData)
 end
 

