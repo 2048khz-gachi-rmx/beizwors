@@ -437,31 +437,25 @@ end
 --if bottom is true, it'll make the bottom shorter
 --otherwise the top is shorter
 
+local poly = {
+	{ --[[top left]] },
+	{ --[[top right]] },
+	{ --[[bottom right]] },
+	{ --[[bottom left]] }
+}
+
 function draw.RightTrapezoid(x, y, w, h, leg, bottom)
+	poly[1].x = x
+	poly[1].y = y
 
+	poly[2].x = x + w - (bottom and 0 or leg)
+	poly[2].y = y
 
-	local poly = {
+	poly[3].x = x + w - (bottom and leg or 0)
+	poly[3].y = y + h
 
-		{ --top left
-			x = x,
-			y = y,
-		},
-
-		{ --top right
-			x = x + w - (bottom and 0 or leg),
-			y = y,
-		},
-
-		{ --bottom right
-			x = x + w - (bottom and leg or 0),
-			y = y + h,
-		},
-
-		{ --bottom left
-			x = x,
-			y = y + h,
-		}
-	}
+	poly[4].x = x
+	poly[4].y = y + h
 
 	surface.DrawPoly(poly)
 end

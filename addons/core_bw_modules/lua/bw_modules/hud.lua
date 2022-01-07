@@ -54,17 +54,38 @@ hook.Add("PostDrawTranslucentRenderables", "StructureInfoToScreen", updateToscre
 
 local b = bench("bw_hud", 600)
 
-local function DrawStructureInfo()
-	local me = LocalPlayer()
-	local ep = me:EyePos()
+local trOut = {}
 
-	local trace = util.TraceHull({
-		start = ep,
-		endpos = ep + (me:GetAimVector() * 32768),
-		maxs = vector_origin,
-		mins = vector_origin,
-		filter = {me}
-	})
+local trEnd = Vector()
+local eyePos = Vector()
+
+local trParams = {
+	start = nil,
+	endpos = trEnd,
+
+	maxs = vector_origin,
+	mins = vector_origin,
+	filter = {},
+
+	output = trOut,
+}
+
+
+local function DrawStructureInfo()
+	local me = CachedLocalPlayer()
+	local ep = EyePos()
+	eyePos:Set(ep)
+
+	local av = me:GetAimVector()
+	av:Mul(512)
+
+	trEnd:Set(ep)
+	trEnd:Add(av)
+
+	trParams.start = ep
+	trParams.filter[1] = me
+
+	local trace = util.TraceHull(trParams)
 
 	--b:Close():print()
 
@@ -85,7 +106,7 @@ local function DrawStructureInfo()
 
 		local ep = ent:LocalToWorld(ent:OBBCenter())
 
-		dist = ep:Distance(EyePos())
+		dist = ep:Distance(eyePos)
 		lastent = ent
 
 		name = ent.PrintName or "wat"

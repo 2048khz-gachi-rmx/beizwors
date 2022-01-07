@@ -159,16 +159,14 @@ function meta:NewAnimation( length, delay, ease, callback )
 	delay = math.max(delay, 0)
 
 	local anim = AnimMeta:new()
-	table.Merge(anim, {
-		EndTime = delay + length,
-		StartTime = delay,
-		Ease = ease,
-		OnEnd = callback,
-		Parent = self,
-		Valid = true,
-		UneasedFrac = 0,
-		Frac = 0
-	})
+	anim.EndTime = delay + length
+	anim.StartTime = delay
+	anim.Ease = ease
+	anim.OnEnd = callback
+	anim.Parent = self
+	anim.Valid = true
+	anim.UneasedFrac = 0
+	anim.Frac = 0
 
 	self:SetAnimationEnabled( true )
 	if ( self.m_AnimList == nil ) then self.m_AnimList = {} end

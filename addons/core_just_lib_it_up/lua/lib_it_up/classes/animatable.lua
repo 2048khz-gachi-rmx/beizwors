@@ -28,13 +28,11 @@ AnimMeta = Promise:extend()
 local systime = SysTime()
 
 hook.Add("Think", "AnimatableThink", function()
-
 	systime = SysTime()
 
 	for k,v in pairs(objs) do
 		v:AnimationThink()
 	end
-
 end)
 
 function AnimMeta:Remove()
@@ -248,7 +246,6 @@ function Animatable:Lerp(key, val, dur, del, ease, forceswap)
 
 		anim.ToVal = val
 		anims[key] = anim
-
 	end
 
 	anim:On("Stop", "RemoveAnim", function()

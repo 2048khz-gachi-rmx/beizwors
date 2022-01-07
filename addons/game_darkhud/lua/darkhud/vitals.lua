@@ -386,7 +386,7 @@ function DarkHUD.CreateVitals()
 		ic:Paint(x + w2 + 12, moneyY, sz, sz)
 
 		moneyY = moneyY - popups.BounceMoney * 2
-		draw.SimpleText2(Language("Price", LocalPlayer():GetMoney()), "DarkHUD_Money",
+		draw.SimpleText2(Language("Price", me:GetMoney()), "DarkHUD_Money",
 			x + w2 + 12 + sz + 4, moneyY + sz/2, popups.MoneyColor, 0, 1)
 
 		local tm = me:Team()

@@ -285,7 +285,6 @@ function DarkHUD.CreateAmmo()
 			local total_lines = math.max(maxclip, 1)
 
 			if total_lines > 10 then
-
 				if total_lines % 10 == 0 then
 					if total_lines >= 60 then
 						total_lines = total_lines / 20
@@ -299,14 +298,11 @@ function DarkHUD.CreateAmmo()
 				else
 					total_lines = 4
 				end
-
 			end
-
 
 			local line_gap = math.max(w / total_lines, 2)
 
 			local anim, new = f:To("LineGap", line_gap, 0.3, 0, 0.3)
-
 			if self.Gone then
 				if anim then anim:Stop() end
 				self.LineGap = line_gap
@@ -323,7 +319,8 @@ function DarkHUD.CreateAmmo()
 				end
 			end
 
-			draw.BeginMask(f.MaskHeader, f, w, h)
+			draw.BeginMask()
+				f:MaskHeader(w, h)
 			draw.DrawOp()
 
 			render.SetScissorRect(x, y, x + w * self.AmmoMissingFrac, y + self.HeaderSize, true)
@@ -449,7 +446,6 @@ function DarkHUD.CreateAmmo()
 			local magH = fonts.WeaponMagHeight
 			local resH = fonts.WeaponReserveHeight
 
-
 			-- first draw reserve because we already have the font set
 			surface.SetTextColor( lazy.Get("DHReserve") or lazy.Set("DHReserve", Color(100, 100, 100)) )
 			surface.SetTextPos(ammoX + magW + fonts.WeaponDivWidth, ammoY - magH / 2 + (magH - resH) * iHateFonts)
@@ -471,7 +467,7 @@ function DarkHUD.CreateAmmo()
 		--self.Gone = false -- if the panel is being painted that means it ain't gone
 
 		::emit::
-		DarkHUD:Emit("AmmoPainted", self, w, h) -- ;)
+		DarkHUD:Emit("AmmoPainted", self, w, h)
 	end
 
 end

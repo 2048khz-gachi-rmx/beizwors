@@ -95,12 +95,13 @@ end)
 local holdTip = "(hold)"
 
 dh:On("AmmoPainted", "PaintOffhand", function(_, pnl, fw, h)
+
 	local x = pnl.OffhandX or 8
 	local w = math.max(48, 48 * DarkHUD.Scale)
 	pnl.OffhandFr = pnl.OffhandFr or 0
 	local y = -w - DarkHUD.OffhandYPad - (1 - pnl.OffhandFr) * h
 
-	local mat, has = draw.GetMaterial(unpack(icon))
+	local mat, has = draw.GetMaterial(icon[1], icon[2])
 
 	if has and not handle.rendered then
 		handle:CacheShadow(3, 8, 4)
