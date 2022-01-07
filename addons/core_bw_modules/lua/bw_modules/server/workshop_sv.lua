@@ -101,15 +101,14 @@ timer.Simple(0, function()
 		WSMount.AddWorkshop(BWAddons[i])
 	end
 
-	DownloadFolder("materials/vgui/prestige")
+	-- DownloadFolder("materials/vgui/prestige")
+	-- DownloadFolder("materials/vgui/runes")
+	-- DownloadFolder("materials/vgui/misc")
 
-	DownloadFolder("materials/vgui/runes")
-
-	DownloadFolder("materials/vgui/misc")
-
-	DownloadFolder("models/player/wiltos")
+	-- DownloadFolder("models/player/wiltos")
 
 	DownloadFolder("materials/grp")
+	DownloadFolder("materials/effects")
 	DownloadFolder("materials/zerochain")
 	DownloadFolder("materials/models/props/computers")
 
