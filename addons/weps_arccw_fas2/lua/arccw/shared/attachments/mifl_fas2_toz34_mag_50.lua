@@ -11,7 +11,7 @@ att.AutoStats = true
 att.Slot = {"mifl_fas2_toz34_mag"}
 
 att.Mult_RPM = 0.5
-att.Mult_Damage = 2
+att.Mult_Damage = 1.5
 att.Mult_Range = 2
 att.Mult_Recoil = 3
 att.Mult_RecoilSide = 2

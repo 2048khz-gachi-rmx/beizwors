@@ -25,7 +25,7 @@ SWEP.ViewModel = "models/weapons/arccw/fml/fas1/c_M82.mdl"
 SWEP.WorldModel = "models/weapons/arccw/fml/fas1/w_m82.mdl"
 SWEP.ViewModelFOV = 60
 
-SWEP.Damage = 140
+SWEP.Damage = 95
 SWEP.DamageMin = 20 -- damage done at maximum range
 SWEP.Range = 300 -- in METRES
 SWEP.Penetration = 40
