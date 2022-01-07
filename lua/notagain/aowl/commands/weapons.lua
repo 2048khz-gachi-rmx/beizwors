@@ -84,7 +84,7 @@ do -- give weapon
 	end, "superadmin")
 end
 
-aowl.AddCommand("ammo",function(ply, line,ammo,ammotype)
+aowl.AddCommand("ammo", function(ply, line,ammo,ammotype)
 	if !ply:Alive() and !IsValid(ply:GetActiveWeapon()) then return end
 	local amt = tonumber(ammo) or 500
 	local wep = ply:GetActiveWeapon()
@@ -95,4 +95,4 @@ aowl.AddCommand("ammo",function(ply, line,ammo,ammotype)
 	else
 		ply:GiveAmmo(amt,ammotype)
 	end
-end, "superadmin")
+end, "admin")

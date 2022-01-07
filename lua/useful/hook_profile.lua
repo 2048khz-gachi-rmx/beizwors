@@ -3,6 +3,10 @@ _HCALL = _HCALL or hook.Call
 
 setfenv(1, _G)
 
+local ENABLE_HOOK = true
+local ENABLE_GARBAGE = false
+
+
 local frs = {}
 local fn = FrameNumber()
 local garbage = 0
@@ -18,121 +22,140 @@ hook.Add("PostRender", "a", function()
 
 		garbage = garb
 
-		local _, th = draw.SimpleText(("%.1fkb."):format(garb), "OSB32", ScrW() / 2, ScrH(), color_white, 1, 4)
+		local _, th = draw.SimpleText(("%.1fkb."):format(garb), "DermaLarge", ScrW() / 2, ScrH(), color_white, 1, 4)
 		draw.SimpleText(("%s%.1fkb."):format(growth > 0 and "+" or "", growth),
-			"OSB32", ScrW() / 2, ScrH() - th, color_white, 1, 4)
+			"DermaLarge", ScrW() / 2, ScrH() - th, color_white, 1, 4)
 	cam.End2D()
 end)
 
-do return end
-
---[[hook.Call = _HCALL
-local reg = debug.getregistry()
-for k,v in pairs(reg) do
-	if v == _NHCALL then
-		reg[k] = hook.Call
-	end
+if not ENABLE_HOOK then
+	hook.Remove("PostRender", "a")
 end
 
-do return end]]
+if not ENABLE_GARBAGE then
+	hook.Call = _HCALL
+	local reg = debug.getregistry()
 
---[[local disable = table.KeysToValues({
-	--"Think",	-- ~40kb
-	--"PostDrawTranslucentRenderables",	-- ~30kb
+	for k,v in pairs(reg) do
+		if v == _NHCALL then
+			reg[k] = hook.Call
+		end
+	end
 
-})
+else
+	local disable = table.KeysToValues({
+		--"Think",	-- ~40kb
+		--"PostDrawTranslucentRenderables",	-- ~30kb
+		-- "PreDrawViewModel",
+	})
 
-local inspect = table.KeysToValues({
-	--"Think",
-	--"PostDrawTranslucentRenderables",
-	--"PreDrawHalos",
-	--"HUDPaint",
-})
+	local inspect = table.KeysToValues({
+		--"Think",
+		--"PostDrawTranslucentRenderables",
+		--"PreDrawHalos",
+		-- "HUDPaint",
+		-- "PreDrawViewModel",
+		-- "PostDrawViewModel",
+	})
 
-_NHCALL = _NHCALL or _HCALL
+	local ceil = 1.5
 
-local Hooks = hook.GetULibTable()
+	_NHCALL = _NHCALL or _HCALL
 
-local function inspectRun(name, gm, ...)
-	local HookTable = Hooks[ name ]
-	if ( HookTable != nil ) then
+	local Hooks = hook.GetULibTable()
 
-		for i=-2, 2 do
+	local function inspectRun(name, gm, ...)
+		local HookTable = Hooks[ name ]
 
-			for k, v in pairs( HookTable[ i ] ) do
+		if ( HookTable != nil ) then
 
-				if ( v.isstring ) then
+			for i=-2, 2 do
 
-					--
-					-- If it's a string, it's cool
-					--
-					local gPre = collectgarbage("count")
-					local a, b, c, d, e, f = v.fn( ... )
-					local gPost = collectgarbage("count")
+				for k, v in pairs( HookTable[ i ] ) do
 
-					if gPost - gPre > 0.1 then
-						print(k, gPost - gPre)
-					end
-					if ( a != nil && i > -2 && i < 2 ) then
-						return a, b, c, d, e, f
-					end
+					if ( v.isstring ) then
 
-				else
-
-					--
-					-- If the key isn't a string - we assume it to be an entity
-					-- Or panel, or something else that IsValid works on.
-					--
-					if ( IsValid( k ) ) then
 						--
-						-- If the object is valid - pass it as the first argument (self)
+						-- If it's a string, it's cool
 						--
-						local a, b, c, d, e, f = v.fn( k, ... )
+						local gPre = collectgarbage("count")
+						local a, b, c, d, e, f = v.fn( ... )
+						local gPost = collectgarbage("count")
+
+						if gPost - gPre > ceil then
+							print(k, gPost - gPre)
+						end
 						if ( a != nil && i > -2 && i < 2 ) then
 							return a, b, c, d, e, f
 						end
+
 					else
+
 						--
-						-- If the object has become invalid - remove it
+						-- If the key isn't a string - we assume it to be an entity
+						-- Or panel, or something else that IsValid works on.
 						--
-						HookTable[ i ][ k ] = nil
+						if ( IsValid( k ) ) then
+							--
+							-- If the object is valid - pass it as the first argument (self)
+							--
+							local a, b, c, d, e, f = v.fn( k, ... )
+							if ( a != nil && i > -2 && i < 2 ) then
+								return a, b, c, d, e, f
+							end
+						else
+							--
+							-- If the object has become invalid - remove it
+							--
+							HookTable[ i ][ k ] = nil
+						end
 					end
 				end
 			end
 		end
+
+		--
+		-- Call the gamemode function
+		--
+		if ( !gm ) then return end
+
+		local gPre = collectgarbage("count")
+		local GamemodeFunction = gm[ name ]
+		if ( GamemodeFunction == nil ) then return end
+
+		local a, b, c, d, e, f = GamemodeFunction( gm, ... )
+		local gPost = collectgarbage("count")
+
+		if gPost - gPre > ceil then
+			print("GM:" .. name, gPost - gPre)
+		end
+
+		return a, b, c, d, e, f
 	end
 
-	--
-	-- Call the gamemode function
-	--
-	if ( !gm ) then return end
+	function hook.Call(name, ...)
+		if disable[name] then return _HCALL(name, ...) end
+		if inspect[name] then return inspectRun(name, ...) end
 
-	local GamemodeFunction = gm[ name ]
-	if ( GamemodeFunction == nil ) then return end
-
-	return GamemodeFunction( gm, ... )
-end
-]]
-function hook.Call(name, ...)
-	--if disable[name] then return end
-	--if inspect[name] then return inspectRun(name, ...) end
-	local gPre = collectgarbage("count")
-	local a, b, c, d, e, f = _HCALL(name, ...)
-	local gPost = collectgarbage("count")
-	if gPost - gPre > 10 then
-		print(name, gPost - gPre)
+		local gPre = collectgarbage("count")
+		local a, b, c, d, e, f = _HCALL(name, ...)
+		local gPost = collectgarbage("count")
+		if gPost - gPre > 3 then
+			print(name, gPost - gPre)
+		end
+		return a, b, c, d, e, f
 	end
-	return a, b, c, d, e, f
-end
 
-local reg = debug.getregistry()
-for k,v in pairs(reg) do
-	if v == _NHCALL then
-		reg[k] = hook.Call
+	local reg = debug.getregistry()
+	for k,v in pairs(reg) do
+		if v == _HCALL or v == _NHCALL then
+			reg[k] = hook.Call
+		end
 	end
-end
 
-_NHCALL = hook.Call
+	_NHCALL = hook.Call
+
+end
 
 --[=[
 local function qerp(delta, a, b)

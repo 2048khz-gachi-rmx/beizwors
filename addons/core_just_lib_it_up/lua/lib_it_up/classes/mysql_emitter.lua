@@ -73,8 +73,6 @@ function MySQLQuery:onSuccess(qobj, data)
 end
 
 function MySQLQuery:onError(qobj, err, query)
-	local db = qobj:GetDB()
-
 
 	if err == "Lost connection to server during query" or err:match("^Can't connect to server") then -- !?
 		print ("!! Lost connection to DB during query !!")

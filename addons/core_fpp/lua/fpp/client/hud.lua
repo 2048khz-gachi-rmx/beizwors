@@ -158,9 +158,9 @@ local function HUDPaint()
     if FPP.getPrivateSetting("HideOwner") then return end
 
     --Show the owner:
-    local ply = LocalPlayer()
+    local ply = CachedLocalPlayer()
 
-    local tr = ply:GetEyeTraceNoCursor()
+    local tr = ply:GetEyeTrace()
 
     local LAEnt = tr.Entity
     if not IsValid(LAEnt) then return end

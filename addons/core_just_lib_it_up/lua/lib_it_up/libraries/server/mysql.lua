@@ -211,6 +211,7 @@ end
 
 local DB = FindMetaTable("MySQLOO Database")
 local QRY = FindMetaTable("MySQLOO Query")
+local PQRY = FindMetaTable("MySQLOO Transaction")
 
 DB._realQuery = DB._realQuery or DB.query
 
@@ -221,6 +222,19 @@ function DB:query(str)
 	qObj._strQry = str
 
 	return qObj
+end
+
+DB._realTrans = DB._realTrans or DB.createTransaction
+
+function DB:createTransaction(...)
+	local qObj = self:_realTrans(...)
+
+	qObj._fromDb = self
+	return qObj
+end
+
+function PQRY:GetDB()
+	return self._fromDb
 end
 
 function QRY:GetSQL()

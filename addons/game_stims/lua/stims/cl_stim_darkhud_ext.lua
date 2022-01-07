@@ -80,7 +80,7 @@ Stims.OffhandTable.Paint = function(pnl, x, y, size)
 		handle.cached = true
 	end
 
-	local me = LocalPlayer()
+	local me = CachedLocalPlayer()
 
 	pnl.StimpakCDFrac = pnl.StimpakCDFrac or 0
 
@@ -111,7 +111,8 @@ Stims.OffhandTable.Paint = function(pnl, x, y, size)
 				gsX, gsY, size, size)
 
 			-- trapezoid mask for cooldown
-			draw.BeginMask(mask, gsX + size / 2, gsY + size / 2, size, cdFrac)
+			draw.BeginMask()
+				mask(gsX + size / 2, gsY + size / 2, size, cdFrac)
 			draw.DrawOp()
 				surface.SetDrawColor(stimCol:Unpack())
 				surface.DrawMaterial("https://i.imgur.com/1aEZv3d.png", "adrenaline_shot128.png",
@@ -125,7 +126,7 @@ Stims.OffhandTable.Paint = function(pnl, x, y, size)
 			local tY = gsY + size - circSize / 2
 
 			surface.SetFont("DarkHUD_Stims")
-			local tx = tostring(LocalPlayer():GetStims())
+			local tx = tostring(me:GetStims())
 			local tw, th = surface.GetTextSize(tx)
 			tX = math.ceil(tX - tw / 2)
 			tY = math.ceil(tY - th / 2)

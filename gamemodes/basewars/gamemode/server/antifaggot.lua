@@ -14,10 +14,15 @@ end)
 ]]
 
 hook.Add("PrePACConfigApply", "PACDust", function(ply)
-	if not table.HasValue(BaseWars.Config.VIPRanks,ply:GetUserGroup()) and not ply:IsAdmin() and not ply:IsSuperAdmin() then return false,"Not enough privileges!" end
+	if not table.HasValue(BaseWars.Config.VIPRanks,ply:GetUserGroup()) and not ply:IsAdmin() and not ply:IsSuperAdmin() then
+		return false, "Not enough privileges!"
+	end
 end)
+
 hook.Add("CanWearParts", "PACStop", function(ply)
-	if not table.HasValue(BaseWars.Config.VIPRanks,ply:GetUserGroup()) and not ply:IsAdmin() and not ply:IsSuperAdmin() then return false,"Not enough privileges!" end
+	if not table.HasValue(BaseWars.Config.VIPRanks,ply:GetUserGroup()) and not ply:IsAdmin() and not ply:IsSuperAdmin() then
+		return false,"Not enough privileges!"
+	end
 end)
 
 --[[

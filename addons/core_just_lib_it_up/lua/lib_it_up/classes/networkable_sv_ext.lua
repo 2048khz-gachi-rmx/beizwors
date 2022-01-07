@@ -513,6 +513,9 @@ local nwAll = function()
 	hook.NHRun("NetworkableNetworkFrame")
 end
 
+timer.Create("NetworkableNetwork", update_freq, 0, nwAll)
+
+
 function Networkable._DoDecay()
 	local passed = CurTime() - Networkable.WrittenWhen
 	local decayed = passed * SZ.WRITTEN_DECAY			-- how much data became available since last write
@@ -645,8 +648,6 @@ function Networkable.UpdateFull(who, what, frag)
 end
 
 Networkable.FullUpdate = Networkable.UpdateFull
-
-timer.Create("NetworkableNetwork", update_freq, 0, nwAll)
 
 hook.Add("PlayerFullyLoaded", "NetworkableUpdate", function(ply)
 	Networkable.UpdateFull(ply, _NetworkableCache)
