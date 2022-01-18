@@ -3,8 +3,8 @@ _HCALL = _HCALL or hook.Call
 
 setfenv(1, _G)
 
-local ENABLE_HOOK = true
-local ENABLE_GARBAGE = false
+local ENABLE_HUD = true
+local ENABLE_GARBAGE_HOOK_TRACK = false
 
 
 local frs = {}
@@ -28,11 +28,11 @@ hook.Add("PostRender", "a", function()
 	cam.End2D()
 end)
 
-if not ENABLE_HOOK then
+if not ENABLE_HUD then
 	hook.Remove("PostRender", "a")
 end
 
-if not ENABLE_GARBAGE then
+if not ENABLE_GARBAGE_HOOK_TRACK then
 	hook.Call = _HCALL
 	local reg = debug.getregistry()
 
