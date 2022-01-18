@@ -50,6 +50,7 @@ hook.Add("StartCommand", "NX_Norecoil", function(ply, cmd)
 	if sinceStart > 0.1 and -- let the ucmds catch up (dumbass engine)
 		dat.my < dat.p * 20 and -- they dont move their mouse enough
 		dat.d < dat.p and -- right now, their recoil is controlled (not far off the center)
+		ang.p >= -85 and -- they dont look straight up (cuz recoil would have nowhere to go)
 		passed < wep.RecoilTRecovery * 0.4 then
 		if cmd:GetMouseY() + 2 < wep:GetRecoil() * 4 then
 			dat.viols = (dat.viols or 0) + 1
