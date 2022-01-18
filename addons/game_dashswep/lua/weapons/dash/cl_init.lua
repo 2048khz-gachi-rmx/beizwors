@@ -33,28 +33,40 @@ local function ease(x)
 	end
 end
 
-function SWEP:DrawHUD()
+function SWEP:CL_OnDash()
+	if not IsFirstTimePredicted() then return end
+
 	anim = anim or Animatable()
 
-	oldCharges = newCharges
-	newCharges = self:GetDashCharges()
+	anim:To("Frac", 0, 0.2, 0, 0.2, true)
 
-	if oldCharges ~= newCharges and not snap then
-		if newCharges > oldCharges then
-			anim:To("Frac", 1, 0.2, 0, 0.2, true)
-			anim.Dir = 1
-			CurrentColor:Set(color_white)
-			anim:LerpColor(CurrentColor, snapCols[1], 0.3, 0.1, 2, true)
-		else
-			anim:To("Frac", 0, 0.3, 0, 0.2, true)
-			anim.Dir = -1
-			CurrentColor:Set(color_white)
-			anim:LerpColor(CurrentColor, snapCols[0], 0.15, 0, 2, true)
-		end
+	CurrentColor:Set(color_white)
+	anim:LerpColor(CurrentColor, snapCols[0], 0.15, 0.1, 2, true)
 
-		anim.RecentChangeFrac = 1
-		anim:To("RecentChangeFrac", 0, anim.Dir == -1 and 0.2 or 0.4, 0, 0.3, true)
-	end
+	anim.Dir = -1
+
+	anim.RecentChangeFrac = 1
+	anim:To("RecentChangeFrac", 0, 0.2, 0, 0.3, true)
+end
+
+function SWEP:CL_OnRecharge()
+	if not IsFirstTimePredicted() then return end
+
+	anim = anim or Animatable()
+
+	anim:To("Frac", 1, 0.2, 0, 0.2, true)
+
+	CurrentColor:Set(color_white)
+	anim:LerpColor(CurrentColor, snapCols[1], 0.3, 0.1, 2, true)
+
+	anim.Dir = 1
+
+	anim.RecentChangeFrac = 1
+	anim:To("RecentChangeFrac", 0, 0.4, 0, 0.3, true)
+end
+
+function SWEP:DrawHUD()
+	anim = anim or Animatable()
 
 	local cdDur = self.CooldownDuration
 	local cdNext = self:GetDashCooldownEnd() --self.CooldownEndsWhen

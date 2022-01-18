@@ -88,7 +88,8 @@ end)
 function SWEP:RechargeLogic(ply, force)
 	local dashing = (SERVER and DashTable[ply]) or (CLIENT and self:GetDashing())
 
-	if (ply:IsOnGround() or ply:WaterLevel() >= 2) and self:GetDashCharges() ~= 1 and not dashing then
+	if (ply:IsOnGround() or ply:WaterLevel() >= 2) and
+		self:GetDashCharges() ~= 1 and not dashing then
 		self:SetPostDash(false)
 
 		if self:GetDashCooldown() > 0 and self:GetDashCooldownEnd() == 0 then
@@ -115,6 +116,7 @@ function SWEP:RechargeLogic(ply, force)
 		self:SetDashCharges(1)
 		if CLIENT then
 			self.Dashed = false
+			self:CL_OnRecharge()
 		end
 	end
 
@@ -306,7 +308,9 @@ function SWEP:PrimaryAttack()
 	dt.down = dir.z < -0.15
 
 	self:SetNextPrimaryFire(CurTime() + 0.4)
-
+	if CLIENT then
+		self:CL_OnDash()
+	end
 end
 
 hook.Remove("SetupMove", "Dash")
