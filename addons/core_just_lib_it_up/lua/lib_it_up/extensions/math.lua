@@ -80,6 +80,21 @@ function math.Ratio(ratio, w, h)
 	end
 end
 
+function Ease(num, how) --garry easing
+	num = math.Clamp(num, 0, 1)
+	local Frac = 0
+
+	if ( how < 0 ) then
+		Frac = num ^ ( 1.0 - ( num - 0.5 ) ) ^ -how
+	elseif ( how > 0 and how < 1 ) then
+		Frac = 1 - ( ( 1 - num ) ^ ( 1 / how ) )
+	else --how > 1 = ease in
+		Frac = num ^ how
+	end
+
+	return Frac
+end
+
 -- reverse math.clamp basically lol
 -- if a number is not within [min; max], returns it
 
