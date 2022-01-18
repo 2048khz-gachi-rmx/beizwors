@@ -143,7 +143,8 @@ dh:On("AmmoPainted", "PaintOffhand", function(_, pnl, fw, h)
 
 		local ok, add
 
-		if not tbl or not tbl.Paint then
+		if not tbl or not tbl.Paint or
+			(tbl.ShouldPaint and tbl:ShouldPaint() == false) then
 			paintNothing(pnl, ux, uy, w)
 			add = w
 			goto postpaint
