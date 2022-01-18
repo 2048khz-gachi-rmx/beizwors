@@ -373,7 +373,7 @@ end
 				EnableTick()
 
 				
-				local ok,str=pcall(ToStringEx," ",...)
+				local ok,str=pcall(ToStringEx,"	",...)
 				if str then
 					PushPayload( IS_PRINT , str )
 				end

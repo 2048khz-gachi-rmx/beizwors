@@ -181,7 +181,7 @@ function MODULE.MsgN(...)
 end
 
 function MODULE.Print(...)
-	local ok,str=pcall(ToStringEx," ",...)
+	local ok,str=pcall(ToStringEx,"	",...)
 	if not ok then internalPrint(str) return end
 	if not str then return end
 
