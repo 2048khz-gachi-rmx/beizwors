@@ -1,0 +1,70 @@
+*.*
+
+# ?????
+!/.git**
+
+!addons/**/*.lua
+
+!gamemodes/basewars/**
+
+!lua/notagain/**
+!lua/xp3/**
+!lua/autorun/**
+!lua/useful/**
+
+!cfg/**
+
+# modified core files
+!lua/includes/**
+!gamemodes/sandbox/**
+!gamemodes/base/**
+
+
+
+# custom models & materials
+!materials/grp/**/*
+!models/grp/**/*
+
+# supercomputers from csgo (different folder cuz screwup)
+!materials/models/props/**/*
+
+# ignore .ztmp shit
+**/*.ztmp
+
+
+# ?
+addons/game_inventory/**
+
+!addons/weps_arccw*/lua
+!addons/weps_cw*
+
+!addons/weps_cw2_base*
+!addons/weps_arccw_mp
+
+addons/*pac3*
+addons/fas*
+
+cfg/mount.cfg
+
+#lua/autorun/server/lanes.lua
+#lua/xp3/chathud-stable_5-to-1.lua
+#*
+#!*/
+#
+#*.sublime-project
+#*.sublime-workspace
+#*.sublime-project
+#*.zip
+#*.gma
+#**.*
+#!gamemodes/basewars/**/*.lua
+#
+#addons/*gdcw*
+#addons/*cw*
+#addons/*customizable*
+#
+#addons/epic_mining/*
+#addons/inventory/*
+#addons/research/*
+#addons/inventory/inventory_1.0.zip
+cfg/server.vdf
