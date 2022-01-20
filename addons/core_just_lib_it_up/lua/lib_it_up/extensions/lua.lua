@@ -89,14 +89,18 @@ end
 local cur = {}
 local buf = {}
 
+local on_dev = false
+
 function GCMark(n)
 	if SERVER then return end
+	if not on_dev then return end
 
 	cur[n] = collectgarbage("count")
 end
 
 function GCPrint(n)
 	if SERVER then return end
+	if not on_dev then return end
 
 	local g = collectgarbage("count")
 
@@ -105,6 +109,7 @@ function GCPrint(n)
 end
 
 hook.Add("HUDPaint", "GC_Trk", function()
+	if not on_dev then return end
 	if table.IsEmpty(buf) then return end
 
 	local sw, sh = ScrW(), ScrH()
@@ -126,12 +131,12 @@ if CLIENT then
 
 	local MB = bit.lshift(1, 10)
 
-	local START, START_STEP = 1200 * MB, 120
+	local START, START_STEP = 1150 * MB, 110
 	local END, END_STEP = 1900 * MB, 250
 
 	local PANIC = jit.arch == "x64" and 3000 * MB or 1800 * MB
 
-	timer.Create("GC_Slow", 30, 0, function()
+	timer.Create("GC_Slow", 1, 0, function()
 		local cnt = math.min(collectgarbage("count"), END)
 		if cnt < START then return end -- not worth collecting
 

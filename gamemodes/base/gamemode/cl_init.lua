@@ -542,6 +542,10 @@ end
 	Name: gamemode:CalcViewModelView()
 	Desc: Called to set the view model's position
 -----------------------------------------------------------]]
+
+local ep, ea = Vector(), Angle()
+local ep2, ea2 = Vector(), Angle()
+
 function GM:CalcViewModelView( Weapon, ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng )
 
 	if ( !IsValid( Weapon ) ) then return end
@@ -551,7 +555,10 @@ function GM:CalcViewModelView( Weapon, ViewModel, OldEyePos, OldEyeAng, EyePos, 
 	-- Controls the position of all viewmodels
 	local func = Weapon.GetViewModelPosition
 	if ( func ) then
-		local pos, ang = func( Weapon, EyePos*1, EyeAng*1 )
+		ep:Set(EyePos)
+		ea:Set(EyeAng)
+
+		local pos, ang = func(Weapon, ep, ea)
 		vm_origin = pos or vm_origin
 		vm_angles = ang or vm_angles
 	end
@@ -559,7 +566,13 @@ function GM:CalcViewModelView( Weapon, ViewModel, OldEyePos, OldEyeAng, EyePos, 
 	-- Controls the position of individual viewmodels
 	func = Weapon.CalcViewModelView
 	if ( func ) then
-		local pos, ang = func( Weapon, ViewModel, OldEyePos*1, OldEyeAng*1, EyePos*1, EyeAng*1 )
+		ep:Set(EyePos)
+		ea:Set(EyeAng)
+
+		ep2:Set(OldEyePos)
+		ea2:Set(OldEyeAng)
+
+		local pos, ang = func(Weapon, ViewModel, ep2, ea2, ep, ea)
 		vm_origin = pos or vm_origin
 		vm_angles = ang or vm_angles
 	end

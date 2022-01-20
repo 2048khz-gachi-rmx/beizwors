@@ -13,9 +13,20 @@ local garbage = 0
 local growth = 0
 
 hook.Add("PostRender", "a", function()
+	
+	if ENABLE_GARBAGE_HOOK_TRACK then print("----") end
+
 	cam.Start2D()
 		fn = FrameNumber()
+
+		local a = SysTime()
 		local garb = fn % 1 == 0 and collectgarbage("count") or garbage
+		local b = SysTime()
+
+		if b - a > 0.1 then
+			print("! wtf!", b - a)
+		end
+
 		if fn % 1 == 0 then
 			growth = garb - garbage
 		end
@@ -26,6 +37,9 @@ hook.Add("PostRender", "a", function()
 		draw.SimpleText(("%s%.1fkb."):format(growth > 0 and "+" or "", growth),
 			"DermaLarge", ScrW() / 2, ScrH() - th, color_white, 1, 4)
 	cam.End2D()
+	
+
+
 end)
 
 if not ENABLE_HUD then
