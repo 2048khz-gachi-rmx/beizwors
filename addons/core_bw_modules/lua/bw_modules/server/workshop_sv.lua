@@ -33,6 +33,9 @@ local BWAddons = {
 	"1589205037", -- acr
 	"349050451", -- cw2 base
 	"358608166", -- cw2 unofficial
+
+	"2165008251", 	-- gmodstore overwatch HUD content
+					-- what are they gonna do, cope? seethe? mald, perhaps?
 }
 
 

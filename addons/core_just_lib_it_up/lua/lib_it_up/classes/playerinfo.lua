@@ -17,6 +17,7 @@ LibItUp.PlayerInfoTables = LibItUp.PlayerInfoTables or {
 }
 
 LibItUp.AllPlayerInfos = LibItUp.AllPlayerInfos or {}
+LibItUp.PlayerInfo.Aliases = {}
 
 function LibItUp.CleanupAllPIs()
 	-- extremely debug feature
@@ -80,6 +81,21 @@ function PI:Initialize(id, is_sid64) -- we can't know that the id is a steamID64
 	table.insert(LibItUp.AllPlayerInfos, self)
 
 	PI.Revalidate(sid)
+end
+
+function LibItUp.PlayerInfo.AliasNW(name, id)
+	local al = LibItUp.PlayerInfo.Aliases
+	if al[id] and al[id] ~= name then
+		errorf("Attempted to alias using taken ID (%s -> %d; already taken by %s)", name, id, al[id])
+		return
+	end
+
+	LibItUp.PlayerInfo.Aliases[id] = name
+
+	for k,v in pairs(LibItUp.AllPlayerInfos) do
+		v:GetPrivateNW():Alias(name, id)
+		v:GetPublicNW():Alias(name, id)
+	end
 end
 
 ChainAccessor(PI, "_SteamID", "SteamID")	-- 	  !! Using SteamID's is not advised due to its' behavior on bots !!
@@ -231,6 +247,11 @@ function PI:ValidateNW()
 		priv.Filter = function(_, ply) return ply:SteamID64() == self:GetSteamID64() end
 		priv.PlayerInfoNW = self
 		priv.IsPrivateNW = self
+
+		for id, name in pairs(self.Aliases) do
+			pub:Alias(name, id)
+			priv:Alias(name, id)
+		end
 
 		hook.NHRun("PlayerInfoNWCreate", self)
 	end
@@ -484,9 +505,12 @@ function PIToPlayer(what)
 	end
 end
 
+-- ?
 function GetAllPlayerInfos()
 	return table.Copy(LibItUp.AllPlayerInfos)
 end
+
+
 
 function PInfoAccessor(k)
 	PLAYER["Get" .. k] = function(self)
@@ -499,6 +523,14 @@ function PInfoAccessor(k)
 		return pin["Set" .. k](pin, v)
 	end
 end
+
+PInfoAccessor("PublicNW")
+PInfoAccessor("PrivateNW")
+
+PLAYER.GetPubNW = PLAYER.GetPublicNW
+PLAYER.GetPrivNW = PLAYER.GetPrivateNW
+
+
 
 hook.Add("NetworkableAttemptCreate", "PlayerInfo", function(nwID)
 	-- we only need to do this for public NW's; private should be fine

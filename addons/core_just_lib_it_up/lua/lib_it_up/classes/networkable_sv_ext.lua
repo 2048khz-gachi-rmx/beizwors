@@ -252,12 +252,12 @@ local function WriteNWID(obj)
 end
 
 local function WriteChange(key, val, obj, ...)
+	obj.__LastNetworked[key] = val
 	key = obj.__Aliases[key] ~= nil and obj.__Aliases[key] or key
 
 	local key_typ = type(key):lower()
 	local val_typ = type(val):lower()
 
-	obj.__LastNetworked[key] = val
 	if val == fakeNil then val = nil end
 
 	local unAliased = obj.__AliasesBack[key] or key
