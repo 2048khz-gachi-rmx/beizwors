@@ -50,7 +50,7 @@ local die_time = 5
 local ltg_list = {}
 
 hook.Add("PrePlayerDraw", "kys_now", function(ply, fl)
-	if fl ~= bit.bor(STUDIO_TWOPASS, STUDIO_RENDER) then return end
+	if fl ~= --[[bit.bor(STUDIO_TWOPASS, STUDIO_RENDER)]] 0 then return end
 
 	local timeDie = ply:GetNWFloat("kys_now", 0)
 	if timeDie == 0 then return end
