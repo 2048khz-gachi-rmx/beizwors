@@ -156,7 +156,7 @@ hook.Add("HUDPaint", "PaintBWStructure", function()
 	sin.DoPainters(ent)
 end)
 
-FInc.FromHere("structureinfo/*.lua", _CL)
+FInc.FromHere("structureinfo/*.lua", FInc.CLIENT)
 
 function hud.RestartPainters()
 	table.Empty(sin.ActivePainters)

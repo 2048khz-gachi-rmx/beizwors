@@ -1,5 +1,5 @@
 if SERVER then
-	FInc.FromHere("client/huds/*", _CL)
+	FInc.FromHere("client/huds/*", FInc.CLIENT)
 	return
 end
 
@@ -313,6 +313,6 @@ end
 hook.Add("HUDPaint", "StructureInfoPaint", PaintStuff)
 
 include("client/huds/painter_ext.lua")
-FInc.FromHere("client/huds/*.lua", _CL, false)
+FInc.FromHere("client/huds/*.lua", FInc.CLIENT, false)
 
 hook.Run("BW_HUDLoaded")

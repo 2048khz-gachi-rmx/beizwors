@@ -521,11 +521,11 @@ IncludeCS("baseview/_init.lua")
 IncludeCS("powergrid/_init.lua")
 
 -- subfolders in client/ aren't autoincluded
-FInc.FromHere("client/*", _CL, false, function(fn)
+FInc.FromHere("client/*", FInc.CLIENT, false, function(fn)
 	return false
 end)
 
 -- files are tho
-FInc.FromHere("client/*.lua", _CL)
+FInc.FromHere("client/*.lua", FInc.CLIENT)
 
-FInc.FromHere("server/*.lua", _SV)
+FInc.FromHere("server/*.lua", FInc.SERVER)

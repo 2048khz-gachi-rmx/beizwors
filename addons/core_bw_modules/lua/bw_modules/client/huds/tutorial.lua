@@ -353,7 +353,7 @@ end)
 
 LibItUp.OnLoaded("bases.lua", function()
 	LibItUp.OnInitEntity(function()
-		FInc.FromHere("tutorials/*.lua", _CL)
+		FInc.FromHere("tutorials/*.lua", FInc.CLIENT)
 	end)
 end)
 
