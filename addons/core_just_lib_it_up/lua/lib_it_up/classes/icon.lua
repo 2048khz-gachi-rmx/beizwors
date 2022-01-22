@@ -34,6 +34,9 @@ function Icon:Initialize(url, name)
 		if is_url then
 			self.URL = url
 			self.Name = name
+
+			-- start downloading before we actually need it
+			draw.GetMaterial(url, name)
 		else
 			local mat = draw.GetMaterialInfo(url) or Material(url)
 

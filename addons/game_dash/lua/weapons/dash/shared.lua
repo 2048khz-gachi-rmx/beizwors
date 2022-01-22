@@ -301,9 +301,6 @@ function SWEP:PrimaryAttack()
 
 	local dt = DashTable[owner]
 
-
-	dt.ground = owner:IsOnGround() or owner:WaterLevel() >= 1
-
 	dt.jump = owner:KeyDown(IN_JUMP)
 	dt.down = dir.z < -0.15
 
@@ -312,8 +309,6 @@ function SWEP:PrimaryAttack()
 		self:CL_OnDash()
 	end
 end
-
-hook.Remove("SetupMove", "Dash")
 
 hook.Add("FinishMove", "Dash", function(ply, mv, cmd)
 	local dash = ply:GetActiveWeapon()
@@ -346,10 +341,6 @@ hook.Add("FinishMove", "Dash", function(ply, mv, cmd)
 	end
 
 	local time = t.t
-
-	if t.smooth then
-		time = time - ply:Ping() / 1000
-	end
 
 	local curt = CurTime()
 	local d = t.dir

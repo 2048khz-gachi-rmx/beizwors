@@ -1,4 +1,3 @@
--- no not the nsfw fucking mats
 local customMats = {}
 
 MoarPanelsMats._ReloadAll = function()

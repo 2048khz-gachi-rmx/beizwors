@@ -18,6 +18,8 @@ You may want to use this page: https://wiki.facepunch.com/gmod/Enums/KEY
 ]]
 
 local function writeData()
+	if SERVER then errorf("tried to write bind data serverside...?") return end
+
 	local t = {}
 
 	for line, num in eachNewline(comment) do
@@ -37,6 +39,8 @@ local function writeData()
 end
 
 local function readData()
+	if SERVER then errorf("tried to read bind data serverside...?") return end
+
 	local dat = file.Read(fileName, "DATA")
 
 	if not dat then
@@ -97,7 +101,9 @@ function bindData:Initialize(k, m)
 	self[2] = m
 end
 
-readData()
+if CLIENT then
+	readData()
+end
 
 local function cleanID(t, id)
 	for i=#t, 1, -1 do
@@ -211,6 +217,8 @@ end
 
 
 ChainAccessor(Bind, "Exclusive", "Exclusive")
+ChainAccessor(Bind, "Key", "Key")
+ChainAccessor(Bind, "ID", "ID")
 
 function Bind:SetKey(k)
 	local prev = self.Key
@@ -240,6 +248,7 @@ function Bind:SetKey(k)
 	self:GetData().Key = k
 
 	self:Emit("KeyChanged", prev, k)
+	hook.Run("BindKeyChanged", self, k)
 	return self
 end
 
@@ -305,6 +314,17 @@ end
 
 ChainAccessor(Bind, "__State", "Active")			-- the "custom" button state; can be influenced by addons (eg Bind:SetHeld(true))
 ChainAccessor(Bind, "__BtnState", "ButtonState") 	-- the REAL button state, the player's input representing this bind currently
+ChainAccessor(Bind, "_CanPredict", "CanPredict")
+ChainAccessor(Bind, "_Synced", "Synced")
+
+function Bind:SetSynced(b)
+	self._Synced = b
+	if CLIENT and b and self:GetKey() then
+		self:NWKey()
+	end
+
+	return self
+end
 
 function Bind:Deactivate(ply)
 	local newState = not self.__State
@@ -323,17 +343,21 @@ function Bind:Activate(ply)
 end
 
 function Bind:_Fire(down, ply)
+	local inPred = not IsFirstTimePredicted()
 
 	if self.Method == BINDS_HOLD then
-		if down == self:GetActive() then return end 	-- you can't re-activate a holdable bind
-		if not down and self:GetHeld() then return end 	-- if the bind is forced to be held, don't deactivate it
+		if not self:GetCanPredict() and down == self:GetActive() and not inPred then return end 	-- you can't re-activate a holdable bind
+		if not self:GetCanPredict() and not down and self:GetHeld() and not inPred then return end 	-- if the bind is forced to be held, don't deactivate it
 
 		self:SetActive(down)
 		self:Emit(down and "Activate" or "Deactivate", ply)
-
 	elseif self.Method == BINDS_TOGGLE and down then
+		-- unsure if this works
+		if CLIENT and not inPred then
+			ply:SetNW2Bool("_bindState:" .. self:GetName(), self.__State)
+		end
 
-		local newState = not self.__State
+		local newState = not (CLIENT and ply:GetNW2Bool("_bindState:" .. self:GetName()) or self.__State)
 		self:SetActive(newState)
 		self:Emit(newState and "Activate" or "Deactivate", ply)
 	end
@@ -349,13 +373,15 @@ end)
 
 hook.Add("PlayerButtonDown", __LibName .. "_BindsDown", function(ply, btn)
 	if not Binds.Keys[btn] then return end
-	if not IsFirstTimePredicted() then return end
+
+	local first = IsFirstTimePredicted()
 
 	local binds = Binds.Keys[btn]
 
 	for _, bind in ipairs(binds) do
 		if not bind.Exclusive then continue end
 		if bind:Emit("ShouldActivate") == false then continue end
+		if not first and not bind:GetCanPredict() then continue end
 
 		bind:SetButtonState(true)
 		bind:Emit("ButtonChanged", true)
@@ -367,24 +393,27 @@ hook.Add("PlayerButtonDown", __LibName .. "_BindsDown", function(ply, btn)
 
 	for _, bind in ipairs(binds) do
 		if bind:Emit("ShouldActivate") == false then continue end
+		if not first and not bind:GetCanPredict() then continue end
 
 		bind:SetButtonState(true)
 		bind:Emit("ButtonChanged", true)
 
 		bind:_Fire(true, ply)
 	end
-
 end)
 
 hook.Add("PlayerButtonUp", __LibName .. "_BindsUp", function(ply, btn)
 	if not Binds.Keys[btn] then return end
-	if not IsFirstTimePredicted() then return end
+
+	local first = IsFirstTimePredicted()
 
 	local binds = Binds.Keys[btn]
 
 	for _, bind in ipairs(binds) do
 		if not bind.Exclusive then continue end
 		if bind:Emit("ShouldDeactivate") == false then continue end
+
+		if not first and not bind:GetCanPredict() then continue end
 
 		bind:SetButtonState(false)
 		bind:Emit("ButtonChanged", false)
@@ -396,6 +425,7 @@ hook.Add("PlayerButtonUp", __LibName .. "_BindsUp", function(ply, btn)
 
 	for _, bind in ipairs(binds) do
 		if bind:Emit("ShouldDeactivate") == false then continue end
+		if not first and not bind:GetCanPredict() then continue end
 
 		bind:SetButtonState(false)
 		bind:Emit("ButtonChanged", false)
@@ -486,3 +516,35 @@ concommand.Add("-" .. cmdPrefix .. "bind", onUnhold, autoCompleter(BINDS_HOLD))
 
 if not Timerify then include("lib_it_up/libraries/timerify.lua") end
 Timerify(Bind)
+
+if SERVER then include("binds_ext_sv.lua") end
+
+if CLIENT then
+	-- network binds to the server so we can predict nicely
+	local toNw = {}
+
+	hook.Add("BindKeyChanged", "Network", function(bind, old, new)
+		if not bind:GetSynced() then return end
+		bind:NWKey()
+	end)
+
+	function Binds.Network()
+		if table.IsEmpty(toNw) then return end
+
+		local cnt = table.Count(toNw)
+		net.Start("lbu_binds")
+			net.WriteUInt(cnt, 16)
+			for id, key in pairs(toNw) do
+				net.WriteString(id)
+				net.WriteUInt(key, 32)
+			end
+		net.SendToServer()
+
+		table.Empty(toNw)
+	end
+
+	function Bind:NWKey()
+		toNw[self.ID] = self:GetKey()
+		timer.Simple(0, Binds.Network)
+	end
+end

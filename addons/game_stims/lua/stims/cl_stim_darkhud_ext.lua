@@ -21,7 +21,7 @@ handle:SetGenerator(function(self, w, h)
 	local ratio = w / size
 
 	surface.SetDrawColor(255, 255, 255)
-	surface.DrawMaterial("https://i.imgur.com/1aEZv3d.png", "adrenaline_shot128.png", 0, 0, w, h)
+	local mat = surface.DrawMaterial("https://i.imgur.com/1aEZv3d.png", "adrenaline_shot128.png", 0, 0, w, h)
 
 	--local circSize = circSize * 2.8
 
@@ -29,6 +29,8 @@ handle:SetGenerator(function(self, w, h)
 	local _, sy = handle:Offset(0, stimY or 0)
 
 	draw.MaterialCircle(sz / 2, h - sz / 2, sz)
+
+	return not not mat -- only return true if we have the material
 end)
 
 handle.cached = false
@@ -76,8 +78,7 @@ Stims.OffhandTable.Paint = function(pnl, x, y, size)
 	stimX, stimY = sX, sY
 
 	if not handle.cached then
-		handle:CacheShadow(4, 8, 2)
-		handle.cached = true
+		handle.cached = handle:CacheShadow(4, 8, 2)
 	end
 
 	local me = CachedLocalPlayer()

@@ -30,7 +30,10 @@ function META:Timer(name, sec, reps, func, ...)
 		ErrorNoHalt("created a 0 rep timer:" .. debug.traceback())
 	end
 
-	timer.Create(id, sec or 0, reps or 1, function()
+	sec = sec or 0
+	sec = sec - (CurTime() - UnPredictedCurTime()) -- brb finna kms
+
+	timer.Create(id, sec, reps or 1, function()
 		if self.IsValid and not self:IsValid() then return end
 		func(self, unpack(args))
 	end)

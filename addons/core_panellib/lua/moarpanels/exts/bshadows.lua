@@ -137,6 +137,13 @@ function handle:CacheShadow(int, spr, blur, color, color2)
 	self:_Begin()
 		local ok, ret = xpcall(self._Generator, err, self, self.W, self.H)
 	self:_End(ret, int, spr, blur, color, color2)
+
+	return ret
+end
+
+function handle:CacheRet(...) -- cache only if generator never returned true before
+	if self._retOk then return end
+	self._retOk = self:CacheShadow(...)
 end
 
 local amult

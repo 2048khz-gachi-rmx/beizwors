@@ -132,13 +132,22 @@ function PLAYER:Retry()
 	self:ConCommand("retry")
 end
 
+FullyLoaded = FullyLoaded or {}
+FullyLoadedCallbacks = FullyLoadedCallbacks or LibItUp.MulDim:new()
+
+function PLAYER:IsFullyLoaded()
+	return FullyLoaded[self]
+end
+
+function PLAYER:OnFullyLoaded(cb, ...)
+	if self:IsFullyLoaded() then cb(...) end
+	FullyLoadedCallbacks:Insert({cb, ...}, self)
+end
+
 if SERVER then
 	if not LibItUp.MulDim then include("lib_it_up/classes/multidim.lua") end
 
 	util.AddNetworkString("FullLoad")
-
-	FullyLoaded = FullyLoaded or {}
-	FullyLoadedCallbacks = FullyLoadedCallbacks or LibItUp.MulDim:new()
 
 	-- wait for either the client's net message or source's Move hook
 
@@ -179,14 +188,7 @@ if SERVER then
 
 	end)
 
-	function PLAYER:IsFullyLoaded()
-		return FullyLoaded[self]
-	end
-
-	function PLAYER:OnFullyLoaded(cb, ...)
-		if self:IsFullyLoaded() then cb(...) end
-		FullyLoadedCallbacks:Insert({cb, ...}, self)
-	end
+	
 
 else
 
@@ -194,6 +196,14 @@ else
 	FullLoadRan = FullLoadRan or false
 
 	hook.Add("CalcView", "FullyLoaded", function()
+		FullyLoaded[LocalPlayer()] = true
+
+		if FullyLoadedCallbacks:Get(LocalPlayer()) then
+			for k,v in ipairs(FullyLoadedCallbacks:Get(LocalPlayer())) do
+				xpcall(v[1], GenerateErrorer("PlayerFullyLoaded_Callbacks"), unpack(v, 2))
+			end
+		end
+
 		if FullLoadSent then
 			hook.Remove("CalcView", "FullyLoaded")
 			return
