@@ -219,6 +219,7 @@ function DarkHUD.CreateAmmo()
 			end
 		end
 
+		DarkHUD:Emit("AmmoThink", self)
 	end)
 
 	function f:MaskHeader(w, h)

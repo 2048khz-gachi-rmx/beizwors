@@ -94,6 +94,15 @@ end)
 
 local holdTip = "(hold)"
 
+dh:On("AmmoThink", "ThinkOffhand", function(_, pnl)
+	local w = math.max(48, 48 * DarkHUD.Scale)
+	local fw = pnl:GetWide()
+
+	pnl:To("OffhandX", pnl.Gone and fw - #Offhand.Binds * w or 8, 0.3, 0, 0.3)
+	pnl:To("OffhandFr", (pnl.Gone or pnl.GoingAway) and 0 or 1, 0.3, 0, 0.3)
+end)
+
+
 dh:On("AmmoPainted", "PaintOffhand", function(_, pnl, fw, h)
 
 	local x = pnl.OffhandX or 8
@@ -107,9 +116,6 @@ dh:On("AmmoPainted", "PaintOffhand", function(_, pnl, fw, h)
 		handle:CacheShadow(3, 8, 4)
 		handle.rendered = true
 	end
-
-	pnl:To("OffhandX", pnl.Gone and fw - #Offhand.Binds * w or 8, 0.3, 0, 0.3)
-	pnl:To("OffhandFr", (pnl.Gone or pnl.GoingAway) and 0 or 1, 0.3, 0, 0.3)
 
 	DisableClipping(true)
 
