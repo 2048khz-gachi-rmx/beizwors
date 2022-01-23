@@ -92,6 +92,16 @@ function libTbl.SetIncluded(who)
 	libTbl.Included[who] = true
 end
 
+function libTbl.IncludeIfNeeded(who)
+	local path = path .. who
+	if libTbl.Included[who] then print("not needed", who) return false end
+
+	include(path)
+	libTbl.SetIncluded(who)
+	print("including", who)
+	return true
+end
+
 function IncludeFolder(name, realm, nofold)	-- This function will be used both by addons and by LibItUp,
 											-- so we'll only count files when we're loading
 	local file, folder = file.Find( name, "LUA" )

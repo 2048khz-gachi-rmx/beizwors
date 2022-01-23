@@ -179,9 +179,6 @@ function Offhand.CreateBinds(n)
 	end
 end
 
-
-Offhand.CreateBinds(3)
-
 Offhand.Actions = Offhand.Actions or {}
 function Offhand.Register(name, dat)
 	if not istable(dat) then
@@ -204,7 +201,7 @@ function Offhand.SetBindAction(bind, act)
 	cookie.Set("offhand_action_" .. id, act)
 
 	if CLIENT then
-		LocalPlayer():OnFullyLoaded(function()
+		OnFullyLoaded(function()
 			net.Start("offhand_bind")
 				net.WriteUInt(id, 4)
 				net.WriteString(act)
@@ -212,7 +209,6 @@ function Offhand.SetBindAction(bind, act)
 		end)
 	end
 end
-
 
 if CLIENT then
 	local curWheel
@@ -312,3 +308,6 @@ else
 		ply._offhandBinds[net.ReadUInt(4)] = net.ReadString()
 	end)
 end
+
+-- now initialize
+Offhand.CreateBinds(3)

@@ -20,6 +20,9 @@ if not CLIENT then return end
 Icon = Icon or Animatable:callable()
 Icon.AutoInitialize = false
 
+local doGet = function(...) return draw.GetMaterial(...) end -- index on call
+LibItUp.IncludeIfNeeded("extensions/player.lua")
+
 function Icon:Initialize(url, name)
 	if not url then error("Icon.Initialize: expected IMaterial in arg #1 or URL + name, got nothing instead") return end
 
@@ -36,7 +39,10 @@ function Icon:Initialize(url, name)
 			self.Name = name
 
 			-- start downloading before we actually need it
-			draw.GetMaterial(url, name)
+			if CLIENT then
+				-- wait for ISteamHTTP
+				OnFullyLoaded(doGet, url, name)
+			end
 		else
 			local mat = draw.GetMaterialInfo(url) or Material(url)
 

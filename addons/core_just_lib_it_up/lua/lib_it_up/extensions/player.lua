@@ -125,29 +125,31 @@ end
 PLAYER.GetNextRespawn = PLAYER.GetRespawnTime
 
 function IsPred()
-	return CurTime() ~= UnPredictedCurTime()
+	return CLIENT and (CurTime() ~= UnPredictedCurTime() or GetPredictionPlayer():IsValid())
 end
 
 function PLAYER:Retry()
 	self:ConCommand("retry")
 end
 
-FullyLoaded = FullyLoaded or {}
-FullyLoadedCallbacks = FullyLoadedCallbacks or LibItUp.MulDim:new()
 
-function PLAYER:IsFullyLoaded()
-	return FullyLoaded[self]
-end
-
-function PLAYER:OnFullyLoaded(cb, ...)
-	if self:IsFullyLoaded() then cb(...) end
-	FullyLoadedCallbacks:Insert({cb, ...}, self)
-end
 
 if SERVER then
-	if not LibItUp.MulDim then include("lib_it_up/classes/multidim.lua") end
+	LibItUp.IncludeIfNeeded("classes/multidim.lua")
+
+	FullyLoaded = FullyLoaded or {}
+	FullyLoadedCallbacks = FullyLoadedCallbacks or LibItUp.MulDim:new()
 
 	util.AddNetworkString("FullLoad")
+
+	function PLAYER:IsFullyLoaded()
+		return FullyLoaded[self]
+	end
+
+	function PLAYER:OnFullyLoaded(cb, ...)
+		if self:IsFullyLoaded() then cb(...) end
+		FullyLoadedCallbacks:Insert({cb, ...}, self)
+	end
 
 	-- wait for either the client's net message or source's Move hook
 
@@ -188,20 +190,37 @@ if SERVER then
 
 	end)
 
-	
-
 else
+	FullyLoadedCallbacks = FullyLoadedCallbacks or {}
+	FullyLoaded = FullyLoaded or false
+
+	-- you might not even have localplayer clientside if doing during boot
+
+	function IsFullyLoaded()
+		return FullyLoaded
+	end
+
+	function OnFullyLoaded(cb, ...)
+		if IsFullyLoaded() then cb(...) end
+		table.insert(FullyLoadedCallbacks, {cb, ...})
+	end
+
+	function PLAYER:IsFullyLoaded()
+		return IsFullyLoaded()
+	end
+
+	function PLAYER:OnFullyLoaded(cb, ...)
+		return OnFullyLoaded(cb, ...)
+	end
 
 	FullLoadSent = FullLoadSent or false
 	FullLoadRan = FullLoadRan or false
 
 	hook.Add("CalcView", "FullyLoaded", function()
-		FullyLoaded[LocalPlayer()] = true
+		FullyLoaded = true
 
-		if FullyLoadedCallbacks:Get(LocalPlayer()) then
-			for k,v in ipairs(FullyLoadedCallbacks:Get(LocalPlayer())) do
-				xpcall(v[1], GenerateErrorer("PlayerFullyLoaded_Callbacks"), unpack(v, 2))
-			end
+		for k,v in ipairs(FullyLoadedCallbacks) do
+			xpcall(v[1], GenerateErrorer("PlayerFullyLoaded_Callbacks"), unpack(v, 2))
 		end
 
 		if FullLoadSent then
