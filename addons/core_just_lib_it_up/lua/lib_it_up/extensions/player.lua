@@ -128,6 +128,22 @@ function IsPred()
 	return CLIENT and (CurTime() ~= UnPredictedCurTime() or GetPredictionPlayer():IsValid())
 end
 
+
+
+if SERVER then
+	PredTime = CurTime
+else
+	local pt
+	function PredTime()
+		return pt or CurTime()
+	end
+
+	hook.Add("SetupMove", "predtime", function()
+		if IsFirstTimePredicted() then pt = CurTime() end
+	end)
+end
+
+
 function PLAYER:Retry()
 	self:ConCommand("retry")
 end
