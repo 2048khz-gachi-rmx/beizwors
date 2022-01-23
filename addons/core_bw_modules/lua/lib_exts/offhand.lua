@@ -15,23 +15,24 @@ local wheelTimer = 0.2
 
 if CLIENT then
 	function fillBind(bind)
-		local ac = false
-
 		function bind:DoActivate(action)
+			local first = IsFirstTimePredicted()
+
 			if not action then
 				-- errorNHf("Offhand action not found! %q", action)
 				return
 			else
 				if not first and not action.CanPredict then return end
 
-				if isfunction(action.Use) then
-					action.Use(LocalPlayer())
-				end
+				Offhand.TryActivate(action, LocalPlayer())
 			end
 		end
 
+
 		bind:On("Activate", "ShowChoices", function(self)
-			if not IsFirstTimePredicted() then
+			local first = IsFirstTimePredicted()
+
+			if not first then
 				local action = Offhand.GetBindAction(self)
 				if not action then return end
 
@@ -43,8 +44,6 @@ if CLIENT then
 
 				return
 			end
-
-			ac = true
 
 			self:Timer("ShowChoices", wheelTimer, 1, function()
 				Offhand.ShowChoices(self)
@@ -76,19 +75,16 @@ if CLIENT then
 				self:RemoveTimer("ShowChoices")
 			end
 
-			if not ac then return end
+			if kms[CurTime()] then return end
 
 			if self.Wheel then
-				ac = false
-			end
-
-			if self.Wheel or kms[CurTime()] then
 				if first then
 					Offhand.HideChoices(self)
-					kms[CurTime()] = true
-					self:Timer("aaaaaaaaaa", 5, 1, bind.fucking_kms)
 				end
 
+				-- kill any attempts to deactivate for this pred frame
+				kms[CurTime()] = true
+				self:Timer("aaaaaaaaaa", 5, 1, bind.fucking_kms)
 				return
 			end
 
@@ -106,17 +102,13 @@ else
 		bind.plys = {}
 
 		function bind:DoActivate(ply, action)
-
-
 			if not action then
 				-- errorNHf("Offhand action not found! %q", action)
 				return
 			else
 				if not action.Synced then return end
 
-				if isfunction(action.Use) then
-					action.Use(ply)
-				end
+				Offhand.TryActivate(action, ply)
 			end
 		end
 
@@ -187,6 +179,7 @@ function Offhand.Register(name, dat)
 	end
 
 	Offhand.Actions[name] = dat
+	dat.Name = name
 end
 
 function Offhand.GetBindAction(bind, ply)
@@ -207,6 +200,77 @@ function Offhand.SetBindAction(bind, act)
 				net.WriteString(act)
 			net.SendToServer()
 		end)
+	end
+end
+
+function Offhand.TryActivate(name, ply)
+	local action = istable(name) and name or Offhand.Actions[name]
+	if not action then return false end
+
+	action._cds = action._cds or {}
+
+	if Offhand.GetCooldown(name, ply) > 0 then
+		return false, false
+	end
+
+	local ret
+
+	if isfunction(action.Use) then
+		ret = action.Use(ply)
+		ret = ret == nil or ret
+	else
+		ret = true
+	end
+
+	if ret then
+		local cd = isnumber(action.Cooldown) and action.Cooldown
+			or eval(action.Cooldown, ply, ret) or 0
+
+		Offhand.SetCooldown(name, ply, CurTime() + cd)
+	end
+
+	return ret, true
+end
+
+function Offhand.SetCooldown(name, ply, till)
+	if istable(name) then
+		if name.CanPredict then
+			ply:SetNW2Float("offhand_cd_" .. name.Name, till)
+		else
+			name._cds = name._cds or {}
+			name._cds[ply] = till
+		end
+	else
+		local action = Offhand.Actions[name]
+		if not action then errorf("no action: %s", name) return false end
+
+		if action.CanPredict then
+			ply:SetNW2Float("offhand_cd_" .. name, till)
+		else
+			action._cds = action._cds or {}
+			action._cds[ply] = till
+		end
+	end
+end
+
+function Offhand.GetCooldown(name, ply)
+	if CLIENT then ply = CachedLocalPlayer() end
+
+	if istable(name) then
+		local till = name.CanPredict and
+			ply:GetNW2Float("offhand_cd_" .. name.Name, 0) or
+			name._cds[ply] or 0
+
+		return math.max(0, till - CurTime()), till
+	else
+		local action = Offhand.Actions[name]
+		if not action then errorf("no action: %s", name) return false end
+
+		local till = action.CanPredict and
+			ply:GetNW2Float("offhand_cd_" .. name, 0) or
+			action._cds[ply] or 0
+
+		return math.max(0, till - CurTime()), till
 	end
 end
 
@@ -291,16 +355,8 @@ else
 		local name = net.ReadString()
 		if not name then pr:ReplySend("OffhandAction", false) return false end
 
-		local act = Offhand.Actions[name]
-		if not act then pr:ReplySend("OffhandAction", false) return false end
-
-		if isfunction(act.Use) then
-			local out, ns = act.Use(ply)
-
-			if out ~= nil then
-				pr:ReplySend("OffhandAction", out, ns)
-			end
-		end
+		local ok = Offhand.TryActivate(name, ply)
+		if not ok then pr:ReplySend("OffhandAction", false) return false end
 	end)
 
 	net.Receive("offhand_bind", function(len, ply)
