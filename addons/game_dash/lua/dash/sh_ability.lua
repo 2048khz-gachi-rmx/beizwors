@@ -5,11 +5,13 @@ function Dash.Can(ply)
 end
 
 Dash.OffhandTable = {
-	Use = function(ply) Dash.Begin(ply) end,
-	Paint = function(...) Dash.PaintAbility(...) end,
+	Use = function(ply) return Dash.Begin(ply) end,
+	Paint = function(...) return Dash.PaintAbility(...) end,
 	CanPredict = true,
 	Synced = true,
-	ActivateOnPress = true
+	ActivateOnPress = true,
+
+	Cooldown = math.huge,
 }
 
 Offhand.Register("Dash", Dash.OffhandTable)

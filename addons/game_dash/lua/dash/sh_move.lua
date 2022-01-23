@@ -3,9 +3,27 @@ Dash.Table = Dash.Table or {} -- table of dashing people
 local DashTable = Dash.Table
 
 Dash.DashTime = 0.3
+Dash.DashCooldown = 1
+
+function Dash.OnGround(ply)
+	if Offhand.GetCooldown("Dash", ply) == math.huge then
+		Offhand.SetCooldown("Dash", ply, CurTime() + Dash.DashCooldown)
+		return true
+	elseif not ply:GetNW2Bool("DashReady") and Offhand.GetCooldown("Dash", ply) == 0 then
+		ply:SetNW2Bool("DashReady", true)
+		if Dash.OnReady then Dash.OnReady(ply) end
+	end
+end
 
 hook.Add("OnPlayerHitGround", "Dash_StartRecharge", function(ply, water, floater, speed)
+	local afterDash = Dash.OnGround(ply)
+	if afterDash then
+		ply._stopFall = afterDash
+	end
+end)
 
+hook.Add("GetFallDamage", "Dash_NoFall", function(ply)
+	if ply._stopFall then ply._stopFall = nil return 0 end
 end)
 
 local function IsDashing(ply)
@@ -97,6 +115,7 @@ function Dash.CheckMoves(ply, mv, dir)
 			ply:SetNW2Bool("Dash_SuperMoving", true)
 			ply:SetNW2Bool("Dash_PostSuperMove", true)
 
+			ply._stopFall = true
 			dt.SuperMovingVelocity = vel
 
 			if SERVER then
@@ -110,6 +129,10 @@ end
 hook.Add("FinishMove", "Dash_DoMove", function(ply, mv, cmd)
 	if CLIENT and ply ~= CachedLocalPlayer() then
 		return
+	end
+
+	if not (SERVER and DashTable[ply] or ply:GetNW2Bool("Dashing")) and ply:OnGround() then
+		Dash.OnGround(ply)
 	end
 
 	if not DashTable[ply] then return end
@@ -163,6 +186,10 @@ hook.Add("FinishMove", "Dash_DoMove", function(ply, mv, cmd)
 end)
 
 function Dash.Begin(ply)
+	if not ply:GetNW2Bool("DashReady", true) then
+		return false
+	end
+
 	local dir = ply:EyeAngles():Forward()
 	local z = dir.z
 	if z > -0.15 and z < 0.20 then
@@ -171,8 +198,8 @@ function Dash.Begin(ply)
 
 	ply:SetNW2Bool("Dashing", true)
 	ply:SetNW2Bool("PostDash", true)
+	ply:SetNW2Bool("DashReady", false)
 
-	print("beginning dash", Realm(), CurTime())
 	if SERVER or IsFirstTimePredicted() then
 		DashTable[ply] = {
 			t = CurTime(),

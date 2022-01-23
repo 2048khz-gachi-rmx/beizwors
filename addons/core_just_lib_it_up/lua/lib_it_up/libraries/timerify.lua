@@ -31,7 +31,7 @@ function META:Timer(name, sec, reps, func, ...)
 	end
 
 	sec = sec or 0
-	sec = sec - (CurTime() - UnPredictedCurTime()) -- brb finna kms
+	sec = sec --+ (CurTime() - UnPredictedCurTime()) -- brb finna kms
 
 	timer.Create(id, sec, reps or 1, function()
 		if self.IsValid and not self:IsValid() then return end
