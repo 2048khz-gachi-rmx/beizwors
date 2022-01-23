@@ -154,6 +154,12 @@ function Bind:Remove()
 	end
 
 	self:SetValid(false)
+
+	if SERVER then
+		for k,v in ipairs(player.GetConstAll()) do
+			Binds.Remap(v)
+		end
+	end
 end
 
 ChainAccessor(Bind, "_Valid", "Valid")
@@ -221,6 +227,8 @@ ChainAccessor(Bind, "Key", "Key")
 ChainAccessor(Bind, "ID", "ID")
 
 function Bind:SetKey(k)
+	assert(isnumber(k), "not a key")
+
 	local prev = self.Key
 	if prev == k then return self end --bruh
 
@@ -364,19 +372,27 @@ function Bind:_Fire(down, ply)
 
 end
 
-hook.Add("PlayerBindPress", __LibName .. "_BindsDown", function(ply, _, _, btn)
-	if not Binds.Keys[btn] then return end
+local function getBinds(ply, btn)
+	if CLIENT then return Binds.Keys[btn] end
 
-	local bind = Binds.Keys[btn]
-	if bind.Exclusive then return true end
+	return ply._keysToBinds and ply._keysToBinds[btn]
+end
+
+-- cl only hook
+hook.Add("PlayerBindPress", __LibName .. "_BindsDown", function(ply, _, _, btn)
+	local binds = getBinds(ply, btn)
+	if not binds then return end
+
+	for k,v in ipairs(binds) do
+		if v.Exclusive then return true end
+	end
 end)
 
 hook.Add("PlayerButtonDown", __LibName .. "_BindsDown", function(ply, btn)
-	if not Binds.Keys[btn] then return end
+	local binds = getBinds(ply, btn)
+	if not binds then return end
 
 	local first = IsFirstTimePredicted()
-
-	local binds = Binds.Keys[btn]
 
 	for _, bind in ipairs(binds) do
 		if not bind.Exclusive then continue end
@@ -403,11 +419,10 @@ hook.Add("PlayerButtonDown", __LibName .. "_BindsDown", function(ply, btn)
 end)
 
 hook.Add("PlayerButtonUp", __LibName .. "_BindsUp", function(ply, btn)
-	if not Binds.Keys[btn] then return end
+	local binds = getBinds(ply, btn)
+	if not binds then return end
 
 	local first = IsFirstTimePredicted()
-
-	local binds = Binds.Keys[btn]
 
 	for _, bind in ipairs(binds) do
 		if not bind.Exclusive then continue end

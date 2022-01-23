@@ -69,6 +69,7 @@ local realmExclusive = {
 	["sql_arglist.lua"] = _SV,
 	["rtpool.lua"] = _CL,
 	["networkable_sv_ext.lua"] = _NONE,
+	["binds_ext_sv.lua"] = _NONE,
 	["networkable_cl_ext.lua"] = _CL,
 	["chat.lua"] = _CL,
 	["render.lua"] = _CL,
@@ -98,7 +99,6 @@ function libTbl.IncludeIfNeeded(who)
 
 	include(path)
 	libTbl.SetIncluded(who)
-	print("including", who)
 	return true
 end
 

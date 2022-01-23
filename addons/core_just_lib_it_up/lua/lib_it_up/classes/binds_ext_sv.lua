@@ -6,12 +6,12 @@ function Binds.Remap(ply)
 
 	for k,v in pairs(ply._bindsToKey) do
 		ply._keysToBinds[v] = ply._keysToBinds[v] or {}
-		table.insert(ply._keysToBinds[v], k)
+		local bind = Binds.Objects[k]
+		table.insert(ply._keysToBinds[v], bind)
 	end
 end
 
 net.Receive("lbu_Binds", function(len, ply)
-	print("received", len / 8, "bytes of bind data from", ply)
 	local amt = net.ReadUInt(16)
 
 	ply._bindsToKey = ply._bindsToKey or {}
@@ -29,4 +29,5 @@ net.Receive("lbu_Binds", function(len, ply)
 		ply._bindsToKey[id] = key
 	end
 
+	Binds.Remap(ply)
 end)
