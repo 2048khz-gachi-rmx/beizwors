@@ -89,7 +89,7 @@ end
 local cur = {}
 local buf = {}
 
-local on_dev = false
+local on_dev = true
 
 function GCMark(n)
 	if SERVER then return end

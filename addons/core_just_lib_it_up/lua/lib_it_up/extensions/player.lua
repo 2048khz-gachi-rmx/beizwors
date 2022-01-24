@@ -405,6 +405,8 @@ hook.Add("PlayerDisconnected", "TrackAll", function(ply)
 	if has then
 		table.RemoveByValue(allPlayers, ply)
 	end
+
+	ply:Emit("Disconnect")
 end)
 
 function player.GetConstAll()

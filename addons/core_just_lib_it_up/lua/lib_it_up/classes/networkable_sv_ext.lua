@@ -119,12 +119,21 @@ local encoders = {
 	["color"] = {6, net.WriteColor},
 
 	--7 to 11 are used!!!!!! do not use them!
+
+	["float"] = {12, net.WriteFloat}
 }
 
 ns:Hijack(false)
 ns = nil
 
-local function determineEncoder(typ, val)
+local function determineEncoder(typ, val, force)
+	if force then
+		local enc = encoders[force]
+		if not enc then errorf("Failed to find Encoder function for forced ID %s!", force) return end
+
+		return enc[2], enc[1], enc[3]
+	end
+
 	if val == fakeNil or val == nil then --lol
 		return BlankFunc, 11
 	end
@@ -253,6 +262,7 @@ end
 
 local function WriteChange(key, val, obj, ...)
 	obj.__LastNetworked[key] = val
+	local origKey = key
 	key = obj.__Aliases[key] ~= nil and obj.__Aliases[key] or key
 
 	local key_typ = type(key):lower()
@@ -280,14 +290,20 @@ local function WriteChange(key, val, obj, ...)
 	-- write val encoderID and the encoded val
 	--print("WriteChange called", key, val)
 
+	op = nil
 	local res = obj:Emit("WriteChangeValue", unAliased, val, ...)
 
 	if res == false then printf("WriteChangeValue asked to not write change (%s = %s)", unAliased, val) return end
 
-	op = net.WriteUInt(v_encoderID, encoderIDLength)
+	if not obj.__AliasesTypes[origKey] then
+		op = net.WriteUInt(v_encoderID, encoderIDLength)
+	else
+		v_encoder, v_encoderID, v_additionalArg = determineEncoder(nil, nil, nw.TypesBack[obj.__AliasesTypes[origKey]]:lower())
+	end
+
 	v_encoder(val, v_additionalArg, key)
 
-	if net.ActiveNetstack then
+	if net.ActiveNetstack and op then
 		op.Description = "Changed value encoder ID"
 	end
 end
@@ -363,6 +379,7 @@ function nw:_SendNet(who, full, budget)
 		local nsCursor = 0
 
 		if self:Emit("CustomWriteChanges", changes) == nil then
+			if changes_count == 0 then net.Send({}) return end -- ?? lol
 			net.WriteUInt(changes_count, SZ.CHANGES_COUNT).IsChangesCount = true
 			nsCursor = ns:GetCursor() - 1
 

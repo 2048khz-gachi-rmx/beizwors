@@ -1,7 +1,7 @@
 BaseWars.PlayerData = BaseWars.PlayerData or {}
 local pd = BaseWars.PlayerData
 
-local PLAYER = debug.getregistry().Player
+local PLAYER = FindMetaTable("Player")
 
 local db
 
@@ -117,7 +117,6 @@ local function doQry(qTpl, rep, sid, name, val)
 
 	local qry = qTpl:format(name, second_arg, third_arg, fourth_arg, fucking_end_me)
 
-	print("qry: ran", qry)
 	MySQLQuery(db:query(qry), true)
 		:Catch(mysqloo.CatchError)
 end
