@@ -5,6 +5,22 @@ local DashTable = Dash.Table
 Dash.DashTime = 0.3
 Dash.DashCooldown = 1
 
+local function getNw(ply)
+	if CLIENT then ply = CachedLocalPlayer() end
+
+	local key = "dash" .. ply:UserID()
+	local ret = _NetworkableCache[key]
+
+	if not ret then
+		ret = PredNetworkable(key)
+		ret:Bind(ply)
+	end
+
+	ret:Alias("Dashing", 2, "Bool")
+
+	return ret
+end
+
 function Dash.OnGround(ply)
 	if Offhand.GetCooldown("Dash", ply) == math.huge then
 		Offhand.SetCooldown("Dash", ply, CurTime() + Dash.DashCooldown)
@@ -27,7 +43,11 @@ hook.Add("GetFallDamage", "Dash_NoFall", function(ply)
 end)
 
 local function IsDashing(ply)
-	return ply:GetNW2Bool("Dashing", false)
+	return getNw(ply):Get("Dashing", false)
+end
+
+local function SetDashing(ply, b)
+	getNw(ply):Set("Dashing", b)
 end
 
 function Dash.CheckMoves(ply, mv, dir)
@@ -131,7 +151,7 @@ hook.Add("FinishMove", "Dash_DoMove", function(ply, mv, cmd)
 		return
 	end
 
-	if not (SERVER and DashTable[ply] or ply:GetNW2Bool("Dashing")) and ply:OnGround() then
+	if not (SERVER and DashTable[ply] or IsDashing(ply)) and ply:OnGround() then
 		Dash.OnGround(ply)
 	end
 
@@ -161,10 +181,10 @@ hook.Add("FinishMove", "Dash_DoMove", function(ply, mv, cmd)
 	Dash.CheckMoves(ply, mv, d)
 	-- self:CheckMoves(ply, mv, d)
 	local smv = ply:GetNW2Bool("Dash_SuperMoving", false)
-	local psmv = ply:GetNW2Bool("Dash_PostSuperMove", false)
-	local pds = ply:GetNW2Bool("Dash_Post", false)
-	local dashing = ply:GetNW2Bool("Dashing", false)
-
+	-- local psmv = ply:GetNW2Bool("Dash_PostSuperMove", false)
+	-- local pds = ply:GetNW2Bool("Dash_Post", false)
+	local dashing = IsDashing(ply) -- ply:GetNW2Bool("Dashing", false)
+	--clprint("dashing:", dashing)
 	if smv then
 		mv:SetMaxSpeed(10e9)
 		mv:SetVelocity(t.SuperMovingVelocity)
@@ -187,6 +207,7 @@ end)
 
 function Dash.Begin(ply)
 	if not ply:GetNW2Bool("DashReady", true) then
+		print("dash not ready", Realm())
 		return false
 	end
 
@@ -196,7 +217,9 @@ function Dash.Begin(ply)
 		dir.z = 0.1
 	end
 
-	ply:SetNW2Bool("Dashing", true)
+	--ply:SetNW2Bool("Dashing", true)
+	SetDashing(ply, true)
+
 	ply:SetNW2Bool("PostDash", true)
 	ply:SetNW2Bool("DashReady", false)
 
@@ -215,5 +238,6 @@ end
 function Dash.Stop(ply)
 	-- nil the table serverside; cl we need the pred so use nw2
 	if SERVER then DashTable[ply] = nil end
-	ply:SetNW2Bool("Dashing", false)
+	--ply:SetNW2Bool("Dashing", false)
+	SetDashing(ply, false)
 end

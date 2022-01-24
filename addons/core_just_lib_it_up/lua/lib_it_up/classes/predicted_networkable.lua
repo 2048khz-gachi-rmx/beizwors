@@ -1,7 +1,7 @@
 setfenv(0, _G)
 
 if not Networkable then include("networkable.lua") end -- end me
-do return end -- bad bad bad
+-- do return end -- bad bad bad
 
 --[[
 	terms:
@@ -40,15 +40,17 @@ Stream.__tostring = function(self) return string.format("PredNWStream @ %f (%p)"
 local allNWs = _AllPredNWs or WeakTable("v")
 _AllPredNWs = allNWs
 
-local JITTER_THRESHOLD = 100 / 1000
+local JITTER_THRESHOLD = 500 / 1000
 
 if CLIENT then
 	local valid = false
 
 	timer.Create("PredNW_GC", 0.1, 0, function()
 		if not valid and not LocalPlayer():IsValid() then return end -- gmod plx
+
 		local rCT = CurTime() - math.max(0.07, LocalPlayer():Ping() / 100 + JITTER_THRESHOLD)
 		--print((LocalPlayer():Ping() / 500 + JITTER_THRESHOLD))
+
 		for k,v in pairs(allNWs) do
 			for ct, _ in pairs(v.Streams) do
 				if rCT > ct  then
@@ -65,7 +67,7 @@ if CLIENT then
 			end
 		end
 
-		JITTER_THRESHOLD = LocalPlayer():Ping() / 1000 / 4 --25% of the player's ping is acceptable as jitter
+		JITTER_THRESHOLD = LocalPlayer():Ping() / 1000 / 2 + 0.5
 	end)
 end
 
@@ -98,7 +100,7 @@ function nw:Initialize(id)
 	-- self.MaxCTStream = math.huge  -- can't; we know UCT will never be less than the previous value, but CT can be due to winding forward
 	self.MaxUCTStream = math.huge
 
-	self:Alias("__ct", 255)
+	self:Alias("__ct", 255, "Float")
 	allNWs[#allNWs + 1] = self
 end
 
@@ -126,7 +128,6 @@ function nw:CreateStream(time)
 
 	self.MaxUCTStream = time
 	self.MaxCTStream = math.max(self.MaxCTStream or 0, CurTime())
-
 	return st
 end
 
@@ -208,7 +209,7 @@ function nw:GetClosestPredRunUnpred(uct, key, lim, p)
 end
 
 function nw:Set(k, v)
-	if self.Aliases[k] ~= nil then k = self.Aliases[k] end
+	--if self.__Aliases[k] ~= nil then k = self.__Aliases[k] end
 
 	if SERVER then
 		if self.Networked[k] == v then return self end
@@ -218,7 +219,7 @@ function nw:Set(k, v)
 
 		timer.Create("NWNetwork" .. tostring(self.NetworkableID), 0, 1, function()
 			if self:IsValid() then
-				self.__parent.Network(self, true)
+				self.__parent.Network(self)
 			end
 		end)
 
@@ -273,7 +274,7 @@ function nw:Get(k, p, no_pred)
 		return self.__parent.Get(self, k)
 	end
 
-	if self.Aliases[k] ~= nil then k = self.Aliases[k] end
+	--if self.__Aliases[k] ~= nil then k = self.__Aliases[k] end
 
 	if p then print = acPrint else print = BlankFunc end
 
@@ -281,7 +282,6 @@ function nw:Get(k, p, no_pred)
 	local streamWhen = UnPredictedCurTime()
 
 	local pred = not no_pred and (streamWhen ~= when or not IsFirstTimePredicted())
-
 	if no_pred == false then pred = true end
 
 	if pred then -- we're in prediction; either grab current prediction frame's var, first prediction frame's var in a pred run before this one or baseline
@@ -290,7 +290,10 @@ function nw:Get(k, p, no_pred)
 		local ply = GetPredictionPlayer()
 		local cmd = ply ~= NULL and ply:GetCurrentCommand():CommandNumber()
 		print(ply, cmd, stream)
-		if stream and (stream.Data[k] == nil or (stream.Cmd and stream.Cmd ~= cmd)) then print("stream cmd matches; bail") stream = nil end
+		if stream and (stream.Data[k] == nil or (stream.Cmd and stream.Cmd ~= cmd)) then
+			print("stream cmd matches; bail")
+			stream = nil
+		end
 
 		local streamFrom
 		if not stream then
@@ -319,7 +322,7 @@ function nw:Get(k, p, no_pred)
 			return var, streamFrom or streamWhen
 		end -- if the current prediction frame has that var set, return it
 
-		print('returned to baseline')
+		print("returned to baseline")
 		return self.BaseLine[k], self.BaseLineWhen -- otherwise, return to baseline
 	else
 		print("unpred")
@@ -346,7 +349,6 @@ function nw:Get(k, p, no_pred)
 		if ret == nil then ret = blVar print("falling back to NW baseline") end
 
 		return ret, closestTime or streamWhen
-
 	end
 end
 
@@ -380,7 +382,7 @@ if CLIENT then
 	end)
 
 	nw:On("NetworkedVarChanged", "MergeIntoBaseline", function(self, key, old, new)
-		if key == self.Aliases["__ct"] then
+		if key == self.__Aliases["__ct"] then
 			if self.BaseLineWhen < new then
 				--self.BaseLineWhen = new
 				self.BaseLineServer = new
