@@ -155,11 +155,11 @@ end
 PLAYER.SetBWData = setter(qries.set_column_query)
 
 function PLAYER:AddBWData(name, val)
-	return self:SetBWData(name, self:GetBWData(name) + val)
+	return self:SetBWData(name, (self:GetBWData(name) or 0) + val)
 end
 
 function PLAYER:SubBWData(name, val)
-	return self:SetBWData(name, self:GetBWData(name) - val)
+	return self:SetBWData(name, (self:GetBWData(name) or 0) - val)
 end
 
 PLAYER.GetBWData = function(self, key)
