@@ -127,30 +127,70 @@ hook.Add("HUDPaint", "GC_Trk", function()
 end)
 
 if CLIENT then
-	collectgarbage("stop")
 
-	local MB = bit.lshift(1, 10)
+	if not Logger then LibItUp.IncludeIfNeeded("extensions/debug.lua") end
 
-	local START, START_STEP = 1150 * MB, 110
-	local END, END_STEP = 1900 * MB, 250
+	local gcLog = Logger("GarbageCollect", Color(0, 0, 160))
 
-	local PANIC = jit.arch == "x64" and 3000 * MB or 1800 * MB
+	local cvar = CreateConVar("gc_manual_default", "0", nil, "Set the manual GC algorithm as the default")
 
-	timer.Create("GC_Slow", 1, 0, function()
-		local cnt = math.min(collectgarbage("count"), END)
-		if cnt < START then return end -- not worth collecting
+	GC_IsManual = (GC_IsManual == nil and cvar:GetBool()) or GC_IsManual
 
-		local stepSz = math.Remap(cnt, START, END, START_STEP, END_STEP)
+	function GC_EnableManual()
+		is_manual = true
 
-		collectgarbage("step", stepSz)
-	end)
+		collectgarbage("stop")
 
-	timer.Create("GC_Panic", 1, 0, function()
-		local cnt = collectgarbage("count")
-		if cnt > PANIC then
-			print("!!! PANICKING GARBAGE COLLECTION !!!")
-			collectgarbage()
-			collectgarbage()
+		local MB = bit.lshift(1, 10)
+
+		local START, START_STEP = 1150 * MB, 110
+		local END, END_STEP = 1900 * MB, 250
+
+		local PANIC = jit.arch == "x64" and 3000 * MB or 1800 * MB
+
+		timer.Create("GC_Slow", 1, 0, function()
+			local cnt = math.min(collectgarbage("count"), END)
+			if cnt < START then return end -- not worth collecting
+
+			local stepSz = math.Remap(cnt, START, END, START_STEP, END_STEP)
+
+			collectgarbage("step", stepSz)
+		end)
+
+		timer.Create("GC_Panic", 1, 0, function()
+			local cnt = collectgarbage("count")
+			if cnt > PANIC then
+				print("!!! PANICKING GARBAGE COLLECTION !!!")
+				collectgarbage()
+				collectgarbage()
+			end
+		end)
+
+		gcLog("Enabled MANUAL (custom) GC; switch via `gc_switch_mode`")
+	end
+
+	function GC_DisableManual()
+		is_manual = false
+
+		collectgarbage("restart")
+
+		timer.Remove("GC_Slow")
+		timer.Remove("GC_Panic")
+
+		gcLog("Enabled AUTOMATIC (vanilla) GC; switch via `gc_switch_mode`")
+	end
+
+	concommand.Add("gc_switch_mode", function()
+		if is_manual then
+			GC_DisableManual()
+		else
+			GC_EnableManual()
 		end
 	end)
+
+	if GC_IsManual then
+		GC_EnableManual()
+	else
+		GC_DisableManual()
+	end
 end
