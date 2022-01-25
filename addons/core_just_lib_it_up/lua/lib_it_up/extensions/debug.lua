@@ -1,5 +1,4 @@
 LibItUp.SetIncluded()
-if not CheckArg then include("lua.lua") end -- lol
 
 local modules = {}
 
@@ -125,6 +124,8 @@ function svPrintf(...)
 	if SERVER then printf(...) end
 end
 svprintf = svPrintf
+
+if not CheckArg then LibItUp.IncludeIfNeeded("extensions/lua.lua") end
 
 LibItUp.LogIDs = LibItUp.LogIDs or {}
 function CreateLogID(id, str, types)
