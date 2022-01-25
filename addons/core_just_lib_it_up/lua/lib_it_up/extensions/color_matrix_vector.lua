@@ -136,6 +136,15 @@ function COLOR:MulHSV(h, s, v)
 end
 
 COLOR.HSVMod = COLOR.ModHSV
+
+function COLOR:SetDraw()
+	surface.SetDrawColor(self.r, self.g, self.b, self.a or 255)
+end
+
+function COLOR:SetText()
+	surface.SetTextColor(self.r, self.g, self.b, self.a or 255)
+end
+
 function IsMaterial(m)
 	return type(m) == "IMaterial"	--we can't really compare m.MetaName because m might not even be a table
 end
