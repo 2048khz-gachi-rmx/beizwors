@@ -603,9 +603,9 @@ local shitCircle = CreateMaterial("_crapcircle", "UnlitGeneric", {
 function draw.SetMaterialCircle(rad)
 	local mat
 
-	if rad < 64 then
+	if rad <= 64 then
 		mat = draw.GetMaterial("https://i.imgur.com/MMHZw92.png", "small-circle.png", "smooth ignorez")
-	elseif rad < 256 then
+	elseif rad <= 256 then
 		mat = draw.GetMaterial("https://i.imgur.com/XAWPA15.png", "medium-circle.png", "smooth ignorez")
 	else
 		mat = draw.GetMaterial("https://i.imgur.com/6SdL8ff.png", "big-circle.png", "smooth ignorez")
@@ -619,9 +619,9 @@ function draw.SetMaterialCircle(rad)
 end
 
 function draw.DrawMaterialCircle(x, y, rad)	--i hate it but its the only way to make an antialiased circle on clients with no antialiasing set
-	if rad < 64 then
+	if rad <= 64 then
 		surface.DrawMaterial("https://i.imgur.com/MMHZw92.png", "small-circle.png", x - rad/2, y - rad/2, rad, rad)
-	elseif rad < 256 then
+	elseif rad <= 256 then
 		surface.DrawMaterial("https://i.imgur.com/XAWPA15.png", "medium-circle.png", x - rad/2, y - rad/2, rad, rad)
 	else
 		surface.DrawMaterial("https://i.imgur.com/6SdL8ff.png", "big-circle.png", x - rad/2, y - rad/2, rad, rad)
