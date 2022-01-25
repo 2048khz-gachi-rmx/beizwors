@@ -17,9 +17,7 @@ ENT.ResearchComputer = true
 
 
 function ENT:DerivedDataTables()
-
 	self:NetworkVar("Int", 5, "RSPerk")
 	self:NetworkVar("Int", 6, "RSLevel")
 	self:NetworkVar("Float", 1, "RSTime")
-
 end
