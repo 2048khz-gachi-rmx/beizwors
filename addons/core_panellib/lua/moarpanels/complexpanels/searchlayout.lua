@@ -2,9 +2,22 @@
 local SL = {}
 vgui.ColorSetters(SL)
 
+function SL:SetFont(f, force)
+	if force then self.SearchBar:SetFont(f) return end
+
+	local fam = Fonts.GetFamily(f)
+	self.SearchFont = fam
+
+	self.SearchBar:CalcFont()
+end
+
 function SL:Init()
 	local srchPanel = vgui.Create("EditablePanel", self) -- ewww cant offset entry text, hafta do this
 	self.SearchPanel = srchPanel
+	self.SearchFont = "OS"
+
+	local main = self
+
 	srchPanel:Dock(TOP)
 	srchPanel:SetTall(28)
 	srchPanel:DockMargin(4, 4, 4, 4)
@@ -12,11 +25,13 @@ function SL:Init()
 	local srch = vgui.Create("FTextEntry", srchPanel)
 
 	function srchPanel:Paint(w, h)
+		local off = 4
+
 		srch:DrawBG(w, h)
 			surface.SetDrawColor(Colors.Button:Copy())
-			surface.DrawRect(0, 0, 28, 28)
+			surface.DrawRect(0, 0, h, h)
 			surface.SetDrawColor(255, 255, 255)
-			surface.DrawMaterial("https://i.imgur.com/Q8Vdlhq.png", "mag32_1.png", 4, 4, 20, 20)
+			surface.DrawMaterial("https://i.imgur.com/Q8Vdlhq.png", "mag32_1.png", off, off, h - off * 2, h - off * 2)
 		srch:DrawGradBorder(w, h)
 	end
 
@@ -25,6 +40,18 @@ function SL:Init()
 	srch:DockMargin(28, 0, 0, 0)
 	srch.NoDrawBG = true
 	srch.GradBorder = false
+
+	function srch:CalcFont()
+		local h = srchPanel:GetTall()
+		local fnt = Fonts.PickFont(main.SearchFont, "abc", 999, h, nil, 16)
+		self:SetFont(fnt)
+		self:SetFontInternal(fnt)
+	end
+
+	function srchPanel:PerformLayout()
+		srch:DockMargin(self:GetTall(), 0, 0, 0)
+		srch:CalcFont()
+	end
 
 	local scr = vgui.Create("FScrollPanel", self)
 	scr:Dock(FILL)

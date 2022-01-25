@@ -274,9 +274,11 @@ local RoundingMask = function(scr, w, h)
 		color_white, true, true, false, true)
 end
 
+NavPanel.ExpandHeight = 28
+
 function Navbar:Init()
 	local showHolder = vgui.Create("InvisPanel", self)
-	showHolder:SetSize(self:GetWide(), 28)
+	showHolder:SetSize(self:GetWide(), NavPanel.ExpandHeight)
 	showHolder:Dock(TOP)
 	showHolder:SetMouseInputEnabled(true)
 
@@ -301,6 +303,10 @@ function Navbar:Init()
 	end
 
 	show.Navbar = self
+
+	function showHolder:PerformLayout()
+		show:CenterVertical()
+	end
 
 	self.ShowBtn = show
 
