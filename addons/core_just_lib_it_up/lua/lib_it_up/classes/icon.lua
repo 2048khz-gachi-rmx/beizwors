@@ -101,6 +101,8 @@ ChainAccessor(Icon, "_Align", "Alignment")
 ChainAccessor(Icon, "_PreserveRatio", "PreserveRatio")
 
 function Icon:PaintIcon(x, y, w, h, rot, xA, yA)
+	x = x - math.floor(w * xA)
+	y = y - math.floor(h * yA)
 
 	if not self.Material then
 		local mat = surface.DrawMaterial(self.URL, self.Name, x, y, w, h, rot)
@@ -115,9 +117,6 @@ function Icon:PaintIcon(x, y, w, h, rot, xA, yA)
 
 	else
 		surface.SetMaterial(self.Material)
-
-		x = x - w * xA
-		y = y - h * yA
 
 		if rot then
 			surface.DrawTexturedRectRotated(x, y, w, h, rot)
@@ -215,8 +214,8 @@ function Icon:Paint(x, y, w, h, rot)
 		w, h = self:_WHPreseveRatio(w, h)
 	end
 
-	w = w or self.W
-	h = h or self.H
+	w = math.floor(w or self.W)
+	h = math.floor(h or self.H)
 
 	local xA, yA = 0, 0
 	local alNum = self:GetAlignment()
