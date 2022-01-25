@@ -516,23 +516,36 @@ local gd = Material("vgui/gradient-d")
 local gr = Material("vgui/gradient-r")
 local gl = Material("vgui/gradient-l")
 
-function META:DrawGradientBorder(w, h, gw, gh)
+function META:DrawGradientBorder(w, h, gw, gh, left, top, right, bottom)
 	gw, gh = math.ceil(gw), math.ceil(gh)
 
-	if gh > 0 then
-		surface.SetMaterial(gu)
-		surface.DrawTexturedRect(0, 0, w, gh)
+	left = left == nil or left
+	right = right == nil or right
+	top = top == nil or top
+	bottom = bottom == nil or bottom
 
-		surface.SetMaterial(gd)
-		surface.DrawTexturedRect(0, h - gh, w, gh)
+	if gh > 0 then
+		if top then
+			surface.SetMaterial(gu)
+			surface.DrawTexturedRect(0, 0, w, gh)
+		end
+
+		if bottom then
+			surface.SetMaterial(gd)
+			surface.DrawTexturedRect(0, h - gh, w, gh)
+		end
 	end
 
 	if gw > 0 then
-		surface.SetMaterial(gr)
-		surface.DrawTexturedRect(w - gw, 0, gw, h)
+		if right then
+			surface.SetMaterial(gr)
+			surface.DrawTexturedRect(w - gw, 0, gw, h)
+		end
 
-		surface.SetMaterial(gl)
-		surface.DrawTexturedRect(0, 0, gw, h)
+		if left then
+			surface.SetMaterial(gl)
+			surface.DrawTexturedRect(0, 0, gw, h)
+		end
 	end
 end
 
