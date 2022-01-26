@@ -138,6 +138,10 @@ function DeltaText:GetElements()
 	return self.Elements
 end
 
+function DeltaText:GetElement(n)
+	return self.Elements[n]
+end
+
 function DeltaText:GetPreviousElement()
 	return self.Active[self.LastActive - 1]
 end
@@ -188,13 +192,11 @@ function DeltaText:CycleNext()
 end
 
 function DeltaText:DisappearCurrentElement()
-
 	local cur = self:GetCurrentElement()
 
 	if cur and not cur.Disappearing then
 		cur:Disappear()
 	end
-
 end
 
 function DeltaText:GetSize()

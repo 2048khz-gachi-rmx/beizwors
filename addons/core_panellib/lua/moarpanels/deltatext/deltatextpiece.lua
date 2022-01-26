@@ -42,8 +42,8 @@ function pmeta:Initialize(par, tx, font, key, rep)
 	--self.Font = font
 	self.Key = key
 
-	self.DropStrength = 24	--Text replacement animation: height to which text drops FROM the text
-	self.LiftStrength = 24	--Text replacement animation: height to which text drops TO the text
+	self.DropStrength = 16	--Text replacement animation: height to which text drops FROM the text
+	self.LiftStrength = -12	--Text replacement animation: height to which text drops TO the text
 
 	self.Parent = par 		--DeltaTextMain
 
@@ -56,7 +56,7 @@ function pmeta:Initialize(par, tx, font, key, rep)
 	self.Offsets = {X = 0, Y = 0}
 
 	self.Offsets.XAppear = 0
-	self.Offsets.YAppear = -36
+	self.Offsets.YAppear = -24
 
 	self.Offsets.XDisappear = 0
 	self.Offsets.YDisappear = 24
@@ -137,7 +137,7 @@ function pmeta:GetAnimation(nm)
 end
 
 --[[
-	Returning anything in these functions will stop default animations from playing.
+	Returning anything non-falsy in these functions will stop default animations from playing
 ]]
 
 function pmeta:AppearAnimation(fr)
@@ -150,7 +150,7 @@ end
 
 --[[
 	This is called by the Appear and Disappear animation(which, in turn, is created by :Appear() and :Disappear())
-	Don't override it; use :AppearAnimation() and :DisappearAnimation callbacks instead.
+	Don't override it; use :AppearAnimation() and :DisappearAnimation callbacks instead
 ]]
 
 function pmeta:AnimateAppearance(fr, a, rev, fromx, fromy)
@@ -161,9 +161,9 @@ function pmeta:AnimateAppearance(fr, a, rev, fromx, fromy)
 	local xo, yo
 
 	if not rev then -- just a regular appear; start from default values
-		xo, yo = self.Offsets.XAppear, -self:GetLiftStrength()
+		xo, yo = self.Offsets.XAppear, self.Offsets.YAppear --self:GetLiftStrength()
 	else -- we're reversing a disappear animation; take current values and go from them
-		xo, yo = fromx, fromy--self.Offsets.X, self.Offsets.Y
+		xo, yo = fromx, fromy --self.Offsets.X, self.Offsets.Y
 	end
 
 	self.Offsets.X = Lerp(fr, xo, 0)
@@ -603,7 +603,7 @@ function pmeta:Reset()
 	end
 end
 
-function pmeta:RemoveFragment(num)
+function pmeta:RemoveFragment(num, now)
 	local frag
 
 	for k,v in pairs(self.Fragments) do --find the frag we'll be replacing
@@ -621,6 +621,15 @@ function pmeta:RemoveFragment(num)
 		end
 	end
 
+	if now then
+		-- delete now, no fancy anims
+		for k,v in pairs(self.Fragments) do
+			if v == frag then
+				table.remove(self.Fragments, k)
+				return
+			end
+		end
+	end
 
 	local dropstr = self:GetDropStrength()
 
