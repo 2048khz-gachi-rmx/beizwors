@@ -42,17 +42,6 @@ end
 local cachetbl = {}
 local cachenums = {}
 
-
---[[
-function eachNewline(s) --meant to be used as 'for s in eachNewline(tx) do...'
-	local iter, line = (s:gmatch("[^|]*")), 0
-	return function()
-		line = line + 1
-		return iter(), line
-	end
-end
-]]
-
 function eachNewline(s) --meant to be used as 'for s in eachNewline(tx) do...'
 	local ps = 0
 	local st, e
@@ -66,13 +55,38 @@ function eachNewline(s) --meant to be used as 'for s in eachNewline(tx) do...'
 			local ret = s:sub(ps, st - 1)
 			ps = e + 1
 			return ret, i
-		elseif ps < #s then
+		elseif ps <= #s then
 			local ret = s:sub(ps)
-			ps = #s
+			ps = #s + 1
 			return ret, i
 		end
 	end
 end
+
+function eachMatch(s, match)
+	local ps = 0
+	local st, e
+	local i = 0
+
+	return function()
+		st, e = s:find(match, ps)
+		i = i + 1
+
+		if st then
+			local ret = s:sub(ps, st - 1)
+			ps = e + 1
+			return ret, s:sub(st, e)
+		elseif ps <= #s then
+			local ret = s:sub(ps)
+			ps = #s + 1
+			return ret --, s:sub(st, e)
+		end
+	end
+end
+
+string.Prefixes = {
+	"#", "^", "$", "@", "&", "*"
+}
 
 function amtNewlines(s)
 	return select(2, s:gsub("[\r\n]", ""))
