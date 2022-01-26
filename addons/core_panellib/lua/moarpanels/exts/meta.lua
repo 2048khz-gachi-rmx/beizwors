@@ -109,7 +109,7 @@ function META:Lerp(key, val, dur, del, ease, forceswap, changeDest)
 	if not self2[key] then self2[key] = self2[key] or 0 end
 	local from = self2[key]
 
-	if self2[key] == val then return false, false end
+	if self2[key] == val and not forceswap then return false, false end
 
 	if anims[key] then
 		anim = anims[key]
