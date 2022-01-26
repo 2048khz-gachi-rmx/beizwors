@@ -187,6 +187,6 @@ local function downloadForUlibUpdateCheck()
 end
 
 if ULib.AUTOMATIC_UPDATE_CHECKS then
-	hook.Add( "InitPostEntity", "ULibPluginUpdateChecker", downloadForUlibUpdateCheck )
+	--hook.Add( "InitPostEntity", "ULibPluginUpdateChecker", downloadForUlibUpdateCheck )
 	timer.Create( "ULibPluginUpdateChecker", 9, 10, downloadForUlibUpdateCheck )
 end
