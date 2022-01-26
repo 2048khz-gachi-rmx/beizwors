@@ -19,6 +19,7 @@ ChainAccessor(perk, "_Name", "Name")
 ChainAccessor(perk, "_Icon", "Icon")
 ChainAccessor(perk, "_Levels", "Levels")
 ChainAccessor(perk, "_TreeName", "TreeName")
+ChainAccessor(perk, "_Color", "Color")
 
 Research.Perks = Research.Perks or {}
 
@@ -53,10 +54,17 @@ function perk:AddLevel(i)
 	local ret = level:new(i)
 	ret._levelOf = self
 	self:GetLevels()[i] = ret
+
+	ret:SetNameFragments({
+		self:GetName() or "?",
+		" ",
+		i
+	})
+
 	return ret
 end
 
-ChainAccessor(level, "_Name", "Name")
+ChainAccessor(level, "_NameFragments", "NameFragments")
 ChainAccessor(level, "_Icon", "Icon")
 
 ChainAccessor(level, "_Level", "Level")
@@ -67,12 +75,20 @@ ChainAccessor(level, "_Requirements", "Reqs")
 ChainAccessor(level, "_Prerequisites", "Prerequisites")
 ChainAccessor(level, "_Prerequisites", "Prereqs")
 
+ChainAccessor(level, "_Description", "Description")
+ChainAccessor(level, "_Color", "Color")
+
 function level:Initialize(lv)
 	self:SetLevel(lv)
 	self:SetReqs({ Items = {} })
 	self:SetPrereqs({})
+	self:SetNameFragments({})
 
 	self._pos = {0, 0}
+end
+
+function level:GetName()
+	return table.concat(self:GetNameFragments(), "")
 end
 
 function level:GetPerk()
