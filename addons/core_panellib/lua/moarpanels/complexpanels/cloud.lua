@@ -52,6 +52,22 @@ setfenv(1, _G)
 
 ---------------------------------------------------------------------------]]
 
+local ShadowHandle
+
+
+local function getShadowHandle()
+	if ShadowHandle then return ShadowHandle end
+
+	ShadowHandle = BSHADOWS.GenerateCache("CloudShadow", 256, 256)
+	ShadowHandle:SetGenerator(function(self, w, h)
+		draw.RoundedBox(8, 0, 0, w, h, color_white)
+	end)
+
+	ShadowHandle:CacheShadow(4, 4, 4)
+
+	return ShadowHandle
+end
+
 CLOUDS = CLOUDS or {}
 
 function CLOUDS:RemoveAll()
@@ -308,20 +324,23 @@ function Cloud:Paint()
 
 	local oldX, oldY = xoff, finY
 
+	local handle = getShadowHandle()
+
 	local am = surface.GetAlphaMultiplier()
 	surface.SetAlphaMultiplier(self:GetAlpha() / 255)
 
 	local clip = DisableClipping(true)
 
 		if self.Shadow and self.DrawShadow then
-			BSHADOWS.BeginShadow()
-			xoff, finY = self:LocalToScreen(xoff, finY)
+			--BSHADOWS.BeginShadow()
+			--xoff, finY = self:LocalToScreen(xoff, finY)
 		end
 
 		-- the box of the cloud
 		local X = xoff - cw*self.Middle
 		local Y = finY
 
+		handle:Paint(X, Y, cw, boxh)
 		draw.RoundedBox(4, X, Y, cw, boxh, self.Color)
 
 		if self.Shadow then
@@ -331,7 +350,7 @@ function Cloud:Paint()
 			local alpha = self.Shadow.alpha or self.Shadow.opacity or 255
 			local color = self.Shadow.color or nil
 
-			BSHADOWS.EndShadow(int, spr, blur, alpha, 0, 1, nil, color)
+			--BSHADOWS.EndShadow(int, spr, blur, alpha, 0, 1, nil, color)
 
 			xoff, finY = oldX, oldY
 
