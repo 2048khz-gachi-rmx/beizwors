@@ -84,6 +84,12 @@ function ptr:CompletePoint(id, b)
 	-- if b and self.CompletedPoints[id] then return end
 	if not b and not self.CompletedPoints[id] then return end
 
+	if b and not self.CompletedPoints[id] then
+		sfx.SetIn()
+	elseif not b and self.CompletedPoints[id] then
+		sfx.SetOut()
+	end
+
 	self.CompletedPoints[id] = b
 	if tut.CurrentStep ~= self:GetStep() then return end
 
@@ -97,6 +103,7 @@ function ptr:CompletePoint(id, b)
 	end
 
 	if allDone then
+		timer.Simple(0.5, function() sfx.SetFinish() end)
 		self:SetCompleted(true)
 		self:Emit("Completed")
 		for k,v in pairs(tut.Steps) do
@@ -237,7 +244,6 @@ function ptr:PaintPoint(name, y)
 		y = y + dlines * th
 	end
 
-	print(y - preY + 4)
 	return y - preY + 4
 end
 

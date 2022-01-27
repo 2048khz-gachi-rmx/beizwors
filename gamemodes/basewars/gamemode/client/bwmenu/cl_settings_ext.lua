@@ -83,6 +83,7 @@ function tab.Creators:bool(st)
 	end
 
 	function self:DoClick()
+		sfx.Check(not st:GetValue(true))
 		st:SetValue(not st:GetValue(true))
 	end
 end
