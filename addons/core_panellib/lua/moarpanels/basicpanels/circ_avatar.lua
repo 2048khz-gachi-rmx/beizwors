@@ -15,18 +15,19 @@ end
 
 
 function AV:Paint(w, h)
-	
 	--draw.BeginMask(self.StencilAvatar, self, w, h)
 	--draw.DrawOp()
-	
+
 	--[[local x, y = self:LocalToScreen(0, 0)
 	self._w, self._h = self:GetSize()
 	self:SetSize(512, 512)
 
 	draw.EnableMaskCircle(0, 0, 512, 512)]]
+	surface.PushAlphaMult(9999)
 	self:Emit("Paint", w, h)
 	draw.BeginMask(self.StencilAvatar, self, w, h)
 	draw.DrawOp()
+	surface.PopAlphaMult()
 end
 
 function AV:PaintOver(w, h)
