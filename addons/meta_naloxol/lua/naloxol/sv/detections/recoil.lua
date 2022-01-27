@@ -3,8 +3,8 @@ local dt = NX.Detection:new("norecoil", 2)
 dt.ADelta = {}
 
 -- because mouseY and viewangles can mismatch for some time, we do this too
-local timeToDetect = 0.75
-local timeToBypassDetect = 0.4
+local timeToDetect = 0.9
+local timeToBypassDetect = 0.5
 
 local trkBullets = 3
 
@@ -63,6 +63,7 @@ hook.Add("StartCommand", "NX_Norecoil", function(ply, cmd)
 
 	dat.d = (dat.d or 0) + delta
 	dat.p = dat.p or 0
+	dat.usep = math.min(dat.p, math.Approach(dat.usep or 0, dat.p, engine.TickInterval() * 5))
 
 	local sinceStart = CurTime() - dat.st
 	local sinceLast = dat.st - (dat.ended or 0)
@@ -71,10 +72,6 @@ hook.Add("StartCommand", "NX_Norecoil", function(ply, cmd)
 		dat.viols = 0
 		dat.ended = nil
 	end
-
-	--print(sinceStart > 0.1, dat.my < dat.p * 20, dat.d < dat.p, passed < wep.RecoilTRecovery)
-
-	--local punchToRecoil = 
 
 	-- ignore start of spray
 	local is_start = sinceStart < 0.25
@@ -90,11 +87,16 @@ hook.Add("StartCommand", "NX_Norecoil", function(ply, cmd)
 	if offAmt > dat.p * 0.5 then return end -- the aim is off-center
 
 	-- they dont move their mouse enough
-	local mouse_bad = ang.p < 88 and dat.my < dat.p * 20
+	local mouse_bad = ang.p < 88 and dat.my < dat.usep * 10
+
+	--[[if true then
+		printf("bad mouse? %s: %d < %d", mouse_bad, dat.my, dat.usep * 10)
+		printf("	aim offset: %.3f, %.3f\n", offAmt, dat.usep * 0.5)
+	end]]
 
 	-- or they try too hard to pretend
 	local pull_too_much = dat.my > dat.p * 200 and -- mouseY is through the fucking roof
-		offAmt > dat.p * -10 -- but their aim is relatively on-point
+		offAmt > dat.p * -10 -- but their aim is not too low
 
 
 	if pull_too_much and ang.p < 85 then -- if they look straight down they can pull too much
@@ -133,12 +135,13 @@ hook.Add("StartCommand", "NX_Norecoil", function(ply, cmd)
 		--if cmd:GetMouseY() + 2 < wep:GetRecoil() * 4 then
 			dat.viols = (dat.viols or 0) + 1
 			--print(dat.viols, 1 / engine.TickInterval() * timeToDetect)
-			print("detected!!")
+			print("detected norecoil!", ply)
 			if dat.viols > 1 / engine.TickInterval() * timeToDetect then
 				dt:Detect(ply, {
 					MYSum = dat.my,
 					OffCenter = dat.d,
 					PunchSum = dat.p,
+					AttemptedBypass = pull_too_much or nil,
 					--RecoilSum = dat.r,
 				})
 			end

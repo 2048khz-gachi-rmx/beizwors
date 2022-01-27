@@ -32,7 +32,6 @@ function hud:GetPowerDT()
 	piece:SetLiftStrength(-8)
 	piece:SetDropStrength(8)
 
-
 	local i = 0
 
 	local tbl = {}
