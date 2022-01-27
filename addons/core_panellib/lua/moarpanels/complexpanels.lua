@@ -448,6 +448,13 @@ function ebutton:DoClick()
 	self:To("ExpandFrac", self.Expand and 1 or 0, self.ExpandTime, 0, self.Easing)
 end
 
+function ebutton:GetDrawableHeight()
+	local raise = self._UseRaiseHeight * self.HoverFrac
+	local bSz = self.DownSize
+
+	return self.FakeH - bSz - raise
+end
+
 function ebutton:Paint(w, h)
 	local h2 = self.FakeH
 	self.BaseClass.Paint(self, w, h2)

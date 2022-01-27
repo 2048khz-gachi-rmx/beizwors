@@ -98,6 +98,7 @@ local function CreateFrame(ent)
 	col:DockMargin(150, 24, 150, 24)
 	col:Dock(TOP)
 	col:SetZPos(32766)
+	col.RaiseHeight = 4
 
 	local color = Color(90, 180, 90)
 
@@ -130,12 +131,13 @@ function ENT:CreateButton(f, ent, entKey)
 	f.Buttons[entKey] = vgui.Create("EButton", f)
 	local fr = f.Buttons[entKey]
 	fr:SetDoubleClickingEnabled(false)
+	fr.DownSize = 0
 	--fr:SetPos(50, -100 + f.HeaderSize + 16 + 100*i)
 	local frH = scaleH[f.ScaleDown]
 
 	fr:SetSize(375, frH)
 	fr:Dock(TOP)
-	fr:DockMargin(8, 4, 8, 0)
+	fr:DockMargin(8, 8, 8, 0)
 	fr.Border = {w = 2, h = 2, col = ent.FontColor or Color(255, 0, 0)}
 	fr.ID = entKey
 
@@ -165,6 +167,8 @@ function ENT:CreateButton(f, ent, entKey)
 			self:Remove()
 			return
 		end
+
+		h = self:GetDrawableHeight()
 
 		local capFr = ent:GetMoneyFraction()
 		if capFr < self.CapFr then

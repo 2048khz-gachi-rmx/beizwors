@@ -432,6 +432,19 @@ function draw.RoundedStencilBox(bordersize, x, y, w, h, col, tl, tr, bl, br)
 
 end
 
+local stack = { }
+
+function surface.PushAlphaMult(n)
+	stack[#stack + 1] = surface.GetAlphaMultiplier()
+	surface.SetAlphaMultiplier(n)
+	return stack[#stack]
+end
+
+function surface.PopAlphaMult()
+	local a = table.remove(stack)
+	surface.SetAlphaMultiplier(a)
+end
+
 --mostly useful for stencils
 
 --if bottom is true, it'll make the bottom shorter
@@ -694,6 +707,8 @@ function draw.DisableFilters(min, mag)
 end
 
 hook.Add("PostRender", "ResetFilters", function()
+	table.Empty(stack)
+
 	local min, mag
 
 	if minstate > 0 then

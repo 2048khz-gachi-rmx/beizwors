@@ -289,10 +289,12 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 		local mdl = dat.Model
 		local btn = ics:Add("FButton")
 		btn:SetSize(76, 76)
+		btn.RaiseHeight = 2
+		btn.DownSize = 0
 
 		pnl.Items[dat] = btn
 		btn.Data = dat
-		btn.Helpme = dat.Name:find("Hydroelectric")
+
 		btn.Shadow.MaxSpread = 1.1
 		btn.Shadow.Alpha = 150
 		btn.Shadow.Intensity = 2
@@ -318,7 +320,9 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 		sic:SetMouseInputEnabled(false)
 
 		function btn:Demask(x, y, w, h)
+			surface.PushAlphaMult(999)
 			draw.RoundedStencilBox(8, x + 3, y + 3, w - 6, h - 6, color_white)
+			surface.PopAlphaMult()
 		end
 		function btn:Mask(x, y, w, h)
 			surface.SetDrawColor(color_white:Unpack())
@@ -361,8 +365,13 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 			shortNameCol.a = (1 - self.HoverFrac) * 255
 			shortNameShadow.a = (1 - self.HoverFrac) * 255
 
-			draw.SimpleText(shortName, "BS14", w/2 + 1, 4 - 22 * self.HoverFrac + 1, shortNameShadow, 1)
-			draw.SimpleText(shortName, "BS14", w/2, 4 - 22 * self.HoverFrac, shortNameCol, 1)
+			draw.SimpleText(shortName, "BS14",
+				w/2 + 1, 4 - 22 * self.HoverFrac + 1,
+				shortNameShadow, 1)
+
+			draw.SimpleText(shortName, "BS14",
+				w/2, 4 - 22 * self.HoverFrac,
+				shortNameCol, 1)
 
 			bclass.PaintOver(self, w, h)
 		end
@@ -579,6 +588,7 @@ local function MakeSpawnList()
 			end
 
 			local tab = vgui.Create("FButton", cats)
+			tab.RaiseHeight = 0
 			tab:Dock(TOP)
 			tab:SetTall(32)
 			tab:DockMargin(0, 0, 0, 4)

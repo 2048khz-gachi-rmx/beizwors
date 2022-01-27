@@ -673,13 +673,16 @@ local function createNewFaction(f)
 
 	local good = Color(70, 180, 80)
 	local bad = Colors.Button:Copy()
+	doEet:SetColor(good)
 
 	function doEet:Think()
-		if err then
+		self:SetEnabled(not err)
+
+		--[[if err then
 			self:SetColor(bad)
 		else
 			self:SetColor(good)
-		end
+		end]]
 	end
 
 	function doEet:DoClick()
