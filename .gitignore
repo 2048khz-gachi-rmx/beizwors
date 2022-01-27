@@ -21,9 +21,10 @@
 
 
 
-# custom models & materials
+# custom models, materials, sounds
 !materials/grp/**/*
 !models/grp/**/*
+!**/grp/**/*
 
 # supercomputers from csgo (different folder cuz screwup)
 !materials/models/props/**/*
