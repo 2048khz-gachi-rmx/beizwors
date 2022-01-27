@@ -700,7 +700,7 @@ end
 function nw:_ServerSet(k, v)
 	if self.Networked[k] == v and not istable(v) then --[[adios]] return end
 
-	if (v ~= nil and self.__LastNetworked[k] == v) or (v == nil and self.__LastNetworked[k] == fakeNil) then
+	if not istable(v) and (v ~= nil and self.__LastNetworked[k] == v) or (v == nil and self.__LastNetworked[k] == fakeNil) then
 		self.Networked[k] = v
 
 		-- last networked is what we just set;
