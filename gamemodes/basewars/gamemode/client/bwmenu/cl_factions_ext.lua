@@ -147,7 +147,7 @@ local function createOwnFactionActions(f, fac, canv)
 		local cOff = w * fr - w/2
 		local barSX = sx + w * fr - cOff * (1 - scale)
 
-		render.SetScissorRect(sx, sy, barSX, sy + h, true)
+		render.SetScissorRect(sx, sy + self:GetRaise(), barSX, sy + h, true)
 			draw.RoundedBox(self.RBRadius, 0, 0, w, h, leavingProgressRed)
 		render.SetScissorRect(0, 0, 0, 0, false)
 
@@ -361,6 +361,8 @@ function createFactionActions(f, fac, canv)
 				te:LerpColor(te.HTextColor, Color(70, 160, 70), 0.1, 0, 0.2)
 				te:LerpColor(te.BGColor, Color(40, 75, 40), 0.1, 0, 0.2)
 
+				sfx.Success()
+
 				te:Disappear(true):Then(function()
 					createOwnFactionActions(f, fac, canv)
 
@@ -373,8 +375,8 @@ function createFactionActions(f, fac, canv)
 				join:SetInput(false)
 				self:Disappear()
 			end, function(_, err)
-
 				local bad_pw = err == Factions.Errors.BadPassword
+				sfx.Fail()
 
 				if bad_pw then
 					arrResetNow = true

@@ -54,6 +54,8 @@ function button:Init()
 	self.DownFrac = 0
 	self.DefaultRaiseHeight = 3
 	self.DownSize = 2
+
+	self.UseSFX = false
 end
 
 function button:SetIcon(url, name, w, h, col, rot)
@@ -83,6 +85,22 @@ function button:SetColor(col, g, b, a)
 	c.g = g or 70
 	c.b = b or 70
 	c.a = a or 255
+end
+
+function button:OnMousePressed(mb, ...)
+	if mb == MOUSE_LEFT and self.UseSFX then
+		sfx.ClickIn()
+	end
+
+	baseclass.Get("DButton").OnMousePressed(self, mb, ...)
+end
+
+function button:OnMouseReleased(mb, ...)
+	if mb == MOUSE_LEFT and self.UseSFX then
+		sfx.ClickOut()
+	end
+
+	baseclass.Get("DButton").OnMouseReleased(self, mb, ...)
 end
 
 function button:SetTextColor(col, g, b, a)
@@ -297,7 +315,7 @@ function button:DrawButton(x, y, w, h)
 				self:PopMatrix()
 			end
 
-				dRB(rad, x2, y2 + bSz + raise, w2, h2 - bSz - raise, brd, rbinfo)
+				dRB(rad, x2, y2 + bSz, w2, h2 - bSz, brd, rbinfo)
 
 			if raise > 0 then
 				self:ApplyMatrix()
@@ -312,7 +330,7 @@ function button:GetDrawableHeight()
 	local raise = self._UseRaiseHeight * self.HoverFrac
 	local bSz = self.DownSize
 
-	return self:GetTall() - bSz - raise
+	return self:GetTall() - bSz -- raise
 end
 
 --draw the text on the button
@@ -511,7 +529,7 @@ local function popMatrix(self, w, h)
 	if self.ActiveMatrix then
 		cam.PopModelMatrix()
 		self.ActiveMatrix = nil
-		
+
 		fbuttonLeakingMatrices = fbuttonLeakingMatrices - 1
 		fbuttonMatrices[self] = nil
 		draw.DisableFilters(true)
@@ -530,6 +548,10 @@ function button:PopMatrix()
 	end
 end
 
+function button:GetRaise()
+	return math.min(0, -self._UseRaiseHeight * self.HoverFrac
+		+ self._UseRaiseHeight * self.DownFrac * 2)
+end
 
 function button:PaintOver(w, h)
 	if self.Dim then
@@ -577,16 +599,18 @@ function button:Paint(w, h)
 
 		draw.EnableFilters(true)
 
-		cam.PushModelMatrix(mx, true)
+		cam.PushModelMatrix(mx)
 
 		self.ActiveMatrix = mx
 		fbuttonMatrices[self] = mx
 		fbuttonLeakingMatrices = fbuttonLeakingMatrices + 1
 	end
 
-	self:PrePaint(w,h)
+	local h2 = self:GetDrawableHeight()
+
+	self:PrePaint(w, h2)
 	self:Draw(w, h)
-	self:PostPaint(w,h)
+	self:PostPaint(w, h2)
 
 	if not self:IsValid() then
 		popMatrix(self, w, h) -- yes this can happen

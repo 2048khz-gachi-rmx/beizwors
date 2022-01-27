@@ -58,6 +58,7 @@ local function CreateFrame(ent)
 	f.Shadow = false
 
 	local col = vgui.Create("FButton", f)
+	col.UseSFX = true
 
 	f:On("Think", function(self)
 		if not IsValid(ent) then
@@ -130,6 +131,8 @@ function ENT:CreateButton(f, ent, entKey)
 
 	f.Buttons[entKey] = vgui.Create("EButton", f)
 	local fr = f.Buttons[entKey]
+	fr.UseSFX = true
+	
 	fr:SetDoubleClickingEnabled(false)
 	fr.DownSize = 0
 	--fr:SetPos(50, -100 + f.HeaderSize + 16 + 100*i)
@@ -235,6 +238,7 @@ function ENT:CreateButton(f, ent, entKey)
 
 	fr.Eject = vgui.Create("FButton", fr.ExpandPanel)
 	local b = fr.Eject
+	b.UseSFX = true
 
 	b:Dock(FILL)
 	b:DockMargin(400, 16, 100, 16)
@@ -268,6 +272,7 @@ function ENT:CreateButton(f, ent, entKey)
 
 	fr.Upgrade = vgui.Create("FButton", fr.ExpandPanel)
 	local b2 = fr.Upgrade
+	b2.UseSFX = true
 
 	b2:SetPos(100, 16)
 	b2:SetSize(236, b:GetTall())

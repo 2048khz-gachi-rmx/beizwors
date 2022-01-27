@@ -54,7 +54,7 @@ local function facBtnPaint(self, w, h)
 	local cOff = w * frac - w/2 -- god im good
 	local barSX = x + w * frac - cOff * (1 - scale)
 
-	render.SetScissorRect(x, y, barSX, y + h, true)
+	render.SetScissorRect(x, y + self:GetRaise(), barSX, y + h, true)
 		draw.RoundedBox(self.RBRadius or 8, 0, 0, w, h, bgcol)
 		local fh, fs, fv = self.Faction:GetColor():ToHSV()
 		local col = pickFactionButtonTextColor(fh, fs, fv)
@@ -68,7 +68,8 @@ local function facBtnPaint(self, w, h)
 			end
 			surface.SetDrawColor(r, g, b, 100)
 			local u = -CurTime() % 25 / 25
-			surface.DrawUVMaterial("https://i.imgur.com/y9uYf4Y.png", "whitestripes.png", 0, 0, w, h, u, 0, u + 0.5, 0.125)
+			surface.DrawUVMaterial("https://i.imgur.com/y9uYf4Y.png", "whitestripes.png",
+				0, 0, w, h, u, 0, u + 0.5, 0.125)
 		end)
 
 	render.SetScissorRect(0, 0, 0, 0, false)

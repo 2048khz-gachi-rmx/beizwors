@@ -270,7 +270,8 @@ function FAC:CreateMemberList()
 				col = gold
 				render.SetScissorRect(pX, pY, plyList:GetWide() + pX, plyList:GetTall() + pY, true)
 					DisableClipping(true)
-						draw.RoundedBox(self.Rounding, -2, -2, w + 4, h + 4, Colors.Golden)
+						draw.RoundedBox(self.Rounding,
+							-2, -2, w + 4, h + 4, Colors.Golden)
 					DisableClipping(false)
 				render.SetScissorRect(0, 0, 0, 0, false)
 
