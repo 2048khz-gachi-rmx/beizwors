@@ -7,6 +7,10 @@ function PLAYER:GetResearchedPerks()
 	return self._perks
 end
 
+function PLAYER:GetPerkLevel(nm)
+	return self:GetResearchedPerks()[nm] or 0
+end
+
 function PLAYER:Research(lv)
 	assert(Research.IsPerkLevel(lv))
 

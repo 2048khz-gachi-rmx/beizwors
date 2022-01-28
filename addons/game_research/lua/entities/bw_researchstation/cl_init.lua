@@ -11,7 +11,7 @@ function ENT:OpenMenu()
 
 	local f = vgui.Create("NavFrame")
 	f:SetSize(
-		math.min(1200, ScrW() * 0.9),
+		math.min(1200, ScrW() * 0.65),
 		math.min(800, ScrH() * 0.8)
 	)
 	f:Center()
@@ -24,9 +24,7 @@ function ENT:OpenMenu()
 
 	side:SetSize(f:GetWide() * 0.3, sz[2])
 	side:SetPos(f:GetWide() - side:GetWide(), pos[2])
-
-	print(side:GetPos())
-	print(side:GetSize())
+	side:SetComputer(self)
 
 	local canv = vgui.Create("ResearchMap", f)
 	f:PositionPanel(canv)

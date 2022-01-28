@@ -49,7 +49,7 @@ function perk:GetName(lv)
 	return lv and lv:GetName() or self._Name
 end
 
-function perk:AddLevel(i)
+function perk:AddLevel(i, noadd)
 	i = i or #self:GetLevels() + 1
 	local ret = level:new(i)
 	ret._levelOf = self
@@ -60,6 +60,10 @@ function perk:AddLevel(i)
 		" ",
 		i
 	})
+
+	if self:GetLevel(i - 1) and not noadd then
+		ret:AddPrerequisite(self:GetLevel(i - 1))
+	end
 
 	return ret
 end
@@ -113,4 +117,61 @@ function level:AddRequirement(what)
 			table.Merge(cur, what)
 		end
 	end
+end
+
+function level:AddPrerequisite(req, v)
+	local cur = self:GetPrereqs()
+	cur[req] = v or true
+end
+
+function level:PrereqSatisfied(name, ply, comp)
+	if Research.IsPerkLevel(name) then
+		local lv = name:GetLevel()
+		return ply:GetPerkLevel(name:GetPerk():GetID()) >= lv
+	end
+
+	return true -- not implemented?
+end
+
+function level:CanResearch(ply, comp)
+	if not IsValid(comp) or not comp.ResearchComputer then return false end
+
+	-- check prereqs
+	for k,v in pairs(self:GetPrereqs()) do
+		if not self:PrereqSatisfied(k, ply, comp) then
+			return false, "Prerequisites not satisfied!"
+		end
+	end
+		
+	-- check reqs: items
+	local its = self:GetRequirements().Items
+
+	local baseErr = ""
+	local err = ""
+
+	if its then
+		local miss = {}
+		local inv = Inventory.GetTemporaryInventory(ply)
+		for id, need in pairs(its) do
+			local cnt = Inventory.Util.GetItemCount(inv, id)
+
+			if cnt < need then
+				miss[#miss + 1] = {id, cnt, need}
+			end
+		end
+
+		if miss[1] then
+			baseErr = "You don't have enough "
+
+			for k,v in ipairs(miss) do
+				local base = Inventory.Util.GetBase(v[1])
+				if not base then continue end
+				err = err .. base:GetName() .. (miss[k + 1] and ", " or "")
+			end
+
+			return false, baseErr .. err .. "."
+		end
+	end
+
+	return true
 end

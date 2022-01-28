@@ -9,20 +9,56 @@ local hps = {
 
 local totalHP = 100
 
+local reqs = {
+	{ Items = {
+		iron_bar = 10,
+		gold_bar = 3
+	} },
+
+	{ Items = {
+		copper_bar = 15,
+		gold_bar = 5,
+		stem_cells = 2
+	} },
+
+	{ Items = {
+		gold_bar = 10,
+		stem_cells = 5
+	} },
+
+	{ Items = {
+		stem_cells = 15,
+		blood_nanobots = 3,
+		tgt_finder = 1
+	} },
+
+	{ Items = {
+		stem_cells = 30,
+		blood_nanobots = 10,
+		tgt_finder = 3
+	} },
+}
+
 for i=1, 6 do
 	local lv = hp:AddLevel(i)
-	lv:AddRequirement( { Items = { iron_bar = i * 5, gold_bar = i * 3 } } )
+	lv:AddRequirement( reqs[i] or reqs[#reqs] )
 
 	lv:SetPos((i - 1) * 1.5, 0)
 	lv:SetIcon(CLIENT and Icons.Plus)
 
+	if i > 3 then
+		lv:AddPrerequisite("ComputerReq", 2)
+	end
+
 	local add = hps[i]
 	totalHP = totalHP + add
 
-	lv:SetDescription( ("Increase your maximum HP by $%d (total: *%d)"):format(
+	lv:SetDescription( ("Increase your maximum HP by $%d\n(total: *%d)"):format(
 		math.floor(add),
 		math.floor(totalHP)
 	) )
+
+	lv.TotalHP = totalHP
 end
 
 local cap = Research.Perk:new("cap")
