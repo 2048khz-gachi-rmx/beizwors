@@ -51,16 +51,16 @@ _ = cout128:IsError() and hdl.DownloadFile("https://i.imgur.com/mLZEMpW.png", "c
 _ = cout64:IsError() and hdl.DownloadFile("https://i.imgur.com/kY0Isiz.png", "circle_outline64.png", function(fn) cout64 = Material(fn, "mips") end)
 
 
-local function LerpColor(frac, col, dest, src)
+local function LerpColor(frac, into, to, from)
 
-	col.r = Lerp(frac, src.r, dest.r)
-	col.g = Lerp(frac, src.g, dest.g)
-	col.b = Lerp(frac, src.b, dest.b)
+	into.r = Lerp(frac, from.r, to.r)
+	into.g = Lerp(frac, from.g, to.g)
+	into.b = Lerp(frac, from.b, to.b)
 
-	local sA, c1A, c2A = src.a, col.a, dest.a
+	local sA, c1A, c2A = from.a, into.a, to.a
 
 	if sA ~= c2A or c1A ~= c2A then
-		col.a = Lerp(frac, sA, c2A)
+		into.a = Lerp(frac, sA, c2A)
 	end
 
 end
