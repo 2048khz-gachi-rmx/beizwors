@@ -50,6 +50,8 @@ function button:Init()
 	self._Icon = nil
 	self.MxScale = 1
 
+	self.DownFracTime = 0.1
+
 	self.HoverFrac = 0
 	self.DownFrac = 0
 	self.DefaultRaiseHeight = 3
@@ -132,10 +134,10 @@ function button:HoverLogic(dis, w, h)
 		local min = math.max(w, h)
 		local scaleFrac = math.min(6, min * 0.12) / min -- minimum between 12% and 6px
 		--self:To("MxScale", t.MxScaleDown or (1 - scaleFrac), 0.05, 0, 0.2)
-		self:To("DownFrac", 1, 0.1, 0, 0.2)
+		self:To("DownFrac", 1, self.DownFracTime, 0, 0.2)
 	else --if self.MxScale ~= 1 then
 		--self:To("MxScale", 1, 0.1, 0, 0.3)
-		self:To("DownFrac", 0, 0.2, 0, 0.2)
+		self:To("DownFrac", 0, self.DownFracTime * 2, 0, 0.2)
 	end
 
 	if ( self:IsHovered() or t.Hovered or t.ForceHovered ) and not dis then
@@ -322,7 +324,7 @@ function button:DrawButton(x, y, w, h)
 			end
 		end
 
-		dRB(rad, x2, y2 + raise * dfr, w2, h2 - bSz, main, rbinfo)
+		dRB(rad, x2, y2, w2, h2 - bSz, main, rbinfo)
 	end
 end
 
@@ -594,7 +596,7 @@ function button:Paint(w, h)
 		]]
 
 		sharedTranslVec:Zero()
-		sharedTranslVec[2] = math.min(0, -self._UseRaiseHeight * raiseFrac + self._UseRaiseHeight * self.DownFrac * 2)
+		sharedTranslVec[2] = math.min(self.DownSize - 1, -self._UseRaiseHeight * raiseFrac + self._UseRaiseHeight * self.DownFrac * 4)
 		mx:Translate(sharedTranslVec)
 
 		draw.EnableFilters(true)
