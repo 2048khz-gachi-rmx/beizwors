@@ -1,5 +1,13 @@
 setfenv(1, _G)
 
+function scale(n)
+	return n / 900 * ScrH()
+end
+
+function scaleW(n)
+	return n / 1600 * ScrW()
+end
+
 local NOOOOO_MY_GARBAGE_COLLECTION = { type = '2D' }
 
 function cam.Start2D()
