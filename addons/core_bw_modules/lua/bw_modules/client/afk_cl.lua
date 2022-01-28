@@ -100,6 +100,11 @@ local delay = 1 / fps_while_afk
 ]]
 
 local fps_cvar = GetConVar("fps_max")
+
+local afk_cvar = CreateConVar("_bw_afk_fps_limited_DONTTOUCHME", "0", FCVAR_ARCHIVE,
+	"This convar is used to track your FPS when it gets limited by the AFK power saver.\n" ..
+	"You probably shouldn't touch this...")
+
 local base = AFK.BaseMaxFPS or fps_cvar:GetInt()
 AFK.BaseMaxFPS = base
 AFK.FPSLimited = (AFK.FPSLimited ~= nil and AFK.FPSLimited) or false
@@ -108,6 +113,8 @@ function AFK.LimitFPS()
 	if fps_cvar:GetInt() == fps_while_afk then return end
 
 	base = fps_cvar:GetInt()
+	afk_cvar:SetInt(base)
+
 	AFK.BaseMaxFPS = base
 
 	RunConsoleCommand("fps_max", fps_while_afk)
@@ -116,6 +123,8 @@ end
 
 function AFK.UnlimitFPS()
 	if not AFK.FPSLimited then return end
+
+	afk_cvar:SetInt(0)
 	RunConsoleCommand("fps_max", AFK.BaseMaxFPS)
 	AFK.FPSLimited = false
 end
@@ -127,6 +136,15 @@ function AFK.SendFocus(b)
 	net.SendToServer()
 end
 
+
+if afk_cvar:GetInt() > 30 then
+	print("settings fps max to preserved")
+
+	AFK.FPSLimited = true
+	AFK.BaseMaxFPS = afk_cvar:GetInt()
+
+	AFK.UnlimitFPS()
+end
 
 
 hook.Add("RenderScene", "AFKSave", function()
