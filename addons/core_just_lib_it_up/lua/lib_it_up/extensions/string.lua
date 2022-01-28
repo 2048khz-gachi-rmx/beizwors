@@ -267,6 +267,7 @@ local function WrapWord(word, curwid, fullwid, widtbl, line, first)
 	if word:match("^[\r\n]") then
 		curwid = 0
 		line = line + 1
+		fullwid = widtbl[line] or widtbl[#widtbl]
 	end
 
 	local wmult = WrapData and WrapData.ScaleW or 1
