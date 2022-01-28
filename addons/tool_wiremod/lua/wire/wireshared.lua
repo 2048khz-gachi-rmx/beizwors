@@ -54,6 +54,9 @@ end
 
 
 function string.GetNormalizedFilepath( path ) -- luacheck: ignore
+	local null = string.find(path, "\x00", 1, true)
+	if null then path = string.sub(path, 1, null-1) end
+
 	local tbl = string.Explode( "[/\\]+", path, true )
 	local i = 1
 	while i <= #tbl do
@@ -726,34 +729,6 @@ elseif CLIENT then
 	end
 end
 
--- For transmitting the yellow lines showing links between controllers and ents, as used by the Adv Entity Marker
-if SERVER then
-	util.AddNetworkString("WireLinkedEnts")
-	function WireLib.SendMarks(controller, marks)
-		if not IsValid(controller) or not (controller.Marks or marks) then return end
-		net.Start("WireLinkedEnts")
-			net.WriteEntity(controller)
-			net.WriteUInt(#(controller.Marks or marks), 16)
-			for _,v in pairs(controller.Marks or marks) do
-				net.WriteEntity(v)
-			end
-		net.Broadcast()
-	end
-else
-	net.Receive("WireLinkedEnts", function(netlen)
-		local Controller = net.ReadEntity()
-		if IsValid(Controller) then
-			Controller.Marks = {}
-			for _=1, net.ReadUInt(16) do
-				local link = net.ReadEntity()
-				if IsValid(link) then
-					table.insert(Controller.Marks, link)
-				end
-			end
-		end
-	end)
-end
-
 --[[
 	Returns the "distance" between two strings
 	ie the amount of character swaps you have to do to get the first string to equal the second
@@ -1008,19 +983,22 @@ end
 -- Ensures that the force is within the range of a float, to prevent
 -- physics engine crashes
 -- 2*maxmass*maxvelocity should be enough impulse to do whatever you want.
+-- Timer resolves issue with table not existing until next tick on Linux
 local max_force, min_force
 hook.Add("InitPostEntity","WireForceLimit",function()
-	max_force = 100000*physenv.GetPerformanceSettings().MaxVelocity
-	min_force = -max_force
+	timer.Simple(0, function()
+		max_force = 100000*physenv.GetPerformanceSettings().MaxVelocity
+		min_force = -max_force
+	end)
 end)
 
 -- Nan never equals itself, so if the value doesn't equal itself replace it with 0.
 function WireLib.clampForce( v )
-	v = Vector(v[1], v[2], v[3])
-	v[1] = v[1] == v[1] and math.Clamp( v[1], min_force, max_force ) or 0
-	v[2] = v[2] == v[2] and math.Clamp( v[2], min_force, max_force ) or 0
-	v[3] = v[3] == v[3] and math.Clamp( v[3], min_force, max_force ) or 0
-	return v
+	return Vector(
+		v[1] == v[1] and math.Clamp( v[1], min_force, max_force ) or 0,
+		v[2] == v[2] and math.Clamp( v[2], min_force, max_force ) or 0,
+		v[3] == v[3] and math.Clamp( v[3], min_force, max_force ) or 0
+	)
 end
 
 
@@ -1050,6 +1028,23 @@ local function IsRealVehicle(pod)
 	return valid_vehicles[pod:GetClass()]
 end
 
+-- Helper function for GetClosestRealVehicle
+-- we don't use constraint.GetAllConstrainedEntities here because it's far worse for performance
+local function getContraption(ent, already_checked, callback)
+	for _, con in pairs( ent.Constraints or {} ) do
+		if IsValid(con) then
+			for i=1, 6 do
+				local e = con["Ent" .. i]
+				if e and not already_checked[e] then
+					already_checked[e] = true
+					callback(e)
+					getContraption(e,already_checked,callback)
+				end
+			end
+		end
+	end
+end
+
 -- GetClosestRealVehicle
 -- Args:
 --  vehicle; the vehicle that the user would like to link a controller to
@@ -1061,37 +1056,32 @@ function WireLib.GetClosestRealVehicle(vehicle,position,notify_this_player)
 
 	-- If this is a valid entity, but not a real vehicle, then let's get started
 	if IsValid(vehicle) and not IsRealVehicle(vehicle) then
-		-- get all "real" vehicles in the contraption and calculate distance
-		local contraption = constraint.GetAllConstrainedEntities(vehicle)
-		local vehicles = {}
-		for _, ent in pairs( contraption ) do
-			if IsRealVehicle(ent) then
-				vehicles[#vehicles+1] = {
-					distance = position:Distance(ent:GetPos()),
-					entity = ent
-				}
-			end
-		end
+		local distance = math.huge
 
-		if #vehicles > 0 then
-			-- sort them by distance
-			table.sort(vehicles,function(a,b) return a.distance < b.distance end)
-			-- get closest
-			vehicle = vehicles[1].entity
-
-			-- notify the owner of the change
-			if IsValid(notify_this_player) and notify_this_player:IsPlayer() then
-				WireLib.AddNotify(notify_this_player,
-					"That wasn't a vehicle!\n"..
-					"The contraption has been scanned and this entity has instead been linked to the closest vehicle in this contraption.\n"..
-					"Hover your cursor over the controller to view the yellow line, which indicates the selected vehicle.",
-					NOTIFY_GENERIC,14,NOTIFYSOUND_DRIP1)
+		getContraption(vehicle,{[vehicle]=true},
+			function(ent)
+				if IsRealVehicle(ent) then
+					local dist = position:DistToSqr(ent:GetPos())
+					if dist < distance then
+						distance = dist
+						vehicle = ent
+					end
+				end
 			end
+		)
+
+		-- if vehicle is now a real vehicle, and we wanted to notify a player, do so now
+		if IsRealVehicle(vehicle) and IsValid(notify_this_player) and notify_this_player:IsPlayer() then
+			WireLib.AddNotify(notify_this_player,
+				"That wasn't a vehicle!\n"..
+				"The contraption has been scanned and this entity has instead been linked to the closest vehicle in this contraption.\n"..
+				"Hover your cursor over the controller to view the yellow line, which indicates the selected vehicle.",
+				NOTIFY_GENERIC,14,NOTIFYSOUND_DRIP1)
 		end
 	end
 
 	-- If the selected vehicle is still not a real vehicle even after all of the above, notify the user of this
-	if IsValid(notify_this_player) and notify_this_player:IsPlayer() and not IsRealVehicle(vehicle) then
+	if not IsRealVehicle(vehicle) and IsValid(notify_this_player) and notify_this_player:IsPlayer() then
 		WireLib.AddNotify(notify_this_player,
 			"The entity you linked to is not a 'real' vehicle, " ..
 			"and we were unable to find any 'real' vehicles attached to it. This controller might not work.",
@@ -1204,3 +1194,18 @@ do
 		end)
 	end
 end
+
+-- Generic clean-up system for tables with players as keys
+WireLib.PlayerTables = setmetatable({}, {__mode = "kv"})
+
+function WireLib.RegisterPlayerTable(tbl)
+    tbl = tbl or {}
+    WireLib.PlayerTables[tbl] = tbl
+    return tbl
+end
+
+hook.Add("PlayerDisconnected", "WireLib_PlayerDisconnect", function(ply)
+  for _,tbl in pairs(WireLib.PlayerTables) do
+    tbl[ply] = nil
+  end
+end)

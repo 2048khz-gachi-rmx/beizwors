@@ -9,6 +9,7 @@ end
 
 -- -------------------------- Helper functions -----------------------------
 local unpack = unpack
+local IsValid = IsValid
 
 -- This functions should not be used in functions that tend to be used very often, as it is slower than getting the arguments manually.
 function E2Lib.getArguments(self, args)
@@ -36,6 +37,18 @@ function E2Lib.setSubMaterial(ent, index, material)
 	material = WireLib.IsValidMaterial(material)
 	ent:SetSubMaterial(index, material)
 	duplicator.StoreEntityModifier(ent, "submaterial", { ["SubMaterialOverride_"..index] = material })
+end
+
+-- Returns a default e2 table.
+function E2Lib.newE2Table()
+	return {n={},ntypes={},s={},stypes={},size=0}
+end
+
+-- Returns a cloned table of the variable given if it is a table.
+local istable = istable
+local table_Copy = table.Copy
+function E2Lib.fixDefault(var)
+	return istable(var) and table_Copy(var) or var
 end
 
 -- getHash
@@ -190,11 +203,10 @@ end
 
 function E2Lib.isOwner(self, entity)
 	if game.SinglePlayer() then return true end
-	local player = self.player
-	local owner = getOwner(self, entity)
+	local owner = E2Lib.getOwner(self, entity)
 	if not IsValid(owner) then return false end
 
-	return E2Lib.isFriend(owner, player)
+	return E2Lib.isFriend(owner, self.player)
 end
 
 local isOwner = E2Lib.isOwner
@@ -259,31 +271,22 @@ end
 
 -- ------------------------ list filtering -------------------------------------------------
 
-local Debug = false
-local cPrint
-if Debug then
-	if not console then require("console") end -- only needed if you want fancy-colored output.
-	function cPrint(color, text) Msg(text) end
-
-	if console and console.Print then cPrint = console.Print end
-end
-
 function E2Lib.filterList(list, criterion)
 	local index = 1
-	-- if Debug then print("-- filterList: "..#list.." entries --") end
+	-- print("-- filterList: "..#list.." entries --")
 
 	while index <= #list do
 		if not criterion(list[index]) then
-			-- if Debug then cPrint(Color(128,128,128), "-    "..tostring(list[index]).."\n") end
+			-- MsgC(Color(128,128,128), "-    "..tostring(list[index]).."\n")
 			list[index] = list[#list]
 			table.remove(list)
 		else
-			-- if Debug then print(string.format("+%3d %s", index, tostring(list[index]))) end
+			-- print(string.format("+%3d %s", index, tostring(list[index])))
 			index = index + 1
 		end
 	end
 
-	-- if Debug then print("--------") end
+	-- print("--------")
 	return list
 end
 
@@ -343,7 +346,6 @@ E2Lib.optable_inv = {
 	dlt = "$",
 	trg = "~",
 	imp = "->",
-	fea = "foreach",
 }
 
 E2Lib.optable = {}
@@ -442,9 +444,7 @@ end
 do
 	-- Shared stuff, defined later.
 
-	local extensions = nil
-	local function printExtensions() end
-	local function conCommandSetExtensionStatus() end
+	local extensions, printExtensions, conCommandSetExtensionStatus
 
 	function E2Lib.GetExtensions()
 		return extensions.list
@@ -709,6 +709,9 @@ hook.Add("InitPostEntity", "e2lib", function()
 			E2Lib.replace_function("isFriend", function(owner, player)
 				if owner == nil then return false end
 				if owner == player then return true end
+				if not owner:IsPlayer() then
+					return player:GetOwner() == owner
+				end
 
 				local friends = owner:CPPIGetFriends()
 				if not istable(friends) then return end
@@ -735,3 +738,47 @@ hook.Add("InitPostEntity", "e2lib", function()
 		end
 	end
 end)
+
+--- Valid file extensions kept to avoid trying to make files with extensions gmod doesn't allow.
+-- https://wiki.facepunch.com/gmod/file.Write
+local file_extensions = {
+	["txt"] = true,
+	["dat"] = true,
+	["json"] = true,
+	["xml"] = true,
+	["csv"] = true,
+	["jpg"] = true,
+	["jpeg"] = true,
+	["png"] = true,
+	["vtf"] = true,
+	["vmt"] = true,
+	["mp3"] = true,
+	["wav"] = true,
+	["ogg"] = true
+}
+
+-- Returns whether the file has an extension garrysmod can write to, to avoid useless net messages, etc
+function E2Lib.isValidFileWritePath(path)
+	local ext = string.GetExtensionFromFilename(path)
+	if ext then return file_extensions[string.lower(ext)] end
+end
+
+-- Different from Context:throw, which does not error the chip if
+-- @strict is not enabled and instead returns a default value.
+-- This is what Context:throw calls internally if @strict
+-- By default E2 can catch these errors.
+function E2Lib.raiseException(msg, level, trace, can_catch)
+	error({
+		catchable = (can_catch == nil) and true or can_catch,
+		msg = msg,
+		trace = trace
+	}, level)
+end
+
+--- Unpacks either an exception object as seen above or an error string.
+function E2Lib.unpackException(struct)
+	if isstring(struct) then
+		return false, struct, nil
+	end
+	return struct.catchable, struct.msg, struct.trace
+end

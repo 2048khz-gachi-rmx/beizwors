@@ -58,10 +58,12 @@ local function setOutput( self, args, Type )
 	end
 end
 
+local fixDefault = E2Lib.fixDefault
+
 local function getInput( self, args, default, Type )
 	local op1 = args[2]
 	local rv1 = op1[1](self,op1)
-	if istable(default) then default = table.Copy(default) end
+	default = fixDefault(default)
 	if (self.entity.Inputs[rv1] and self.entity.Inputs[rv1].Type == Type) then
 		return self.GlobalScope[rv1] or default
 	end
@@ -91,30 +93,15 @@ end)
 /******************************************************************************/
 -- Name functions
 
--- Set the name of the E2 itself
-e2function void setName( string name )
-	local e = self.entity
-	if( #name > 12000 ) then
-		name = string.sub( name, 1, 12000 )
-	end
-	if (e.name == name) then return end
-	if (name == "generic" or name == "") then
-		name = "generic"
-		e.WireDebugName = "Expression 2"
-	else
-		e.WireDebugName = "E2 - " .. name
-	end
-	e.name = name
-	e:SetNWString( "name", e.name )
-	e:SetOverlayText(name)
-end
 
--- Set the name of a entity (component name if not E2)
-e2function void entity:setName( string name )
-	if not IsValid(this) or E2Lib.getOwner(self, this) ~= self.player then return end
-	if( #name > 12000 ) then
+local function doSetName(self,this,name)
+	if self.data.setNameNext and self.data.setNameNext > CurTime() then return end
+	self.data.setNameNext = CurTime() + 1
+
+	if #name > 12000 then
 		name = string.sub( name, 1, 12000 )
 	end
+
 	if this:GetClass() == "gmod_wire_expression2" then
 		if this.name == name then return end
 		if name == "generic" or name == "" then
@@ -132,6 +119,18 @@ e2function void entity:setName( string name )
 		this:SetNWString("WireName", name)
 		duplicator.StoreEntityModifier(this, "WireName", { name = name })
 	end
+end
+
+-- Set the name of the E2 itself
+e2function void setName( string name )
+	doSetName(self,self.entity,name)
+end
+
+-- Set the name of an entity (component name if not E2)
+e2function void entity:setName( string name )
+	if not IsValid(this) then return self:throw("Invalid entity!", nil) end
+	if E2Lib.getOwner(self, this) ~= self.player then return self:throw("You do not own this entity!", nil) end
+	doSetName(self,this,name)
 end
 
 -- Get the name of another E2 or compatible entity or component name of wiremod components
@@ -220,9 +219,9 @@ registerCallback("postinit", function()
 	for typeid,_ in pairs(wire_expression_types2) do
 		if not excluded_types[typeid] then
 			if comparable_types[typeid] then
-				registerFunction("changed", typeid, "n", e2_changed_n)
+				registerFunction("changed", typeid, "n", registeredfunctions.e2_changed_n)
 			else
-				registerFunction("changed", typeid, "n", e2_changed_a)
+				registerFunction("changed", typeid, "n", registeredfunctions.e2_changed_a)
 			end
 		end
 	end

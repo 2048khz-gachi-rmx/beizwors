@@ -34,7 +34,7 @@ Editor.Fonts["Lucida Console"] = ""
 Editor.Fonts["Monaco"] = "Mac standard font"
 
 surface.CreateFont("DefaultBold", {
-	font = "defaultbold",
+	font = "Tahoma",
 	size = 12,
 	weight = 700,
 	antialias = true,
@@ -776,6 +776,7 @@ function Editor:InitComponents()
 	self.C.Menu = vgui.Create("DPanel", self.C.MainPane)
 	self.C.Val = vgui.Create("Button", self.C.MainPane) -- Validation line
 	self.C.TabHolder = vgui.Create("DPropertySheet", self.C.MainPane)
+	self.C.TabHolder:SetPadding(1)
 
 	self.C.Btoggle = vgui.CreateFromTable(DMenuButton, self.C.Menu) -- Toggle Browser being shown
 	self.C.Sav = vgui.CreateFromTable(DMenuButton, self.C.Menu) -- Save button
@@ -787,7 +788,8 @@ function Editor:InitComponents()
 
 	self.C.Control = self:addComponent(vgui.Create("Panel", self), -350, 52, 342, -32) -- Control Panel
 	self.C.Credit = self:addComponent(vgui.Create("DTextEntry", self), -160, 52, 150, 150) -- Credit box
-
+	self.C.Credit:SetEditable(false)
+	
 	self:CreateTab("generic")
 
 	-- extra component options
@@ -1784,18 +1786,25 @@ function Editor:SaveFile(Line, close, SaveAs)
 
 	file.Write(Line, self:GetCode())
 
-	local panel = self.C.Val
-	timer.Simple(0, function() panel.SetText(panel, "   Saved as " .. Line) end)
-	surface.PlaySound("ambient/water/drip3.wav")
+	local f = file.Open(Line, "r", "DATA")
+	if f then
+		f:Close()
+		local panel = self.C.Val
+		timer.Simple(0, function() panel.SetText(panel, "   Saved as " .. Line) end)
+		surface.PlaySound("ambient/water/drip3.wav")
 
-	if not self.chip then self:ChosenFile(Line) end
-	if close then
-		if self.E2 then
-			GAMEMODE:AddNotify("Expression saved as " .. Line .. ".", NOTIFY_GENERIC, 7)
-		else
-			GAMEMODE:AddNotify("Source code saved as " .. Line .. ".", NOTIFY_GENERIC, 7)
+		if not self.chip then self:ChosenFile(Line) end
+		if close then
+			if self.E2 then
+				GAMEMODE:AddNotify("Expression saved as " .. Line .. ".", NOTIFY_GENERIC, 7)
+			else
+				GAMEMODE:AddNotify("Source code saved as " .. Line .. ".", NOTIFY_GENERIC, 7)
+			end
+			self:Close()
 		end
-		self:Close()
+	else
+		surface.PlaySound("buttons/button10.wav")
+		GAMEMODE:AddNotify("Failed to save file as " .. Line .. ".", NOTIFY_ERROR, 7)
 	end
 end
 
@@ -1948,8 +1957,9 @@ function Editor:Setup(nTitle, nLocation, nEditorType)
 
 	if nEditorType == "E2" then
 		self.E2 = true
-		self:NewScript(true) -- insert default code
 	end
+
+	self:NewScript(true) -- Opens initial tab, in case OpenOldTabs is disabled or fails.
 
 	if wire_expression2_editor_openoldtabs:GetBool() then
 		self:OpenOldTabs()

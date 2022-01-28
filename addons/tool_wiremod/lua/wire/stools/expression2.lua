@@ -21,10 +21,28 @@ TOOL.ClientConVar = {
 	scriptmodel = "",
 	select = "",
 	autoindent = 1,
+	friendwrite = 0,
 }
 
 TOOL.MaxLimitName = "wire_expressions"
 WireToolSetup.BaseLang()
+
+-- Needed a method for printing to players' chatboxes without the outdated and limited umsg based ChatPrint()
+-- Not sure if there's already a framework for this in wire, if so replace this with that
+local BetterChatPrint = function() end
+if SERVER then
+	util.AddNetworkString("WireExpression2_BetterChatPrint")
+	BetterChatPrint = function(plr, msg)
+		net.Start("WireExpression2_BetterChatPrint")
+		net.WriteString(msg)
+		net.Send(plr)
+	end
+else
+	-- Netmsg is coming from the server so no need for sanity checks as the server *should* be as expected unlike clients
+	net.Receive("WireExpression2_BetterChatPrint", function()
+		chat.AddText(net.ReadString())
+	end)
+end
 
 if SERVER then
 	CreateConVar('sbox_maxwire_expressions', 20)
@@ -55,20 +73,165 @@ if SERVER then
 		end
 	end
 
-	util.AddNetworkString("WireExpression2_OpenEditor")
-	function TOOL:RightClick(trace)
-		if trace.Entity:IsPlayer() then return false end
+	local bypassModeCVar = CreateConVar(
+		"wire_expression2_viewrequest_bypass", 1, {FCVAR_ARCHIVE, FCVAR_NOTIFY},
+		"Sets the admin bypass mode for E2 view requests\n0 - No one can bypass\n1 - Superadmins can bypass (default)\n2 - Superadmins and admins can bypass\n3 - View requests disabled"
+	)
+	local function CheckBypass(plr)
+		local bypassMode = bypassModeCVar:GetInt()
 
-		local player = self:GetOwner()
+		-- Need the or between IsAdmin and IsSuperAdmin as superadmins may not count as admins due to certain addons
+		return bypassMode == 3 or (bypassMode == 2 and (plr:IsAdmin() or plr:IsSuperAdmin())) or (bypassMode == 1 and plr:IsSuperAdmin())
+	end
 
-		if IsValid(trace.Entity) and trace.Entity:GetClass() == "gmod_wire_expression2" then
-			self:Download(player, trace.Entity)
-			return true
+	-- Simple serverside only local table for storing view requests to make handling them not spaghetti code
+	local viewRequests = {}
+
+	util.AddNetworkString("WireExpression2_ViewRequest")
+	util.AddNetworkString("WireExpression2_AnswerRequest")
+
+	-- Validates a single request using the initiator and chip (handles cleanup and expiry message)
+	local function ValidateRequest(initiator, chip)
+		if not viewRequests[initiator] or not viewRequests[initiator][chip] then return false end -- Initiator either has no data in viewRequests or has no request for this chip
+		if not IsValid(initiator) then -- Invalid initiator in request table
+			viewRequests[initiator] = nil
+			return false
+		end
+		if not IsValid(chip) or chip:GetClass() ~= "gmod_wire_expression2" then -- Invalid chip in request table
+			viewRequests[initiator][chip] = nil
+			return false
+		end
+		if CurTime() > viewRequests[initiator][chip].expiry then -- Expiry point passed
+			BetterChatPrint(initiator, "Your request to view "..chip.player:Nick().."'s chip, '"..chip.name.."', has expired")
+			viewRequests[initiator][chip] = nil
+			return false
+		end
+		return true
+	end
+
+	local function InvalidateRequests()
+		local count = 0
+		for initiator, _ in pairs(viewRequests) do
+			for chip, _ in pairs(viewRequests[initiator]) do
+				if ValidateRequest(initiator, chip) then count = count + 1
+				elseif not viewRequests[initiator] then break end -- If that validation removed the entire initiating player, stop trying to enumerate their requests
+			end
 		end
 
-		net.Start("WireExpression2_OpenEditor") net.Send(player)
-		return false
+		-- If the count is 0 then there's no requests to invalidate, so remove the hook
+		if count == 0 then hook.Remove("Tick", "WireExpression2_InvalidateRequests") end
 	end
+
+	local function RequestView(chip, initiator)
+		local index = chip:EntIndex()
+		local truncName = string.sub(chip.name, 1, 256) -- In case someone starts making cursed names
+
+		-- Make sure this isn't creating a request for a chip with an outstanding valid request
+		if ValidateRequest(initiator, index) then -- Note that ValidateRequest also deletes the invalid request and handles the expiry notif
+			BetterChatPrint(initiator, "Request to view '"..truncName.."' already sent")
+			return
+		end
+
+		-- Otherwise, print to the tool user's chat that a view request was sent
+		-- and send a view request to the chip's owner (also print a message to their chat to tell them they received a request)
+		BetterChatPrint(initiator, "E2 view request sent for '"..truncName.."' owned by "..chip.player:Nick())
+		BetterChatPrint(chip.player, "You just received a request to view your E2 '"..truncName.."' from "..initiator:Nick()..", which you can view in your context menu at the top left ('C' by default)")
+
+		-- Add the request data to the local requests table for when the request from the client comes in
+		if not viewRequests[initiator] then viewRequests[initiator] = {} end -- Initialise this user in the viewRequests table if not in there already
+		viewRequests[initiator][chip] = {
+			name = truncName,
+			expiry = CurTime() + 60 -- 1 minute for the request before it's invalidated (could make this a convar)
+		}
+		if not hook.GetTable().Tick.WireExpression2_InvalidateRequests then -- If there's no invalidation hook added, create it now we have requests to invalidate
+			hook.Add("Tick", "WireExpression2_InvalidateRequests", InvalidateRequests)
+		end
+
+		net.Start("WireExpression2_ViewRequest")
+			net.WriteEntity(initiator)                           -- The player attempting to view the E2
+			net.WriteEntity(chip)                                -- Chip entity for validation clientside
+			net.WriteString(truncName)                           -- Name of the E2 so the owner knows what they're agreeing to
+			net.WriteFloat(viewRequests[initiator][chip].expiry) -- For making requests expire on time clientside
+		net.Send(chip.player)
+	end
+
+	util.AddNetworkString("WireExpression2_OpenEditor")
+	function TOOL:Think()
+		WireToolObj.Think(self)
+		--[[
+			I had to replace TOOL:RightClick with TOOL:Think as prop protection was preventing
+			the view requests system from functioning as intended
+
+			So this manually handles right click meaning people don't need to give each other
+			full prop protection permissions in order to share a chip
+		]]
+		if not IsFirstTimePredicted() then return end
+
+		local player = self:GetOwner()
+		if player:KeyPressed(IN_ATTACK2) then
+			local chip = player:GetEyeTrace().Entity
+			if chip:IsPlayer() then return end
+
+			local player = self:GetOwner()
+
+			if IsValid(chip) and chip:GetClass() == "gmod_wire_expression2" then
+				if chip.player == player then -- Just download if the toolgun user owns this chip
+					self:Download(player, chip)
+					player:SetAnimation(PLAYER_ATTACK1)
+				elseif (chip.alwaysAllow and chip.alwaysAllow[player]) or not IsValid(chip.player) then -- If the tooling player is in the chip's always allow table, or the chip has no valid owner meaning we can't send a request, do a CanTool check
+					if hook.Run("CanTool", player, WireLib.dummytrace(chip), "wire_expression2") then
+						self:Download(player, chip)
+						player:SetAnimation(PLAYER_ATTACK1)
+					end
+				elseif CheckBypass(player) then
+					if hook.Run("CanTool", player, WireLib.dummytrace(chip), "wire_expression2") then
+						-- Warn the chip's owner their E2 was just taken via the bypass
+						if bypassModeCVar:GetInt() == 3 then
+							BetterChatPrint(
+								chip.player,
+								string.format("Warning, the player '%s' just accessed your chip '%s', as view requests are disabled", player:Nick(), chip.name)
+							)
+						else
+							BetterChatPrint(
+								chip.player,
+								string.format("Warning, the server admin '%s' just accessed your chip '%s', as the view request admin bypass is enabled", player:Nick(), chip.name)
+							)
+						end
+						self:Download(player, chip)
+						player:SetAnimation(PLAYER_ATTACK1)
+					end
+				else
+					RequestView(chip, player)
+					player:SetAnimation(PLAYER_ATTACK1)
+				end
+			else
+				net.Start("WireExpression2_OpenEditor") net.Send(player)
+			end
+		end
+	end
+	net.Receive("WireExpression2_AnswerRequest", function(len, plr)
+		local accept, initiator, chip = net.ReadUInt(8), net.ReadEntity(), net.ReadEntity()
+
+		-- Check that this message is for a valid view request
+		if ValidateRequest(initiator, chip) then
+			-- Check that the sending player actually owns the chip they're allowing access to
+			if chip.player ~= plr then return end
+
+			if accept ~= 0 then
+				WireLib.Expression2Download(initiator, chip, nil, true)
+				BetterChatPrint(initiator, "Your request to view "..plr:Nick().."'s chip, '"..viewRequests[initiator][chip].name.."', was accepted!")
+
+				-- If the player chose "Always Allow", then mark the initiator as always being able to access this entity on the chip
+				if accept == 2 then
+					if not chip.alwaysAllow then chip.alwaysAllow = {} end
+					chip.alwaysAllow[initiator] = true
+				end
+			else
+				BetterChatPrint(initiator, "Your request to view "..plr:Nick().."'s chip, '"..viewRequests[initiator][chip].name.."', was declined")
+			end
+			viewRequests[initiator][chip] = nil
+		end
+	end)
 
 	function TOOL:Upload(ent)
 		WireLib.Expression2Upload( self:GetOwner(), ent )
@@ -78,7 +241,9 @@ if SERVER then
 		if not IsValid( target ) then error( "Invalid entity specified" ) end
 		net.Start("wire_expression2_tool_upload")
 			net.WriteUInt(target:EntIndex(), 16)
-			net.WriteString( filepath or "" )
+			filepath = filepath or ""
+			net.WriteUInt(#filepath, 32)
+			if #filepath>0 then net.WriteData(filepath, #filepath) end
 			net.WriteInt( target.buffer and tonumber(util.CRC( target.buffer )) or -1, 32 ) -- send the hash so we know if there's any difference
 		net.Send(ply)
 	end
@@ -115,11 +280,6 @@ if SERVER then
 			error("Invalid player entity (wtf??). This should never happen. " .. tostring(ply), 0)
 		end
 
-		if not hook.Run( "CanTool", ply, WireLib.dummytrace(targetEnt), "wire_expression2") then
-			WireLib.AddNotify(ply, "You're not allowed to download from this Expression (ent index: " .. targetEnt:EntIndex() .. ").", NOTIFY_ERROR, 7, NOTIFYSOUND_DRIP3)
-			return
-		end
-
 		local main, includes = targetEnt:GetCode()
 		if not includes or not next(includes) then -- There are no includes
 			local datastr = WireLib.von.serialize({ { targetEnt.name, main } })
@@ -133,7 +293,9 @@ if SERVER then
 						net.WriteEntity(targetEnt)
 						net.WriteBit(uploadandexit or false)
 						net.WriteUInt(numpackets, 16)
-						net.WriteString(datastr:sub(i, i + 63999))
+						local data = datastr:sub(i, i + 63999)
+						net.WriteUInt(#data, 32)
+						net.WriteData(data, #data)
 					net.Send(ply)
 				end)
 				n = n + 1
@@ -148,7 +310,8 @@ if SERVER then
 			net.Start("wire_expression2_download_wantedfiles_list")
 			net.WriteEntity(targetEnt)
 			net.WriteBit(uploadandexit or false)
-			net.WriteString(datastr)
+			net.WriteUInt(#datastr, 32)
+			net.WriteData(datastr, #datastr)
 			net.Send(ply)
 		else
 			local data = { {}, {} }
@@ -176,7 +339,9 @@ if SERVER then
 						net.WriteEntity(targetEnt)
 						net.WriteBit(uploadandexit or false)
 						net.WriteUInt(numpackets, 16)
-						net.WriteString(datastr:sub(i, i + 63999))
+						local data = datastr:sub(i, i + 63999)
+						net.WriteUInt(#data, 32)
+						net.WriteData(data, #data)
 					net.Send(ply)
 				end)
 				n = n + 1
@@ -184,7 +349,7 @@ if SERVER then
 		end
 	end
 
-	local wantedfiles = {}
+	local wantedfiles = WireLib.RegisterPlayerTable()
 	net.Receive("wire_expression2_download_wantedfiles", function(len, ply)
 		local toent = net.ReadEntity()
 		local uploadandexit = net.ReadBit() ~= 0
@@ -196,7 +361,7 @@ if SERVER then
 		end
 
 		if not wantedfiles[ply] then wantedfiles[ply] = {} end
-		table.insert(wantedfiles[ply], net.ReadString())
+		table.insert(wantedfiles[ply], net.ReadData(net.ReadUInt(32)))
 		if numpackets <= #wantedfiles[ply] then
 			local ok, ret = pcall(WireLib.von.deserialize, E2Lib.decode(table.concat(wantedfiles[ply])))
 			wantedfiles[ply] = nil
@@ -213,8 +378,8 @@ if SERVER then
 	-- ------------------------------------------------------------
 	-- Serverside Receive
 	-- ------------------------------------------------------------
-	local uploads = {}
-	local upload_ents = {}
+	local uploads = WireLib.RegisterPlayerTable()
+	local upload_ents = WireLib.RegisterPlayerTable()
 	net.Receive("wire_expression2_upload", function(len, ply)
 		local toent = Entity(net.ReadUInt(16))
 		local numpackets = net.ReadUInt(16)
@@ -240,7 +405,7 @@ if SERVER then
 		upload_ents[ply] = toent
 
 		if not uploads[ply] then uploads[ply] = {} end
-		uploads[ply][#uploads[ply]+1] = net.ReadString()
+		uploads[ply][#uploads[ply]+1] = net.ReadData(net.ReadUInt(32))
 		if numpackets <= #uploads[ply] then
 			local datastr = E2Lib.decode(table.concat(uploads[ply]))
 			uploads[ply] = nil
@@ -261,6 +426,10 @@ if SERVER then
 
 			local filepath = ret[3]
 
+			if ply ~= toent.player and toent.player:GetInfoNum("wire_expression2_friendwrite", 0) ~= 1 then
+				code = "@disabled for security reasons. Remove this line (Ctrl+Shift+L) and left-click the chip to enable. 'wire_expression2_friendwrite 1' disables security.\n" .. code
+			end
+
 			toent:Setup(code, includes, nil, nil, filepath)
 		end
 	end)
@@ -269,7 +438,7 @@ if SERVER then
 	-- Stuff for the remote updater
 	-- ------------------------------------------------------------
 
-	local antispam = {}
+	local antispam = WireLib.RegisterPlayerTable()
 	-- Returns true if they are spamming, false if they can go ahead and use it
 	local function canhas(ply)
 		if not antispam[ply] then antispam[ply] = 0 end
@@ -307,16 +476,32 @@ if SERVER then
 		E2 = Entity(E2)
 		if canhas(player) then return end
 		if not IsValid(E2) or E2:GetClass() ~= "gmod_wire_expression2" then return end
-		if hook.Run( "CanTool", player, WireLib.dummytrace( E2 ), "wire_expression2", "request code" ) then
+
+		-- Same check as tool code
+		if E2.player == player then
 			WireLib.Expression2Download(player, E2)
-			WireLib.AddNotify(player, "Downloading code...", NOTIFY_GENERIC, 5, math.random(1, 4))
-			player:PrintMessage(HUD_PRINTCONSOLE, "Downloading code...")
-			if E2.player ~= player then
-				WireLib.AddNotify(E2.player, player:Nick() .. " is reading your E2 '" .. E2.name .. "' using remote updater.", NOTIFY_GENERIC, 5, math.random(1, 4))
-				E2.player:PrintMessage(HUD_PRINTCONSOLE, player:Nick() .. " is reading your E2 '" .. E2.name .. "' using remote updater.")
+		elseif (E2.alwaysAllow and E2.alwaysAllow[player]) or not IsValid(E2.player) then
+			if hook.Run("CanTool", player, WireLib.dummytrace(E2), "wire_expression2") then
+				WireLib.Expression2Download(player, E2)
+			end
+		elseif CheckBypass(player) then
+			if hook.Run("CanTool", player, WireLib.dummytrace(E2), "wire_expression2") then
+				-- Warn the chip's owner their E2 was just taken via the bypass
+				if bypassModeCVar:GetInt() == 3 then
+					BetterChatPrint(
+						E2.player,
+						string.format("Warning, the player '%s' just accessed your chip '%s', as view requests are disabled", player:Nick(), E2.name)
+					)
+				else
+					BetterChatPrint(
+						E2.player,
+						string.format("Warning, the server admin '%s' just accessed your chip '%s', as the view request admin bypass is enabled", player:Nick(), E2.name)
+					)
+				end
+				WireLib.Expression2Download(player, E2)
 			end
 		else
-			WireLib.ClientError("You do not have permission to read this E2.", player)
+			RequestView(E2, player)
 		end
 	end)
 
@@ -347,7 +532,7 @@ if SERVER then
 	-- Server part
 	------------------------------------------------------
 
-	local players_synced = {}
+	local players_synced = WireLib.RegisterPlayerTable()
 	util.AddNetworkString( "wire_expression_sync_ops" )
 	concommand.Add("wire_expression_ops_sync", function(player,command,args)
 		if not player:IsAdmin() then return end
@@ -496,7 +681,9 @@ elseif CLIENT then
 				net.Start("wire_expression2_upload")
 					net.WriteUInt(targetEnt, 16)
 					net.WriteUInt(numpackets, 16)
-					net.WriteString(datastr:sub(i, i + 63999))
+					local data = datastr:sub(i, i + 63999)
+					net.WriteUInt(#data, 32)
+					net.WriteData(data, #data)
 				net.SendToServer()
 			end)
 			delay = delay + 1
@@ -557,12 +744,13 @@ elseif CLIENT then
 
 		if sending then return end
 		sending = true
-		upload_queue(true) // true means its the first packet, suppressing the delay
+		upload_queue(true) -- true means its the first packet, suppressing the delay
 	end
 
 	net.Receive("wire_expression2_tool_upload", function(len, ply)
 		local ent = net.ReadUInt(16)
-		local filepath = net.ReadString()
+		local filepathlen = net.ReadUInt(32)
+		local filepath = filepathlen>0 and net.ReadData(filepathlen) or ""
 		local hash = net.ReadInt(32)
 		if filepath ~= "" then
 			if filepath and file.Exists(filepath, "DATA") then
@@ -594,7 +782,7 @@ elseif CLIENT then
 		local uploadandexit = net.ReadBit() ~= 0
 		local numpackets = net.ReadUInt(16)
 
-		buffer = buffer .. net.ReadString()
+		buffer = buffer .. net.ReadData(net.ReadUInt(32))
 		count = count + 1
 
 		Expression2SetProgress(count / numpackets * 100, nil, "Downloading")
@@ -602,7 +790,7 @@ elseif CLIENT then
 			local ok, ret = pcall(WireLib.von.deserialize, buffer)
 			buffer, count = "", 0
 			if not ok then
-				WireLib.AddNotify(ply, "Expression 2 download failed! Error message:\n" .. ret, NOTIFY_ERROR, 7, NOTIFYSOUND_DRIP3)
+				WireLib.AddNotify("Expression 2 download failed! Error message:\n" .. ret, NOTIFY_ERROR, 7, NOTIFYSOUND_DRIP3)
 				return
 			end
 			local files = ret
@@ -633,11 +821,11 @@ elseif CLIENT then
 	net.Receive("wire_expression2_download_wantedfiles_list", function(len)
 		local ent = net.ReadEntity()
 		local uploadandexit = net.ReadBit() ~= 0
-		local buffer = net.ReadString()
+		local buffer = net.ReadData(net.ReadUInt(32))
 
 		local ok, ret = pcall(WireLib.von.deserialize, buffer)
 		if not ok then
-			WireLib.AddNotify(ply, "Expression 2 file list download failed! Error message:\n" .. ret, NOTIFY_ERROR, 7, NOTIFYSOUND_DRIP3)
+			WireLib.AddNotify("Expression 2 file list download failed! Error message:\n" .. ret, NOTIFY_ERROR, 7, NOTIFYSOUND_DRIP3)
 			print("Expression 2 file list download failed! Error message:\n" .. ret)
 			return
 		end
@@ -736,7 +924,9 @@ elseif CLIENT then
 				net.WriteEntity(ent)
 				net.WriteBit(uploadandexit)
 				net.WriteUInt(numpackets, 16)
-				net.WriteString(datastr:sub(i, i + 63999))
+				local data = datastr:sub(i, i + 63999)
+				net.WriteUInt(#data, 32)
+				net.WriteData(data, #data)
 				net.SendToServer()
 			end
 
@@ -971,7 +1161,7 @@ if SERVER then
 
 elseif CLIENT then
 
-	local busy_players = {}
+	local busy_players = WireLib.RegisterPlayerTable()
 	hook.Add("EntityRemoved", "wire_expression2_busy_animation", function(ply)
 		busy_players[ply] = nil
 	end)

@@ -16,7 +16,6 @@ local allowed_directories = { //prefix with >(allowed directory)/file.txt for fi
 	["cpushared"] = "cpuchip/e2shared",
 	["gpushared"] = "gpuchip/e2shared",
 	["spushared"] = "spuchip/e2shared",
-	["dupeshared"] = "adv_duplicator/e2shared"
 }
 
 for _,dir in pairs( allowed_directories ) do
@@ -105,7 +104,7 @@ end )
 /* --- File Write --- */
 net.Receive("wire_expression2_file_download_begin", function( netlen )
 	local fpath,fname = process_filepath( net.ReadString() )
-	if string.GetExtensionFromFilename( string.lower(fname) ) != "txt" then return end
+	if !E2Lib.isValidFileWritePath(fname) then return end
 	if not file.Exists(fpath, "DATA") then file.CreateDir(fpath) end
 	download_buffer = {
 		name = fpath .. fname,

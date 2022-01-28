@@ -85,7 +85,9 @@ local function soundCreate(self, entity, index, time, path, fade)
 		data.count = data.count + 1
 	end
 
-	local sound = CreateSound( entity, path )
+	local filter = RecipientFilter(true)
+	filter:AddAllPlayers()
+	local sound = CreateSound( entity, path, filter )
 	data.sounds[index] = sound
 	sound:Play()
 
@@ -204,9 +206,11 @@ e2function void soundPurge()
 	soundPurge( self )
 end
 
+__e2setcost(5000)
 e2function number soundDuration(string sound)
 	return SoundDuration(sound) or 0
 end
+__e2setcost(nil)
 
 ---------------------------------------------------------------
 

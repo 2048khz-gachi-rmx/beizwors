@@ -70,6 +70,13 @@ local function filter_default(self)
 	end
 end
 
+local function filter_default_without_class_blocklist(self)
+	local chip = self.entity
+	return function(ent)
+		return ent ~= chip
+	end
+end
+
 -- -- some filter criterion generators -- --
 
 -- Generates a filter that filters out everything not in a lookup table.
@@ -318,7 +325,7 @@ function query_blocked(self, update)
 			self.data.findcount = self.data.findcount - 1
 			return false
 		else
-			return true
+			return self:throw("You cannot send a new find request yet!", true)
 		end
 	end
 	return (self.data.findcount < 1)
@@ -498,7 +505,7 @@ end
 e2function void findExcludePlayerProps(string name)
 	local ply = findPlayer(name)
 	if not ply then return end
-	e2_findExcludePlayerProps_e(self, { nil, { function() return ply end } })
+	registeredfunctions.e2_findExcludePlayerProps_e(self, { nil, { function() return ply end } })
 end
 
 --- Exclude entities with this model (or partial model name) from future finds
@@ -556,7 +563,7 @@ end
 e2function void findAllowPlayerProps(string name)
 	local ply = findPlayer(name)
 	if not ply then return end
-	e2_findAllowPlayerProps_e(self, { nil, { function() return ply end } })
+	registeredfunctions.e2_findAllowPlayerProps_e(self, { nil, { function() return ply end } })
 end
 
 --- Remove entities with this model (or partial model name) from the blacklist
@@ -614,7 +621,7 @@ end
 e2function void findIncludePlayerProps(string name)
 	local ply = findPlayer(name)
 	if not ply then return end
-	e2_findIncludePlayerProps_e(self, { nil, { function() return ply end } })
+	registeredfunctions.e2_findIncludePlayerProps_e(self, { nil, { function() return ply end } })
 end
 
 --- Include entities with this model (or partial model name) in future finds, and remove others not in the whitelist
@@ -672,7 +679,7 @@ end
 e2function void findDisallowPlayerProps(string name)
 	local ply = findPlayer(name)
 	if not ply then return end
-	e2_findDisallowPlayerProps_e(self, { nil, { function() return ply end } })
+	registeredfunctions.e2_findDisallowPlayerProps_e(self, { nil, { function() return ply end } })
 end
 
 --- Remove entities with this model (or partial model name) from the whitelist
@@ -761,6 +768,17 @@ end
 
 --[[************************************************************************]]--
 __e2setcost(2)
+
+--- Allows or disallows finding entities on the hardcoded class blocklist, including classes like "prop_dynamic", "physgun_beam" and "gmod_ghost".
+e2function void findAllowBlockedClasses(useHardcodedFilter)
+	if useHardcodedFilter ~= 0 then
+		self.data.find.filter_default = filter_default_without_class_blocklist(self)
+	else
+		self.data.find.filter_default = filter_default(self)
+	end
+end
+
+--[[************************************************************************]]--
 
 --- Returns the indexed entity from the previous find event (valid parameters are 1 to the number of entities found)
 e2function entity findResult(index)

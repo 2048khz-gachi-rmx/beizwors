@@ -22,10 +22,10 @@ E2Lib.registerConstant( "FILE_TIMEOUT", FILE_TIMEOUT )
 E2Lib.registerConstant( "FILE_404", FILE_404 )
 E2Lib.registerConstant( "FILE_TRANSFER_ERROR", FILE_TRANSFER_ERROR )
 
-local delays = {}
-local uploads = {}
-local downloads = {}
-local lists = {}
+local delays = WireLib.RegisterPlayerTable()
+local uploads = WireLib.RegisterPlayerTable()
+local downloads = WireLib.RegisterPlayerTable()
+local lists = WireLib.RegisterPlayerTable()
 local run_on = {
 	file = {
 		run = 0,
@@ -53,7 +53,7 @@ end
 util.AddNetworkString("wire_expression2_request_file_sp")
 util.AddNetworkString("wire_expression2_request_file")
 local function file_Upload( ply, entity, filename )
-	if !file_canUpload( ply ) or !IsValid( entity ) or !IsValid( ply ) or !ply:IsPlayer() or string.Right( filename, 4 ) != ".txt" then return false end
+	if !file_canUpload( ply ) or !IsValid( entity ) or !IsValid( ply ) or !ply:IsPlayer() or !E2Lib.isValidFileWritePath(filename) then return false end
 
 	uploads[ply] = {
 		name = filename,
@@ -82,7 +82,7 @@ local function file_canDownload( ply )
 end
 
 local function file_Download( ply, filename, data, append )
-	if !file_canDownload( ply ) or !IsValid( ply ) or !ply:IsPlayer() or string.Right( filename, 4 ) != ".txt" then return false end
+	if !file_canDownload( ply ) or !IsValid( ply ) or !ply:IsPlayer() or !E2Lib.isValidFileWritePath(filename) then return false end
 	if string.len( data ) > (cv_max_transfer_size:GetInt() * 1024) then return false end
 
 	-- if we're trying to append an empty string then we don't need to queue up

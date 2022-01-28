@@ -22,7 +22,6 @@ if CLIENT then
 		if path.Width<=0 then
 			if path.Entity.WirePaths then
 				path.Entity.WirePaths[path.Name] = nil
-				if not next(path.Entity.WirePaths) then path.Entity.WirePaths = nil end
 			end
 			return
 		end
@@ -43,7 +42,7 @@ if CLIENT then
 end
 
 WireLib.Paths = {}
-local transmit_queues = setmetatable({}, { __index = function(t,p) t[p] = {} return t[p] end })
+local transmit_queues = WireLib.RegisterPlayerTable(setmetatable({}, { __index = function(t,p) t[p] = {} return t[p] end }))
 util.AddNetworkString("WireLib.Paths.RequestPaths")
 util.AddNetworkString("WireLib.Paths.TransmitPath")
 
@@ -81,10 +80,13 @@ end
 
 local function ProcessQueue()
 	for ply, queue in pairs(transmit_queues) do
-		if not ply:IsValid() then transmit_queues[ply] = nil continue end
-		local nextinqueue = table.remove(queue, 1)
-		if nextinqueue then
-			TransmitPath(nextinqueue, ply)
+		if ply:IsValid() then
+			local nextinqueue = table.remove(queue, 1)
+			if nextinqueue then
+				TransmitPath(nextinqueue, ply)
+			else
+				transmit_queues[ply] = nil
+			end
 		else
 			transmit_queues[ply] = nil
 		end

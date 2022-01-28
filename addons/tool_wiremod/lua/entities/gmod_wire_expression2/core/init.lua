@@ -159,6 +159,7 @@ function registerFunction(name, pars, rets, func, cost, argnames)
 	local signature = name .. "(" .. pars .. ")"
 
 	wire_expression2_funcs[signature] = { signature, rets, func, cost or tempcost, argnames = argnames }
+
 	wire_expression2_funclist[name] = true
 	if wire_expression2_debug:GetBool() then makecheck(signature) end
 end
@@ -215,7 +216,7 @@ if SERVER then
 		wire_expression2_prepare_functiondata()
 
 		-- Send everything
-		local targets = {}
+		local targets = WireLib.RegisterPlayerTable()
 		local function sendData(target)
 			if IsValid(target) and target:IsPlayer() and targets[target] == nil then
 				targets[target] = "start"
@@ -250,7 +251,7 @@ if SERVER then
 			end
 		end)
 
-		local antispam = {}
+		local antispam = WireLib.RegisterPlayerTable()
 		function wire_expression2_sendfunctions(ply, isconcmd)
 			if isconcmd and not game.SinglePlayer() then
 				if not antispam[ply] then antispam[ply] = 0 end
@@ -335,4 +336,6 @@ elseif CLIENT then
 	end)
 end
 
-include("e2doc.lua")
+-- this file just generates the docs so it doesn't need to run every time. 
+-- uncomment this line or use an openscript concmd if you want to generate docs
+-- include("e2doc.lua")
