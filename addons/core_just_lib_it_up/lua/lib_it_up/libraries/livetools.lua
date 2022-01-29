@@ -2,11 +2,11 @@ setfenv(0, _G)
 
 ToolObj = {}
 
-include( "sandbox/entities/weapons/gmod_tool/ghostentity.lua" )
-include( "sandbox/entities/weapons/gmod_tool/object.lua" )
+include( "sandbox_ents/entities/weapons/gmod_tool/ghostentity.lua" )
+include( "sandbox_ents/entities/weapons/gmod_tool/object.lua" )
 
 if ( CLIENT ) then
-	include( "sandbox/entities/weapons/gmod_tool/stool_cl.lua" )
+	include( "sandbox_ents/entities/weapons/gmod_tool/stool_cl.lua" )
 end
 
 local sboxTool = ToolObj
