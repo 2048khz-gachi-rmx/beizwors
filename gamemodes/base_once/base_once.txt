@@ -1,0 +1,5 @@
+"base_once"
+{
+	"title"		"Base"
+	"base"		""
+}

@@ -6,6 +6,11 @@
 
 -----------------------------------------------------------]]
 
+if not _SANDBOX_ENTS_ADDED then
+	DeriveGamemode("sandbox_ents")
+end
+_SANDBOX_ENTS_ADDED = true
+
 include( "player_extension.lua" )
 include( "persistence.lua" )
 include( "save_load.lua" )

@@ -8,17 +8,19 @@
 
 -- These files get sent to the client
 
-AddCSLuaFile( "cl_hints.lua" )
-AddCSLuaFile( "cl_init.lua" )
-AddCSLuaFile( "cl_notice.lua" )
-AddCSLuaFile( "cl_search_models.lua" )
-AddCSLuaFile( "cl_spawnmenu.lua" )
-AddCSLuaFile( "cl_worldtips.lua" )
-AddCSLuaFile( "persistence.lua" )
-AddCSLuaFile( "player_extension.lua" )
-AddCSLuaFile( "save_load.lua" )
-AddCSLuaFile( "shared.lua" )
-AddCSLuaFile( "gui/IconEditor.lua" )
+if not _SANDBOX_ADDED then
+	AddCSLuaFile( "cl_hints.lua" )
+	AddCSLuaFile( "cl_init.lua" )
+	AddCSLuaFile( "cl_notice.lua" )
+	AddCSLuaFile( "cl_search_models.lua" )
+	AddCSLuaFile( "cl_spawnmenu.lua" )
+	AddCSLuaFile( "cl_worldtips.lua" )
+	AddCSLuaFile( "persistence.lua" )
+	AddCSLuaFile( "player_extension.lua" )
+	AddCSLuaFile( "save_load.lua" )
+	AddCSLuaFile( "shared.lua" )
+	AddCSLuaFile( "gui/IconEditor.lua" )
+end
 
 include( 'shared.lua' )
 include( 'commands.lua' )
@@ -172,3 +174,5 @@ function GM:CanEditVariable( ent, ply, key, val, editor )
 	return true
 
 end
+
+_SANDBOX_ADDED = true

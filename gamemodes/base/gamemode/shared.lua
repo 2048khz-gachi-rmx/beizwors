@@ -10,6 +10,12 @@
 
 -----------------------------------------------------------]]
 
+if not _BASE_INCLUDED then
+	DeriveGamemode("base_once")
+end
+
+_BASE_INCLUDED = true
+
 include( 'obj_player_extend.lua' )
 
 include( 'gravitygun.lua' )

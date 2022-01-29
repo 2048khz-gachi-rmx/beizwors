@@ -1,3 +1,4 @@
+if _SANDBOX_ADDED then return end
 
 AddCSLuaFile( "sandbox/gamemode/spawnmenu/controls/manifest.lua" )
 AddCSLuaFile( "sandbox/gamemode/spawnmenu/controls/control_presets.lua" )

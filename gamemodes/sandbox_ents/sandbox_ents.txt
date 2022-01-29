@@ -1,0 +1,6 @@
+"sandbox_ents"
+{
+	"base"		"base"
+	"title"		"Sandbox"
+	"category"	"other"
+}
