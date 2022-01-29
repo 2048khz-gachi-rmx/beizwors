@@ -130,11 +130,13 @@ local t1 = SysTime()
 
 BaseWars.LoadLog:SetShouldNewline(false)
 
+	-- derivation takes a long time
 	BaseWars.LoadLog("	Deriving...")
+		-- FProfiler.start()
 		stageStart = SysTime()
 			DeriveGamemode("sandbox")
 		stageEnd = SysTime()
-
+		-- FProfiler.stop()
 		printFinish()
 
 
@@ -142,7 +144,7 @@ BaseWars.LoadLog:SetShouldNewline(false)
 
 		stageStart = SysTime()
 			includeCS("shared.lua")
-			includeCS("language.lua")
+			-- includeCS("language.lua")
 			includeCS("config.lua")
 
 			if ulib or ulx then

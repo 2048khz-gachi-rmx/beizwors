@@ -374,3 +374,4 @@ function GM:PlayerSpawn(ply)
 end
 
 ScanEntities()
+BaseWars.LoadLog("Initialized.")
