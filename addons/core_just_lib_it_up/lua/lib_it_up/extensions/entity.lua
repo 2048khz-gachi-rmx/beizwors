@@ -19,8 +19,22 @@ EntitySubscribers.Entities = ent_subs					-- this is used for adding/removing su
 local BlankFunc = function() end
 
 
-local lookupCache = setmetatable({}, {__mode = "k"})
+local lookupCache = setmetatable({}, {__mode = "kv"})
 EntTableLookup = lookupCache
+
+hook.Add("EntityActuallyRemoved", "cleanupShit", function(e)
+	timer.Simple(10, function()
+		EntTableLookup[e] = nil
+	end)
+end)
+
+timer.Create("cleanup_invalid_ents_lkup", 10, 0, function()
+	for k,v in pairs(EntTableLookup) do
+		if not k:IsValid() then
+			EntTableLookup[k] = nil
+		end
+	end
+end)
 
 local ENTITY = FindMetaTable("Entity")
 local WEAPON = FindMetaTable("Weapon")
