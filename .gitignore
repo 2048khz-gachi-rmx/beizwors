@@ -18,7 +18,8 @@
 !lua/includes/**
 !gamemodes/sandbox/**
 !gamemodes/base/**
-
+!gamemodes/base_once/**
+!gamemodes/sandbox_ents/**
 
 
 # custom models, materials, sounds
