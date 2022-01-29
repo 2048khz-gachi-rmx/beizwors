@@ -1,14 +1,17 @@
 --
 
 local PERK = {}
+local bg = Color(255, 0, 0)
 
 function PERK:Init()
 	self:SetText("")
 	self.DownFracTime = 0.3
 	self.SelFrac = 0
+
+	self.bgColor = bg -- do not use self:GetColor(), worst mistake of my life
 end
 
-local bg = Color(62, 62, 62)
+
 local hov = Color(60, 160, 250, 60)
 local sel = Color(60, 160, 250):MulHSV(1, 0.7, 1)
 
@@ -28,9 +31,9 @@ function PERK:Paint(w, h)
 		tcol:Set(hov)
 		draw.LerpColor(df, tcol, sel, hov)
 
-		local fr = hf + self.SelFrac * 0.5
+		local fr = hf + self.SelFrac * 0.5 - self.DownFrac
 		if self.Selected then
-			fr = 1 + self.SelFrac * 0.5
+			fr = 1 + self.SelFrac * 0.5 + (self.DownFrac ^ 0.4) * 0.5
 		end
 
 		local sx, sy = self:LocalToScreen(w / 2, h / 2)
@@ -45,7 +48,7 @@ function PERK:Paint(w, h)
 		cam.PopModelMatrix()
 	end
 
-	bg:SetDraw()
+	self.bgColor:SetDraw()
 	draw.DrawMaterialCircle(w / 2, h / 2, h)
 
 	if self.Icon then
@@ -64,11 +67,11 @@ function PERK:SetLevel(level)
 	self.Level = level
 end
 
-function PERK:Deselect()
-	if not self.Selected then return end
+function PERK:Deselect(another)
+	if not self.Selected then print("already deselected") return end
 
 	self.Selected = false
-	self:Emit("Deselect", self.Perk)
+	self:Emit("Deselect", self.Perk, another)
 	self:To("SelFrac", 0, 0.3, 0, 0.3)
 end
 

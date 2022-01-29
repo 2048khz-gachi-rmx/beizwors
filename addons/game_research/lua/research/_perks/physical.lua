@@ -47,18 +47,18 @@ for i=1, 6 do
 	lv:SetIcon(CLIENT and Icons.Plus)
 
 	if i > 3 then
-		lv:AddPrerequisite("ComputerReq", 2)
+		lv:AddRequirement( { Computer = 2 } )
 	end
 
 	local add = hps[i]
 	totalHP = totalHP + add
 
-	lv:SetDescription( ("Increase your maximum HP by $%d\n(total: *%d)"):format(
+	lv:SetDescription( ("Increase your maximum HP by $%d (total: *%d)"):format(
 		math.floor(add),
 		math.floor(totalHP)
 	) )
 
-	lv.TotalHP = totalHP
+	lv.TotalHP = totalHP - 100
 end
 
 local cap = Research.Perk:new("cap")
@@ -73,4 +73,9 @@ for i=1, 3 do
 
 	lv:SetPos(i * 3, 1)
 	lv:SetIcon(CLIENT and Icons.Plus)
+end
+
+
+if SERVER then
+	include("physical_sv_ext.lua")
 end

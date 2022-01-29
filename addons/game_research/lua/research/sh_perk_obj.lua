@@ -14,6 +14,10 @@ function Research.IsPerkLevel(w)
 	return istable(w) and w.IsResearchPerkLevel
 end
 
+function Research.GetPerk(id)
+	return Research.Perks[id]
+end
+
 ChainAccessor(perk, "_ID", "ID")
 ChainAccessor(perk, "_Name", "Name")
 ChainAccessor(perk, "_Icon", "Icon")
@@ -50,6 +54,9 @@ function perk:GetName(lv)
 end
 
 function perk:AddLevel(i, noadd)
+	assert(i > 0, "Levels have to be > 0.")
+	assert(math.floor(i) == i, "Can't add float levels.")
+
 	i = i or #self:GetLevels() + 1
 	local ret = level:new(i)
 	ret._levelOf = self
@@ -61,6 +68,8 @@ function perk:AddLevel(i, noadd)
 		i
 	})
 
+	ret:SetName(table.concat(ret:GetNameFragments()))
+
 	if self:GetLevel(i - 1) and not noadd then
 		ret:AddPrerequisite(self:GetLevel(i - 1))
 	end
@@ -69,6 +78,8 @@ function perk:AddLevel(i, noadd)
 end
 
 ChainAccessor(level, "_NameFragments", "NameFragments")
+ChainAccessor(level, "_Name", "Name")
+
 ChainAccessor(level, "_Icon", "Icon")
 
 ChainAccessor(level, "_Level", "Level")
@@ -78,6 +89,7 @@ ChainAccessor(level, "_Requirements", "Reqs")
 
 ChainAccessor(level, "_Prerequisites", "Prerequisites")
 ChainAccessor(level, "_Prerequisites", "Prereqs")
+ChainAccessor(level, "_ResTime", "ResearchTime")
 
 ChainAccessor(level, "_Description", "Description")
 ChainAccessor(level, "_Color", "Color")
@@ -87,6 +99,7 @@ function level:Initialize(lv)
 	self:SetReqs({ Items = {} })
 	self:SetPrereqs({})
 	self:SetNameFragments({})
+	self:SetResearchTime(6)
 
 	self._pos = {0, 0}
 end
@@ -127,22 +140,75 @@ end
 function level:PrereqSatisfied(name, ply, comp)
 	if Research.IsPerkLevel(name) then
 		local lv = name:GetLevel()
-		return ply:GetPerkLevel(name:GetPerk():GetID()) >= lv
+		return ply:HasPerkLevel(name:GetPerk():GetID(), lv)
 	end
 
 	return true -- not implemented?
 end
 
+local colors = {
+	["$"] = Colors.Money,
+	["^"] = Colors.Sky,
+	["#"] = Colors.Golden,
+	["@"] = Colors.Red,
+	["*"] = color_white,
+	["&"] = Colors.Blue
+}
+
+function level:FillMarkup(mup)
+	local ret = eval(self:GetDescription(), self, mup)
+
+	if isstring(ret) then
+		local t = {}
+		local cols = {}
+
+		local i = 0
+		local pattern = "[%" .. table.concat(string.Prefixes, "%") .. "]"
+
+		for s, match in eachMatch(ret, pattern .. "%d+") do
+			i = i + 2
+			t[i - 1] = s
+			t[i] = match and match:sub(2)
+			cols[#cols + 1] = match and colors[match:sub(1, 1)] or Colors.Error
+		end
+
+		local pc = mup:AddPiece()
+		pc:SetFont("BS20")
+		pc:SetAlignment(1)
+		pc:SetColor(160, 160, 160)
+
+		local n = 0
+		for i=1, #t, 2 do
+			pc:AddText(t[i])
+			if t[i + 1] then
+				n = n + 1
+				local num = pc:AddText(t[i + 1])
+				num.color = cols[n] or Colors.Error
+			end
+		end
+	end
+end
+
+function level:PrereqsSatisified()
+	for k,v in pairs(self:GetPrereqs()) do
+		if not self:PrereqSatisfied(k, ply, comp) then
+			return false
+		end
+	end
+
+	return true
+end
+
 function level:CanResearch(ply, comp)
 	if not IsValid(comp) or not comp.ResearchComputer then return false end
 
+	if comp:GetRSPerk() ~= "" then return false end
+
 	-- check prereqs
-	for k,v in pairs(self:GetPrereqs()) do
-		if not self:PrereqSatisfied(k, ply, comp) then
-			return false, "Prerequisites not satisfied!"
-		end
+	if not self:PrereqsSatisified() then
+		return false, "Prerequisites not satisfied!"
 	end
-		
+
 	-- check reqs: items
 	local its = self:GetRequirements().Items
 
@@ -174,4 +240,9 @@ function level:CanResearch(ply, comp)
 	end
 
 	return true
+end
+
+function level:IsResearched(ply)
+	if CLIENT then ply = CachedLocalPlayer() end
+	return ply:HasPerkLevel(self)
 end

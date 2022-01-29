@@ -1,8 +1,8 @@
 local PANEL = {}
 vgui.ToPrePostPaint(PANEL)
 
-ChainAccessor(PANEL, "_Perk", "Perk")
-ChainAccessor(PANEL, "_Perk", "Level")
+ChainAccessor(PANEL, "_Level", "Perk")
+ChainAccessor(PANEL, "_Level", "Level")
 
 local TitleY = 8
 
@@ -31,11 +31,17 @@ function PANEL:Draw(w, h)
 	self.Title:Paint(w / 2, TitleY)
 end
 
-function PANEL:_AnimateTitle(level, old)
+function PANEL:_AnimateTitle(level, old, unset)
 	if not level then
-		self.Title:DisappearCurrentElement()
+		if not unset then
+			-- dont remove if unsetting because we'll already be
+			-- setting a different fragment via cycle
+			self.Title:DisappearCurrentElement()
+		end
+
 		return
 	end
+
 
 	local perk = level:GetPerk()
 	local num = self.PDT[perk]
@@ -58,7 +64,8 @@ function PANEL:_AnimateTitle(level, old)
 
 		for i=1, #nmFr do
 			if elem.Fragments[i + 1] then
-				elem:ReplaceText(i + 1, nmFr[i], nil, self.Title:GetCurrentElement() ~= elem)
+				elem:ReplaceText(i + 1, nmFr[i],
+					nil, self.Title:GetCurrentElement() ~= elem)
 			else
 				elem:AddFragment(nmFr[i])
 			end
@@ -72,15 +79,6 @@ function PANEL:_AnimateTitle(level, old)
 	self.Title:ActivateElement(num)
 end
 
-local colors = {
-	["$"] = Colors.Money,
-	["^"] = Colors.Sky,
-	["#"] = Colors.Golden,
-	["@"] = Colors.Red,
-	["*"] = color_white,
-	["&"] = Colors.Blue
-}
-
 function PANEL:_AnimateDescription(level, old)
 	local mups = self.MUps
 
@@ -93,7 +91,7 @@ function PANEL:_AnimateDescription(level, old)
 	local perk = level:GetPerk()
 	local mup = mups[level]
 
-	local delay = old and old:GetPerk() == perk and 0.1 or 0.2
+	local delay = old and old:GetPerk() == perk and 0.05 or 0.1
 
 	if not mup then
 		mup = vgui.Create("MarkupText", self)
@@ -105,37 +103,7 @@ function PANEL:_AnimateDescription(level, old)
 		mup:MoveBy(0, 16, 0.6, delay, 0.3)
 		mup:PopIn(0.2, delay)
 
-		local ret = eval(level:GetDescription(), self, mup)
-
-		if isstring(ret) then
-			local t = {}
-			local cols = {}
-
-			local i = 0
-			local pattern = "[%" .. table.concat(string.Prefixes, "%") .. "]"
-
-			for s, match in eachMatch(ret, pattern .. "%d+") do
-				i = i + 2
-				t[i - 1] = s
-				t[i] = match and match:sub(2)
-				cols[#cols + 1] = match and colors[match:sub(1, 1)] or Colors.Error
-			end
-
-			local pc = mup:AddPiece()
-			pc:SetFont("BS20")
-			pc:SetAlignment(1)
-			pc:SetColor(160, 160, 160)
-
-			local n = 0
-			for i=1, #t, 2 do
-				pc:AddText(t[i])
-				if t[i + 1] then
-					n = n + 1
-					local num = pc:AddText(t[i + 1])
-					num.color = cols[n] or Colors.Error
-				end
-			end
-		end
+		level:FillMarkup(mup)
 
 		mups[level] = mup
 	else
@@ -151,8 +119,137 @@ function PANEL:GetDescPanel(lv)
 end
 
 local check, cross = "✓", "✕"
+local col = Color(0, 0, 0)
+local itCol = Color(0, 0, 0)
+
+function PANEL:PaintRequirements(items, y, level)
+	local main = self.Main
+	local comp = ChainValid(main._comp)
+
+	local reqs = level:GetReqs()
+	local del = 0.15
+
+	local apFrs = self._reqFrs or {}
+	self._reqFrs = apFrs
+
+	self:To("ItemLblFr", 1, 0.5, del, 0.3)
+	local tfr = self.ItemLblFr or 0
+
+	col:Set(color_white)
+	col.a = tfr * 255
+
+	local inv = Inventory.GetTemporaryInventory(CachedLocalPlayer())
+
+	if #items > 0 then
+		local lW, lH = draw.SimpleText("Items:", "EX28",
+			8 - 8 * (1 - tfr), y, col)
+		y = y + lH
+
+		del = del + .3
+
+		for i, dat in ipairs(items) do
+			local id, amt = dat[1], dat[2]
+			local base = Inventory.Util.GetBase(id)
+			local cnt = Inventory.Util.GetItemCount(inv, id)
+
+			self:MemberLerp(apFrs, id, 1, 0.9, del, 0.15)
+			del = del + .1
+
+			local fr = apFrs[id] or 0
+
+			itCol:Set(base and base:GetColor() or color_white)
+			itCol:ModHSV(1, -0.15, 0.1)
+			itCol.a = fr * 255
+
+			col:Set(cnt >= amt and color_white or Colors.Reddish)
+			col.a = fr * 255
+
+			local tw, th = Inventory.Draw.DrawItemAmount(id, amt,
+				"BSL20", math.Round(32 - 16 * (1 - fr)), y, nil, nil,
+				itCol, col)
+
+			y = y + th
+		end
+
+		y = y + 12
+	end
+
+	if reqs.Computer then
+		local lv = comp and comp:GetLevel()
+		local can = lv and lv >= reqs.Computer
+
+		if can then
+			col:Set(200, 200, 200, tfr * 255)
+		else
+			col:Set(Colors.Reddish)
+			col.a = tfr * 255
+		end
+
+		local tw, th = draw.SimpleText(Language("ComputerReq", reqs.Computer), "BS22",
+			8 - 8 * (1 - tfr), y, col)
+
+		y = y + th
+	end
+
+	return y
+end
+
+function PANEL:PaintPrerequisites(rqs, y, level)
+	local lvpqs = level:GetPrereqs()
+	local reqFrs = self._reqFrs or {}
+	self._reqFrs = reqFrs
+
+	local del = 0.2
+
+	if #rqs == 0 then
+		return y
+	end
+
+	self:To("ReqsLblFr", 1, 0.5, del, 0.3)
+	local rfr = self.ReqsLblFr or 0
+
+	col:Set(color_white)
+	col.a = rfr * 255
+
+	local lW, lH = draw.SimpleText("Prerequisites:", "EX28",
+		8 - 8 * (1 - rfr), y, col)
+	y = y + lH
+
+	del = del + .2
+
+	for k, lv in ipairs(rqs) do
+		self:MemberLerp(reqFrs, k, 1, 0.9, del, 0.15)
+		del = del + .1
+
+		local fr = reqFrs[k] or 0
+
+		local name
+
+		if Research.IsPerkLevel(lv) then
+			name = lv:GetName()
+			local good = level:PrereqSatisfied(lv, CachedLocalPlayer())
+			col:Set(good and Colors.Sky or Colors.Reddish)
+			col.a = fr * 255
+
+			name = (good and check or cross) .. " " .. name
+		else
+			name = Language[lv] and Language[lv] (lvpqs[lv])
+			col:Set(210, 210, 210, fr * 255)
+		end
+
+		local tw, th = draw.SimpleText(name,
+			"BSL20", math.Round(32 - 16 * (1 - fr)), y, col)
+
+		y = y + th
+	end
+
+	y = y + 16
+
+	return y
+end
 
 function PANEL:_AnimateRequirements(level, old)
+	local main = self
 	local oldReq = self._Reqs[old]
 	if oldReq or not level then
 		oldReq:PopOutHide()
@@ -174,6 +271,7 @@ function PANEL:_AnimateRequirements(level, old)
 		req.IntendedY = desc.IntendedY + desc:GetTall() + 32
 		req.Y = req.IntendedY - 8
 		req:MoveBy(0, 8, 0.6, 0.4, 0.3)
+		req.Main = main
 
 		local apFrs = {}
 		local reqFrs = {}
@@ -191,14 +289,15 @@ function PANEL:_AnimateRequirements(level, old)
 		end
 
 		table.sort(items, function(a, b)
-			local b1, b2 = Inventory.Util.GetBase(a[1]), Inventory.Util.GetBase(b[1])
+			return a[2] > b[2]
+			--[[local b1, b2 = Inventory.Util.GetBase(a[1]), Inventory.Util.GetBase(b[1])
 			local r1, r2 = b1 and b1:GetRarity(), b2 and b2:GetRarity()
 
 			if not b1 or (not r1 and r2) then return false end
 			if not b2 or (r1 and not r2) then return true end
 			if not r1 and not r2 then return false end
 
-			return r1:GetRarity() < r2:GetRarity()
+			return r1:GetRarity() < r2:GetRarity()]]
 		end)
 
 		local rqs = {}
@@ -224,90 +323,9 @@ function PANEL:_AnimateRequirements(level, old)
 
 			local y = titleH + 4
 
-			local del = 0.3
+			y = main.PaintPrerequisites(self, rqs, y, level)
+			y = main.PaintRequirements(self, items, y, level)
 
-			--[==================================[
-				prerequisites
-			--]==================================]
-			self:To("ReqsLblFr", 1, 0.5, del, 0.3)
-			local rfr = self.ReqsLblFr or 0
-
-			col:Set(color_white)
-			col.a = rfr * 255
-
-			if #rqs > 0 then
-				local lW, lH = draw.SimpleText("Prerequisites:", "EX28",
-					8 - 8 * (1 - rfr), y, col)
-				y = y + lH
-
-				del = del + .2
-
-				for k, lv in ipairs(rqs) do
-					self:MemberLerp(reqFrs, k, 1, 0.9, del, 0.15)
-					del = del + .1
-
-					local fr = reqFrs[k] or 0
-
-					local name
-
-					if Research.IsPerkLevel(lv) then
-						name = lv:GetName()
-						local good = level:PrereqSatisfied(lv, CachedLocalPlayer())
-						col:Set(good and Colors.Sky or Colors.Reddish)
-						col.a = fr * 255
-
-						name = (good and check or cross) .. " " .. name
-					else
-						name = Language[lv] and Language[lv] (lvpqs[lv])
-						col:Set(210, 210, 210, fr * 255)
-					end
-
-					local tw, th = draw.SimpleText(name,
-						"BSL20", math.Round(32 - 16 * (1 - fr)), y, col)
-
-					y = y + th
-				end
-
-				y = y + 16
-			end
-
-			--[==================================[
-				requirements: items
-			--]==================================]
-			del = 0.3
-
-			self:To("ItemLblFr", 1, 0.5, del, 0.3)
-			local tfr = self.ItemLblFr or 0
-
-			col:Set(color_white)
-			col.a = tfr * 255
-
-			if #items > 0 then
-				local lW, lH = draw.SimpleText("Items:", "EX28",
-					8 - 8 * (1 - tfr), y, col)
-				y = y + lH
-
-				del = del + .2
-
-				for i, dat in ipairs(items) do
-					local id, amt = dat[1], dat[2]
-					local base = Inventory.Util.GetBase(id)
-
-					self:MemberLerp(apFrs, id, 1, 0.9, del, 0.15)
-					del = del + .1
-
-					local fr = apFrs[id] or 0
-
-					col:Set(base and base:GetColor() or color_white)
-					col.a = fr * 255
-
-					local tw, th = Inventory.Draw.DrawItemAmount(id, amt,
-						"BSL20", math.Round(32 - 16 * (1 - fr)), y, col)
-
-					y = y + th
-				end
-			end
-			
 			self:SetTall(math.max(h, y))
 		end
 
@@ -331,6 +349,7 @@ function PANEL:_AnimateButton(level, old)
 
 	if btn then
 		btn:PopInShow(0.2, 0.2)
+		btn:SetMouseInputEnabled(true)
 	else
 		btn = vgui.Create("FButton", self)
 		self._Btns[level] = btn
@@ -340,9 +359,11 @@ function PANEL:_AnimateButton(level, old)
 		btn:CenterHorizontal()
 
 		btn.Y = btn.IntendedY + 8
-		btn:MoveBy(0, -8, 0.7, 0.75, 0.15)
-
-		btn:PopIn(0.1, 0.75)
+		btn:SetMouseInputEnabled(false)
+		btn:MoveBy(0, -8, 0.7, 0.35, 0.15)
+		btn:PopIn(0.1, 0.35):On("Start", "min", function()
+			btn:SetMouseInputEnabled(true)
+		end)
 		btn:SetColor(Colors.Sky)
 		btn.Label = "Begin Research"
 		btn:SetFont("OS28")
@@ -353,6 +374,14 @@ function PANEL:_AnimateButton(level, old)
 
 		function btn:Think()
 			ent = main._comp
+
+			if CachedLocalPlayer():HasPerkLevel(level) then
+				self:SetEnabled(false)
+				self.Label = "Already researched!"
+				self:SetFont("OS24")
+				return
+			end
+
 			local can, why = level:CanResearch(CachedLocalPlayer(), ent)
 			if not can then
 				self:SetEnabled(false)
@@ -376,6 +405,15 @@ function PANEL:_AnimateButton(level, old)
 			self:RemoveCloud("why")
 			self:SetEnabled(true)
 		end
+
+		function btn:DoClick()
+			if not IsValid(ent) then return end
+			local pr = ent:RequestResearch(level)
+
+			pr:Then(function()
+				main:Emit("ResearchStarted", level)
+			end)
+		end
 	end
 end
 
@@ -383,11 +421,11 @@ function PANEL:SetComputer(ent)
 	self._comp = ent
 end
 
-function PANEL:SetLevel(level)
-	self:_AnimateTitle(level, self._Level)
-	self:_AnimateDescription(level, self._Level)
-	self:_AnimateRequirements(level, self._Level)
-	self:_AnimateButton(level, self._Level)
+function PANEL:SetLevel(level, unset)
+	self:_AnimateTitle(level, self._Level, unset)
+	self:_AnimateDescription(level, self._Level, unset)
+	self:_AnimateRequirements(level, self._Level, unset)
+	self:_AnimateButton(level, self._Level, unset)
 
 	self._Level = level
 end

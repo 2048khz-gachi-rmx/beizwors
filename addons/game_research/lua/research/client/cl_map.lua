@@ -118,6 +118,10 @@ local function onZoom(self)
 	end
 end
 
+function MAP:SetComputer(ent)
+	self._comp = ent
+end
+
 function MAP:OnCreatePerk(btn)
 	local lvl = btn.Level
 
@@ -142,17 +146,30 @@ function MAP:OnCreatePerk(btn)
 		self.ActiveBtn = nil
 	end
 
-	btn:On("Deselect", 	"Forward", function(btn, lvl)
-		self:Emit("DeselectedPerk", btn, lvl)
+	btn:On("Deselect", 	"Forward", function(btn, lvl, another)
+		self:Emit("DeselectedPerk", btn, lvl, another)
+		self.ActiveBtn = nil
 	end)
 
 	btn:On("Select", 	"Forward", function(btn, lvl)
-		if IsValid(self.ActiveBtn) then self.ActiveBtn:Deselect() end
+		if IsValid(self.ActiveBtn) then self.ActiveBtn:Deselect(true) end
 		self.ActiveBtn = btn
 		self:Emit("SelectedPerk", btn, lvl)
 	end)
 
 	btn:On("Zoom", "cloud", onZoom)
+
+	if lvl:IsResearched(CachedLocalPlayer()) then
+		btn.bgColor = Colors.Sky:Copy():MulHSV(1, 0.8, 0.8)
+	elseif lvl:PrereqsSatisified() then
+		if lvl:CanResearch(CachedLocalPlayer(), self._comp) then
+			btn.bgColor = Colors.Yellowish:Copy():MulHSV(1, 0.7, 0.5)
+		else
+			btn.bgColor = Colors.Reddish:Copy():MulHSV(1, 0.8, 0.7)
+		end
+	else
+		btn.bgColor = Color(62, 62, 62)
+	end
 end
 
 function MAP:SetTree(tree)
@@ -176,6 +193,8 @@ function MAP:SetTree(tree)
 				btn.Y / CanvasSize
 			}
 
+			btn.SizeAnchor = PerkSize / CanvasSize / 2
+
 			btn.OrigAnchor = {
 				btn.X / CanvasSize,
 				btn.Y / CanvasSize
@@ -183,7 +202,7 @@ function MAP:SetTree(tree)
 
 			btn:SetLevel(lv)
 
-			dels[btn] = ln * 0.06
+			dels[btn] = true --ln * 0.06
 
 			self:OnCreatePerk(btn)
 		end
@@ -194,32 +213,72 @@ function MAP:SetTree(tree)
 	local mv = 12
 
 	local function move(an, fr)
-		an.pool = an.pool or mv
+		local mvX, mvY = an.Parent.MvX, an.Parent.MvY
+
+		an.pool = an.pool or mvY
+		an.lx = an.lx or 0
 		an.ly = an.ly or 0
-		an.store = an.store or 0
+		an.storex = an.storex or 0
+		an.storey = an.storey or 0
 
-		local mvBy = (mv * fr - mv * an.ly)
+		local mvBy = (mvY * fr - mvY * an.ly)
 		an.ly = fr
-		local add, store = math.modf(an.store + mvBy)
-		an.store = store
+		local addy, storey = math.modf(an.storey + mvBy)
+		an.storey = storey
 
-		if add < 1 then return end
+		local mvBx = (mvX * fr - mvX * an.lx)
+		an.lx = fr
+		local addx, storex = math.modf(an.storex + mvBx)
+		an.storex = storex
 
-		an.Parent.Y = an.Parent.Y + add
-		an.totalMove = (an.totalMove or 0) + add
+		if addy < 1 and addx < 1 then return end
+
+		an.Parent.X = an.Parent.X + addx
+		an.Parent.Y = an.Parent.Y + addy
 
 		-- egh
-		an.Parent.Anchor[2] = Lerp(fr, an.Parent.OrigAnchor[2] - (mv / CanvasSize / self.Canvas.Zoom), an.Parent.OrigAnchor[2])
+		an.Parent.Anchor[1] = Lerp(fr,
+			an.Parent.OrigAnchor[1] - (mvX / CanvasSize / self.Canvas.Zoom),
+			an.Parent.OrigAnchor[1])
+
+		an.Parent.Anchor[2] = Lerp(fr,
+			an.Parent.OrigAnchor[2] - (mvY / CanvasSize / self.Canvas.Zoom),
+			an.Parent.OrigAnchor[2])
 	end
 
 	local function off(an)
-		an.Parent.Y = an.Parent.Y - mv
-		an.Parent.Anchor[2] = an.Parent.Anchor[2] - (mv / CanvasSize / self.Canvas.Zoom)
+		local mvX, mvY = an.Parent.MvX, an.Parent.MvY
+		an.Parent.X = an.Parent.X - mvX
+		an.Parent.Y = an.Parent.Y - mvY
+
+		an.Parent.Anchor[1] = an.Parent.Anchor[1] -
+			(mvX / CanvasSize / self.Canvas.Zoom)
+
+		an.Parent.Anchor[2] = an.Parent.Anchor[2] -
+			(mvY / CanvasSize / self.Canvas.Zoom)
 	end
 
 	for btn, del in pairs(dels) do
-		btn:PopIn(0.2, del)
-			:On("Start", "a", off)
+		local center = CanvasSize / 2 * self.Canvas.Zoom
+
+		local ax, ay = btn.Anchor[1] + btn.SizeAnchor - 0.5,
+			btn.Anchor[2] + btn.SizeAnchor - 0.5
+
+		local dist = math.sqrt( ax ^ 2 + ay ^ 2 )
+
+		del = dist / 0.5 -- 50% of the map covered in a second
+
+		local rad = 24
+
+		btn.MvX = ax / dist * rad
+		btn.MvY = ay / dist * rad
+
+		if dist == 0 then
+			btn.MvX, btn.MvY = 0, 0
+		end
+
+		local an = btn:PopIn(0.2, del)
+		an:On("Start", "a", off)
 
 		local an = btn:To("PopInFr", 1, 0.5, del, 0.3, true)
 
@@ -263,7 +322,7 @@ local fl = math.floor
 function MAP:SetZoom(newZoom, now)
 	local canv = self.Canvas
 
-	newZoom = math.Clamp(newZoom, canv.Map:GetWide() / (CanvasSize - 64), CanvasMaxZoom)
+	newZoom = math.Clamp(newZoom, canv.Map:GetWide() / CanvasSize * 1.5, CanvasMaxZoom)
 
 	local delta = newZoom - canv.Zoom
 	canv.NeedZoom = newZoom
@@ -359,6 +418,9 @@ function MAP:PaintCanvas()
 	surface.SetDrawColor(255, 200, 200, 50)
 	surface.DrawLine(0, h / 2, w, h / 2)
 	surface.DrawLine(w / 2, 0, w / 2, h)
+
+	if not self.CENTER then return end
+	surface.DrawRect(self.CENTER - 2, self.CENTER - 2, 4, 4)
 end
 
 vgui.Register("ResearchMap", MAP, "SearchLayout")

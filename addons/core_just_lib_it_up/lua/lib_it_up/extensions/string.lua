@@ -471,6 +471,14 @@ function string.MaxFits(str, w, font)
 	return str
 end
 
+function string.TimeToH(time)
+	local h = math.floor(time / 3600)
+	local m = math.floor( (time - h * 60) / 60)
+	local s = math.floor(time - h * 3600 - m * 60)
+
+	return h, m, s, time % 1
+end
+
 function string.TimeParse(time) --this is broken i think
 
 	local h = math.floor(time / 3600)

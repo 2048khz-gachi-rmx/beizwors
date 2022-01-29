@@ -741,7 +741,7 @@ function surface.DrawNewlined(tx, x, y, first_x, first_y)
 
 end
 
-function draw.SimpleText2( text, font, x, y, colour, xalign, yalign )
+function draw.SimpleText2( text, font, x, y, colour, xalign, yalign, addTw, addAl )
 
 	text	= tostring( text )
 	x		= x			or 0
@@ -767,6 +767,8 @@ function draw.SimpleText2( text, font, x, y, colour, xalign, yalign )
 		elseif ( yalign == TEXT_ALIGN_BOTTOM ) then
 			y = y - h
 		end
+
+		x = x - (addTw or 0) * (addAl or xalign) / 2
 	end
 
 	surface_SetTextPos(x, y)

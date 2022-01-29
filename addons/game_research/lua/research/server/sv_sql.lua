@@ -36,11 +36,11 @@ hook.Add("PlayerAuthed", "Research", function(ply)
 	ply:FetchResearch()
 end)
 
-hook.Add("PlayerResearched", "Store", function(ply, perk, lv)
-	local json = util.TableToJSON(ply:GetResearchedPerks())
+hook.Add("PlayerResearched", "Store", function(pin, perk, lv)
+	local json = util.TableToJSON(pin:GetResearchedPerks())
 
 	local q = "REPLACE INTO `research`(puid, perks) VALUES(%s, %s)"
-	q = q:format(ply:SteamID64(), mysql.quote(db, json))
+	q = q:format(pin:SteamID64(), mysql.quote(db, json))
 
 	MySQLQuery(db:query(q), true)
 		:Catch(mysqloo.CatchError)

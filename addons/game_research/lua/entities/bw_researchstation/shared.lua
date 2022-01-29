@@ -17,7 +17,28 @@ ENT.ResearchComputer = true
 
 
 function ENT:DerivedDataTables()
-	self:NetworkVar("Int", 5, "RSPerk")
-	self:NetworkVar("Int", 6, "RSLevel")
+	self:NetworkVar("Int", 1, "Level")
+
+	self:NetworkVar("String", 0, "RSPerk")
+	self:NetworkVar("Int", 2, "RSLevel")
+
+	--[[
+		if halted due to no power, RSTime will contain halted time
+			and RSProgress will contain halted progress
+
+		if not halted, RSProgress will contain starting progress
+			and RSTime will contain ending time
+
+		if halted,
+			frac = RSProgress
+		else
+			frac = RSProgress + (
+			math.Remap(CurTime, RSTime - ResearchTime * (1 - RSProgress), RSTime,
+				1 - RSProgress, 1)
+			)
+	]]
+
+	self:NetworkVar("Bool", 1, "RSHalted")
 	self:NetworkVar("Float", 1, "RSTime")
+	self:NetworkVar("Float", 2, "RSProgress")
 end
