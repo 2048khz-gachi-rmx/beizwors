@@ -26,8 +26,10 @@ local function facBtnPrePaint(self, w, h)
 		self.Shadow.MaxSpread = 2
 		self.Shadow.MinSpread = 1
 		self.Shadow.Blur = 2
+		self.Shadow.React = false
 	else
 		self.Shadow.Color = color_white
+		self.Shadow.React = false
 		self.AlwaysDrawShadow = false
 		self.Shadow.MaxSpread = 1
 	end

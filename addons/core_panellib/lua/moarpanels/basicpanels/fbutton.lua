@@ -31,8 +31,9 @@ function button:Init()
 	self.HovMult = 1.2
 
 	self.Shadow = {
-		MaxSpread = 0.6,
+		MaxSpread = 0.3,
 		Intensity = 2,
+		React = true,
 
 		OnHover = true,	--should the internal shadow logic be applied when the button gets hovered?
 		HoverSpeed = 0.3,
@@ -134,10 +135,16 @@ function button:HoverLogic(dis, w, h)
 		local min = math.max(w, h)
 		local scaleFrac = math.min(6, min * 0.12) / min -- minimum between 12% and 6px
 		--self:To("MxScale", t.MxScaleDown or (1 - scaleFrac), 0.05, 0, 0.2)
+		local ex = self:GetTo("DownFrac")
+		if ex and ex.ToVal == 0 then
+			ex:Stop()
+			self.DownFrac = math.min(0.3, self.DownFrac)
+		end
+
 		self:To("DownFrac", 1, self.DownFracTime, 0, 0.2)
 	else --if self.MxScale ~= 1 then
 		--self:To("MxScale", 1, 0.1, 0, 0.3)
-		self:To("DownFrac", 0, self.DownFracTime * 2, 0, 0.2)
+		self:To("DownFrac", 0, self.DownFracTime, 0.05, 0.2)
 	end
 
 	if ( self:IsHovered() or t.Hovered or t.ForceHovered ) and not dis then
@@ -313,13 +320,13 @@ function button:DrawButton(x, y, w, h)
 	else
 
 		if bSz > 0 then
-			if raise > 0 then
+			if raise > 0 or dfr > 0 then
 				self:PopMatrix()
 			end
 
 				dRB(rad, x2, y2 + bSz, w2, h2 - bSz, brd, rbinfo)
 
-			if raise > 0 then
+			if raise > 0 or dfr > 0 then
 				self:ApplyMatrix()
 			end
 		end
@@ -417,9 +424,14 @@ function button:Draw(w, h)
 				cam.PopModelMatrix()
 			end
 
-			BSHADOWS.EndShadow(int, spr, blur or 2, a, shadow.Dir, shadow.Distance, nil, shadow.Color, shadow.Color2)
+			local mult = shadow.React and 1 or 0
 
-
+			BSHADOWS.EndShadow(int, spr + self.DownFrac * mult * 0.6, blur or 2, a,
+				shadow.Dir or 0,
+				(shadow.Distance or 0) +
+					(self.HoverFrac > 0 and 1 or 0) * mult +
+					self.DownFrac * 2 * mult,
+				nil, shadow.Color, shadow.Color2)
 		end
 
 	end
@@ -551,8 +563,7 @@ function button:PopMatrix()
 end
 
 function button:GetRaise()
-	return math.min(0, -self._UseRaiseHeight * self.HoverFrac
-		+ self._UseRaiseHeight * self.DownFrac * 2)
+	return math.min(0, -self._UseRaiseHeight * (self.HoverFrac - self.DownFrac))
 end
 
 function button:PaintOver(w, h)
@@ -568,7 +579,7 @@ function button:OnRemove()
 end
 
 function button:Paint(w, h)
-	self._DefaultRaiseHeight = math.floor( h / 15 ) --math.min(h / 15, 3))
+	self._DefaultRaiseHeight = math.floor( h / 20 ) --math.min(h / 15, 3))
 	self._UseRaiseHeight = self.RaiseHeight or self._DefaultRaiseHeight
 
 	--local scale = self.MxScale
@@ -576,7 +587,7 @@ function button:Paint(w, h)
 	--if scale ~= 1 or self.HoverFrac ~= 0 then
 	local raiseFrac = self.HoverFrac
 
-	if raiseFrac ~= 0 then
+	if raiseFrac ~= 0 or self.DownFrac ~= 0 then
 		mx:Reset()
 
 		--[[
@@ -596,7 +607,10 @@ function button:Paint(w, h)
 		]]
 
 		sharedTranslVec:Zero()
-		sharedTranslVec[2] = math.min(self.DownSize - 1, -self._UseRaiseHeight * raiseFrac + self._UseRaiseHeight * self.DownFrac * 4)
+		sharedTranslVec[2] = math.min(self.DownSize - 1,
+			self:GetRaise()
+		) + self.DownFrac * self.DownSize -- when held, the button should be pushed in completely
+
 		mx:Translate(sharedTranslVec)
 
 		draw.EnableFilters(true)
