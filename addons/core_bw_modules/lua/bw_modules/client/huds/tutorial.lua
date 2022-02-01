@@ -84,14 +84,18 @@ function ptr:CompletePoint(id, b)
 	-- if b and self.CompletedPoints[id] then return end
 	if not b and not self.CompletedPoints[id] then return end
 
-	if b and not self.CompletedPoints[id] then
-		sfx.SetIn()
-	elseif not b and self.CompletedPoints[id] then
-		sfx.SetOut()
+	local is_ac = tut.CurrentStep == self:GetStep()
+
+	if is_ac then
+		if b and not self.CompletedPoints[id] then
+			sfx.SetIn()
+		elseif not b and self.CompletedPoints[id] then
+			sfx.SetOut()
+		end
 	end
 
 	self.CompletedPoints[id] = b
-	if tut.CurrentStep ~= self:GetStep() then return end
+	if not is_ac then return end
 
 	local allDone = true
 
@@ -364,3 +368,4 @@ LibItUp.OnLoaded("bases.lua", function()
 end)
 
 include("tutorial_tab_ext.lua")
+
