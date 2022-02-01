@@ -22,4 +22,9 @@ function PIN:GetResearchedPerks()
 	return self._perks
 end
 
+function PIN:SetResearchedPerks(t)
+	self._perks = t
+	return self
+end
+
 PInfoAccessor("ResearchedPerks")

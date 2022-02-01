@@ -5,6 +5,7 @@ local db
 
 function PLAYER:FetchResearch()
 	local sid = self:SteamID64()
+	local pin = self:GetPInfo()
 
 	MySQLQuery(
 	db:query( ("SELECT `perks` FROM `research` WHERE `puid` = %s"):format(sid) ),
@@ -20,7 +21,7 @@ function PLAYER:FetchResearch()
 				return
 			end
 
-			self._perks = perks
+			pin:SetResearchedPerks(perks)
 
 			if #dat == 0 then
 				local q = db:query( ("INSERT IGNORE INTO `research`(puid) VALUES(%s)"):format(sid) )
