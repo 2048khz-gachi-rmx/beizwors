@@ -11,11 +11,13 @@ local lootInfo = {
 			amt = {2, 4},
 			loot = {
 				blank_bp = {3, 9},
+				stem_cells = {1, 2, 0.3},
+				lube = {1, 1, 0.2},
+
 				-- circuit_board = {1, 2, 0.3},
 				-- capacitor = {1, 4},
-				--nutsbolts = {1, 2},
-				--adhesive = {1, 1, 0.35},
-				lube = {1, 1, 0.2},
+				-- nutsbolts = {1, 2},
+				-- adhesive = {1, 1, 0.35},
 			}
 		},
 
@@ -24,6 +26,8 @@ local lootInfo = {
 			amt = {3, 5},
 			loot = {
 				blank_bp = {10, 16},
+				blood_nanobots = {1, 3, 0.2},
+				tgt_finder = {1, 1, 0.3},
 				-- circuit_board = {2, 4, 0.6},
 				-- emitter = {1, 1, 0.3},
 				-- cpu = {1, 1, 0.2},
