@@ -672,6 +672,7 @@ local function createNewFaction(f)
 	doEet:Dock(BOTTOM)
 	doEet:SetTall(pnl:GetTall() * 0.075)
 	doEet:DockMargin(pnl:GetWide() * 0.2, 0, pnl:GetWide() * 0.2, pnl:GetTall() * 0.02)
+	doEet.UseSFX = true
 
 	local good = Color(70, 180, 80)
 	local bad = Colors.Button:Copy()
@@ -754,6 +755,7 @@ local function createNewFactionButton(pnl, scr, noanim)
 	newFac.Font = fonts.MediumSmall
 	newFac.HovMult = 1.1
 	newFac.DisabledColor = Color(85, 85, 85)
+	newFac.UseSFX = true
 
 	pnl:AddElement("Exclusive", newFac)
 

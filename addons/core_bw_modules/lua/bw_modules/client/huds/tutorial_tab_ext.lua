@@ -75,6 +75,7 @@ local function onOpen(navpnl, tabbtn, prevPnl)
 	nah:SetSize(pnl:GetWide() * 0.5, scale * 48)
 	nah:SetPos(0, pnl:GetTall() - b - nah:GetTall())
 	nah:CenterHorizontal()
+	nah.UseSFX = true
 
 	pnl.noThoughtsHeadEmpty = false
 
@@ -116,6 +117,7 @@ local function onOpen(navpnl, tabbtn, prevPnl)
 	yea:SetPos(0, nah.Y - scale * 16 - yea:GetTall())
 	yea:CenterHorizontal()
 	yea:SetColor(Colors.Sky)
+	yea.UseSFX = true
 
 	function yea:Think()
 		if pnl.noThoughtsHeadEmpty then return end

@@ -120,6 +120,7 @@ timer.Simple(0, function()
 
 	DownloadFolder("resource/fonts", "*.ttf")
 
+	DownloadFolder("sound/grp")
 	DownloadFolder("sound/gachi")
 	DownloadFolder("sound/dash")
 	DownloadFolder("sound/snds")

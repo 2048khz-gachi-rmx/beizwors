@@ -3,6 +3,7 @@ Offhand = Offhand or {}
 Offhand.Binds = Offhand.Binds or {}
 Offhand.CurrentActions = Offhand.CurrentActions or {}
 Offhand.InactiveColor = Colors.LightGray:Copy()
+Offhand.NoAction = "fucking nothing"
 
 -- defaults
 local keys = {
@@ -163,7 +164,7 @@ function Offhand.CreateBinds(n)
 		bind.ActionNum = i
 		Offhand.Binds[i] = bind
 
-		local act = cookie.GetString("offhand_action_" .. i)
+		local act = cookie.GetString("offhand_action_" .. i) or Offhand.NoAction
 
 		Offhand.SetBindAction(bind, act)
 
@@ -355,8 +356,17 @@ else
 		local name = net.ReadString()
 		if not name then pr:ReplySend("OffhandAction", false) return false end
 
-		local ok = Offhand.TryActivate(name, ply)
-		if not ok then pr:ReplySend("OffhandAction", false) return false end
+		local exec_ok, ok = xpcall(Offhand.TryActivate,
+			GenerateErrorer("OffhandActionNet"), name, ply)
+
+		if not exec_ok or not ok then
+			pr:ReplySend("OffhandAction", false)
+			return false
+		end
+
+		if ok then
+			pr:ReplySend("OffhandAction", ok, ok)
+		end
 	end)
 
 	net.Receive("offhand_bind", function(len, ply)

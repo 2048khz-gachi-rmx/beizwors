@@ -306,6 +306,6 @@ function netstack:print()
 end
 
 function IsNetStack(what)
-	return what and what.IsNetStack
+	return istable(what) and what.IsNetStack
 end
 IsNetstack = IsNetStack

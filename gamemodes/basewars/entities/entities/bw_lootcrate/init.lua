@@ -207,6 +207,7 @@ function ENT:Use(ply)
 			drop:Spawn()
 			drop:SetPos(dropPos)
 			drop:Activate()
+			drop:PlayDropSound()
 		end)
 
 		del = del + 0.4 + math.random() * 0.3
