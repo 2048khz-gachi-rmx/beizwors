@@ -13,7 +13,7 @@ local garbage = 0
 local growth = 0
 
 hook.Add("PostRender", "a", function()
-	
+
 	if ENABLE_GARBAGE_HOOK_TRACK then print("----") end
 
 	cam.Start2D()
@@ -37,8 +37,6 @@ hook.Add("PostRender", "a", function()
 		draw.SimpleText(("%s%.1fkb."):format(growth > 0 and "+" or "", growth),
 			"DermaLarge", ScrW() / 2, ScrH() - th, color_white, 1, 4)
 	cam.End2D()
-	
-
 
 end)
 

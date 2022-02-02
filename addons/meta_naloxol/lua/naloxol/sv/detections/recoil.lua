@@ -65,6 +65,8 @@ hook.Add("StartCommand", "NX_Norecoil", function(ply, cmd)
 	dat.p = dat.p or 0
 	dat.usep = math.min(dat.p, math.Approach(dat.usep or 0, dat.p, engine.TickInterval() * 5))
 
+	if dat.usep < 1 then return end -- dont even bother for small recoil
+
 	local sinceStart = CurTime() - dat.st
 	local sinceLast = dat.st - (dat.ended or 0)
 
