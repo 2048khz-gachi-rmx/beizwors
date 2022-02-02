@@ -3,6 +3,7 @@ LibItUp.SetIncluded()
 local COLOR = FindMetaTable("Color")
 local MATRIX = FindMetaTable("VMatrix")
 local VECTOR = FindMetaTable("Vector")
+local ANGLE = FindMetaTable("Angle")
 
 Colors = Colors or {}
 
@@ -172,5 +173,68 @@ for i=1, #mtrx_methods, 2 do
 	MATRIX[fn .. "Number"] = function(self, x, y, z)
 		typ:SetUnpacked(x or 0, y or 0, z or 0)
 		MATRIX[fn] (self, typ)
+	end
+end
+
+local cos, sin, rad = math.cos, math.sin, math.rad
+
+function ANGLE:ToForward(inVec)
+	local p, y = self:Unpack()
+	p, y = rad(p), rad(y)
+
+	local sy, cy = sin(y), cos(y)
+	local sp, cp = sin(p), cos(p)
+
+	inVec:SetUnpacked(
+		cy * cp,
+		sy * cp,
+		-sp
+	)
+
+	return inVec
+end
+
+function ANGLE:ToRight(inVec)
+	local p, y, r = self:Unpack()
+	p, y, r = rad(p), rad(y), rad(r)
+
+	local sy, cy = sin(y), cos(y)
+	local sp, cp = sin(p), cos(p)
+	local sr, cr = sin(r), cos(r)
+
+	inVec:SetUnpacked(
+		-cy * sp * sr + sy * cr,
+		-sy * sp * sr - cy * cr,
+		-cp * sr
+	)
+
+	return inVec
+end
+
+function ANGLE:ToUp(inVec)
+	local p, y, r = self:Unpack()
+	p, y, r = rad(p), rad(y), rad(r)
+
+	local sy, cy = sin(y), cos(y)
+	local sp, cp = sin(p), cos(p)
+	local sr, cr = sin(r), cos(r)
+
+	inVec:SetUnpacked(
+		cr * sp * cy + sr * sy,
+		cr * sp * sy - sr * cy,
+		cp * cr
+	)
+
+	return inVec
+end
+
+local toChain = {
+	"Add", "Sub", "Mul", "Div"
+}
+
+for k,v in pairs(toChain) do
+	VECTOR["C" .. v] = function(self, ...)
+		self[v](self, ...)
+		return self
 	end
 end
