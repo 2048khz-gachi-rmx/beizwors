@@ -112,6 +112,14 @@ function math.Exclude(num, min, max)
 	end
 end
 
+function FPSLerp(vel, from, to, ft)
+	-- this makes zero fucking sense but it works; i can't explain it
+	ft = ft or FrameTime()
+	local fr = ft * vel
+
+	return Lerp(fr, from, to)
+end
+
 function bit.bool(bool)
 	return bool and 1 or 0
 end
