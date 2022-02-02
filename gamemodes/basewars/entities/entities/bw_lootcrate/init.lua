@@ -138,6 +138,8 @@ function ENT:Use(ply)
 		return r1 < r2
 	end)
 
+	local i = 0
+
 	for k,v in ipairs(sort) do
 		local drop = ents.Create("dropped_item")
 		table.insert(ignoreTable, drop)
@@ -200,6 +202,8 @@ function ENT:Use(ply)
 
 		local pos = self:GetPos()
 
+		local i2 = i
+
 		timer.Simple(del, function()
 			drop:SetCreatedTime(CurTime())
 			drop:SetItem(v)
@@ -207,10 +211,12 @@ function ENT:Use(ply)
 			drop:Spawn()
 			drop:SetPos(dropPos)
 			drop:Activate()
-			drop:PlayDropSound()
+			drop:PlayDropSound(i2)
+			print("playing drop", i2)
 		end)
 
-		del = del + 0.4 + math.random() * 0.3
+		del = del + 0.2 + math.random() * 0.2
+		i = i + 1
 	end
 
 	self:RespawnIn()
