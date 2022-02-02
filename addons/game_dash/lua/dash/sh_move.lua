@@ -43,11 +43,12 @@ hook.Add("GetFallDamage", "Dash_NoFall", function(ply)
 end)
 
 local function IsDashing(ply)
-	return getNw(ply):Get("Dashing", false)
+	return ply:GetNW2Bool("Dashing", false) --getNw(ply):Get("Dashing", false)
 end
 
 local function SetDashing(ply, b)
-	getNw(ply):Set("Dashing", b)
+	ply:SetNW2Bool("Dashing", b)
+	--getNw(ply):Set("Dashing", b)
 end
 
 function Dash.CheckMoves(ply, mv, dir)
