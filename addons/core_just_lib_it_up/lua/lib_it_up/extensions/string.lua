@@ -88,6 +88,13 @@ string.Prefixes = {
 	"#", "^", "$", "@", "&", "*"
 }
 
+if CLIENT then
+	function string.GetSize(str, font)
+		if font then surface.SetFont(font) end
+		return surface.GetTextSize(str)
+	end
+end
+
 function amtNewlines(s)
 	return select(2, s:gsub("[\r\n]", ""))
 end

@@ -350,19 +350,12 @@ function GM:PlayerSpawn(ply)
 
 	local Spawn = ply.SpawnPoint
 
-	if IsValid(Spawn) and (not Spawn.IsPowered or Spawn:IsPowered()) then
-		local Pos = Spawn:GetPos() + Vector(0, 0, 16)
-		local ang = Spawn.SpawnAngle
-		ang[1] = 0
-		ang[3] = 0
-		ply:SetPos(Pos)
-		ply:SetEyeAngles(ang)
+	if IsValid(Spawn) then
+		Spawn:RespawnPlayer(ply)
 	end
 
 	for k, v in next, BaseWars.Config.SpawnWeps do
-
 		ply:Give(v)
-
 	end
 
 	if ply:HasWeapon("hands") then
@@ -370,7 +363,6 @@ function GM:PlayerSpawn(ply)
 	elseif ply:HasWeapon("none") then
 		ply:SelectWeapon("none")
 	end
-
 end
 
 ScanEntities()

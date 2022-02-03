@@ -177,7 +177,17 @@ hook.Add("PlayerSay", "BaseWars.Commands", BaseWars.Commands.SayCommand)
 local dist = 128^2
 
 local function Upgradable(ply, ent)
-	return IsValid(ent) and ply:EyePos():DistToSqr( ent:GetPos() ) < dist and ent.RequestUpgrade
+	local ok = IsValid(ent) and
+		ply:EyePos():DistToSqr( ent:GetPos() ) < dist and
+		ent.RequestUpgrade
+
+	if not ok then return false end
+
+	local al = ent.AllowedUpgrade
+	if al == nil then return true end
+	if isbool(al) then return al end
+
+	return eval(al, ent, ply)
 end
 
 local function Upgrade(ply, amt, ent)
@@ -185,9 +195,13 @@ local function Upgrade(ply, amt, ent)
 	local trace = ply:GetEyeTrace()
 
 	ent = ent or trace.Entity
-	if not Upgradable(ply, ent) then return false end
 
-	local canTimes = ent.CanUpgradeTimes and ent:CanUpgradeTimes() or
+	local up = Upgradable(ply, ent)
+	if not up then return false end
+
+	-- try to use the return of .AllowedUpgrade, if possible
+	local canTimes = (isnumber(up) and up) or
+		(ent.CanUpgradeTimes and ent:CanUpgradeTimes()) or
 		ent.MaxLevel - (ent.GetLevel and ent:GetLevel() or ent.Level or ent.MaxLevel)
 
 	if amt == "max" then

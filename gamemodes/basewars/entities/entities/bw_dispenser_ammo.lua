@@ -77,12 +77,12 @@ local capMults = {
 	[".338 Lapua"] = 0.75
 }
 
-function ENT:Dispense(ply, dat)
+function ENT:Dispense(ply, dat, typ)
 	local gun = ply:GetActiveWeapon()
 	if not IsValid(gun) then return true end
 
-	local ammo = gun:GetPrimaryAmmoType()
-	if not ammo then return true end
+	local ammo = typ or gun:GetPrimaryAmmoType()
+	if not ammo or ammo == -1 then print("not ammo or typ; fuck you") return true end
 
 	local ammoName = game.GetAmmoName(ammo)
 	local capMult = capMults[ammoName] or 1
@@ -100,4 +100,6 @@ function ENT:Dispense(ply, dat)
 
 	self:TakeCharge(fracUsed)
 	ply:GiveAmmo(newGive, ammo)
+
+	return true
 end

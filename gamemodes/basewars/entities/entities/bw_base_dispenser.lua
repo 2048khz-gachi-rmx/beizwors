@@ -106,11 +106,15 @@ function ENT:CheckUsable()
 	end
 end
 
+function ENT:DoDispense(ply, ...)
+	return self:Dispense(ply, self:GetLevelData(), ...)
+end
+
 function ENT:UseFunc(ply)
 	if not IsPlayer(ply) then return end
 
 	self.Time = CurTime()
-	local emit = self:Dispense(ply, self:GetLevelData())
+	local emit = self:DoDispense(ply)
 
 	if emit == nil then
 		self:EmitSound(self.Sound, 100, 60)

@@ -80,15 +80,17 @@ if SERVER then
 		self:SetModel(self.Model)
 		self:SetSkin(self.Skin)
 
-		self:PhysicsInit(SOLID_VPHYSICS)
-		self:SetSolid(SOLID_VPHYSICS)
-		self:SetMoveType(MOVETYPE_VPHYSICS)
+		if SERVER then
+			self:PhysicsInit(SOLID_VPHYSICS)
+			self:SetSolid(SOLID_VPHYSICS)
+			self:SetMoveType(MOVETYPE_VPHYSICS)
 
-		self:SetUseType(SIMPLE_USE)
-		self:AddEffects(EF_ITEM_BLINK)
+			self:SetUseType(SIMPLE_USE)
+			self:AddEffects(EF_ITEM_BLINK)
 
-		self:PhysWake()
-		self:Activate()
+			self:PhysWake()
+			self:Activate()
+		end
 
 		self:SetHealth(self.PresetMaxHealth or self.MaxHealth)
 
