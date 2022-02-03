@@ -99,9 +99,10 @@ local function DownloadFolder(str, mask)
 end
 
 timer.Simple(0, function()
+	local fn = WSMount and WSMount.RealAddWorkshop or resource.AddWorkshop
 	for i=1, #BWAddons do
 		-- resource.AddWorkshop(tostring(BWAddons[i]))
-		WSMount.AddWorkshop(BWAddons[i])
+		fn(BWAddons[i])
 	end
 
 	-- DownloadFolder("materials/vgui/prestige")

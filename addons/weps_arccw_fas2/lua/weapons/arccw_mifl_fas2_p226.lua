@@ -87,7 +87,7 @@ SWEP.SightedSpeedMult = 0.75
 SWEP.SightTime = 0.200
 
 SWEP.IronSightStruct = {
-    Pos = Vector(-3.8, -2.5, 1.881),
+    Pos = Vector(-3.8, 5.5, 1.881),
     Ang = Angle(0, 0, 0),
     Magnification = 1.05,
     SwitchToSound = "", -- sound that plays when switching to this sight
@@ -100,11 +100,11 @@ SWEP.HoldtypeSights = "revolver"
 
 SWEP.AnimShoot = ACT_HL2MP_GESTURE_RANGE_ATTACK_PISTOL
 
-SWEP.ActivePos = Vector(-0.5, -2.5, 1)
+SWEP.ActivePos = Vector(-0.5, 1.5, 1)
 SWEP.ActiveAng = Angle(0, 0, 0)
 
-SWEP.CrouchPos = Vector(0.5, -3, -2)
-SWEP.CrouchAng = Angle(0, 0, -10)
+SWEP.CrouchPos = Vector(0.5, 0, -2)
+SWEP.CrouchAng = Angle(0, 0, -20)
 
 SWEP.HolsterPos = Vector(1, 2, 2)
 SWEP.HolsterAng = Angle(-15, 5, -10)
