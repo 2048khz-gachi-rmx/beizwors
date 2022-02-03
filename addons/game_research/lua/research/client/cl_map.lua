@@ -47,6 +47,8 @@ function MAP:Init()
 	canv.Map = map
 	canv.Main = self
 
+	self.TreeButtons = {}
+
 	self.Map = map
 	self.Canvas = canv
 
@@ -173,6 +175,22 @@ function MAP:OnCreatePerk(btn)
 end
 
 function MAP:SetTree(tree)
+	if self.TreeButtons[self.ActiveTree] then
+		for k,v in pairs(self.TreeButtons[self.ActiveTree]) do
+			v:PopOutHide()
+		end
+	end
+
+	self.ActiveTree = tree
+
+	if self.TreeButtons[tree] then
+		for k,v in pairs(self.TreeButtons[tree]) do
+			v:PopInShow()
+		end
+		return
+	end
+
+	self.TreeButtons[tree] = {}
 	local perks = tree:GetPerks()
 
 	local cx, cy = self.Canvas:GetWide() / 2, self.Canvas:GetTall() / 2
@@ -201,7 +219,7 @@ function MAP:SetTree(tree)
 			}
 
 			btn:SetLevel(lv)
-
+			table.insert(self.TreeButtons[tree], btn)
 			dels[btn] = true --ln * 0.06
 
 			self:OnCreatePerk(btn)

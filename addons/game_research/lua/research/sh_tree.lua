@@ -1,13 +1,17 @@
 --
 local tree = Research.Tree or Object:callable()
+Research.Tree = tree
+
 Research.Trees = {} -- dump old trees
 
 ChainAccessor(tree, "_Name", "Name")
+ChainAccessor(tree, "_Description", "Description")
 ChainAccessor(tree, "_Perks", "Perks")
 
 function tree:Initialize(name)
 	self:SetName(name)
 	self:SetPerks({})
+	self:SetDescription("")
 
 	Research.Trees[name] = self
 end

@@ -1,3 +1,6 @@
+local tree = Research.Tree:new("Physical")
+tree:SetDescription("Harder, Better, Faster, Stronger")
+
 local hp = Research.Perk:new("hp")
 hp:SetName("Health Up")
 hp:SetTreeName("Physical")

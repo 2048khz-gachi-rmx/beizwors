@@ -18,6 +18,14 @@ function PANEL:PerformLayout()
 	self:SetTall(h)
 end
 
+function PANEL:Recalculate()
+	for k,v in ipairs(self.Pieces) do
+		v:Recalculate()
+	end
+
+	self:PerformLayout() -- ffs
+end
+
 function PANEL:_StartSelection(piece)
 
 end

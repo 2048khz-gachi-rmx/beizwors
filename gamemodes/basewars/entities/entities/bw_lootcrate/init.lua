@@ -212,7 +212,6 @@ function ENT:Use(ply)
 			drop:SetPos(dropPos)
 			drop:Activate()
 			drop:PlayDropSound(i2)
-			print("playing drop", i2)
 		end)
 
 		del = del + 0.2 + math.random() * 0.2

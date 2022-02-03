@@ -198,10 +198,8 @@ function ENTITY:BaseRecurseCall(methodName, ...)
 	self._recursing[methodName] = true
 	local base = scripted_ents.GetStored(self.Base).t
 	local lastBaseName = self.Base
-	clprint("Calling", base.PrintName, methodName)
 
 	while base do
-		clprint("Calling", base.PrintName, methodName)
 		if base[methodName] then
 			base[methodName] (self, ...)
 		end

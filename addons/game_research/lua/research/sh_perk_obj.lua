@@ -25,7 +25,7 @@ ChainAccessor(perk, "_Levels", "Levels")
 ChainAccessor(perk, "_TreeName", "TreeName")
 ChainAccessor(perk, "_Color", "Color")
 
-Research.Perks = Research.Perks or {}
+Research.Perks = {} -- dump old perks
 
 function perk:Initialize(id)
 	self:SetID(id)
@@ -165,7 +165,7 @@ function level:FillMarkup(mup)
 		local i = 0
 		local pattern = "[%" .. table.concat(string.Prefixes, "%") .. "]"
 
-		for s, match in eachMatch(ret, pattern .. "%d+") do
+		for s, match in eachMatch(ret, pattern .. "%S+") do
 			i = i + 2
 			t[i - 1] = s
 			t[i] = match and match:sub(2)

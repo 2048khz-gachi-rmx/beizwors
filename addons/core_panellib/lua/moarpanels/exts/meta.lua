@@ -196,6 +196,36 @@ function META:MemberLerp(tbl, key, val, dur, del, ease, forceswap)
 	return anim
 end
 
+function META:HoverAnim(tHov, delHov, easeHov, tUnhov, delUnhov, easeUnhov)
+	tHov = tHov or 0.3
+	tUnhov = tUnhov or 0.3
+	delHov = delHov or 0
+	delUnhov = delUnhov or 0
+	easeHov = easeHov or 0.3
+	easeUnhov = easeUnhov or 0.3
+
+	if self:IsHovered() then
+		self:To("HovFrac", 1, tHov, delHov, easeHov)
+	else
+		self:To("HovFrac", 0, tUnhov, delUnhov, easeUnhov)
+	end
+end
+
+function META:DownAnim(tDown, delDown, easeDown, tUp, delUp, easeUp)
+	tDown = tDown or 0.3
+	tUp = tUp or 0.3
+	delDown = delDown or 0
+	delUp = delUp or 0
+	easeDown = easeDown or 0.3
+	easeUp = easeUp or 0.3
+
+	if self:IsDown() then
+		self:To("DownFrac", 1, tDown, delDown, easeDown)
+	else
+		self:To("DownFrac", 0, tUp, delUp, easeUp)
+	end
+end
+
 function META:RemoveLerp(key)
 	local anims = self.__Animations or {}
 

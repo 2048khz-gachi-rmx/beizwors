@@ -64,6 +64,8 @@ function NavbarChoice:Init()
 	self:SetText("")
 	self:SetTall(64)
 	self.TextColor = color_white:Copy()
+
+	self:SetDoubleClickingEnabled(false)
 end
 
 function NavbarChoice:OnSizeChanged(nw, nh)
@@ -71,10 +73,7 @@ function NavbarChoice:OnSizeChanged(nw, nh)
 	self.Icon:SetSize(sz, sz)
 
 	if self.Description then
-		local icsz = self.Icon:GetSize() or sz
-		self.WrappedDescription = self.Description:WordWrap2(self:GetWide() - 16 - icsz, self.DescriptionFont)
-		local _, newlines = self.WrappedDescription:gsub("[^%c]+", "")
-		self.DescripitionNewlines = newlines
+		self:_WrapDescription()
 	end
 end
 
@@ -105,11 +104,20 @@ end
 
 AccessorFunc(NavbarChoice, "Name", "Name")
 
+function NavbarChoice:_WrapDescription()
+	local icsz = self.Icon and self.Icon:GetWide()
+		or self.IconSize
+		or self.DefaultIconSize * self:GetTall()
+
+	self.WrappedDescription = self.Description:WordWrap2(self:GetWide() - icsz - 8 * 2 - 8, self.DescriptionFont)
+
+	local _, newlines = self.WrappedDescription:gsub("[^%c]+", "")
+	self.DescripitionNewlines = newlines
+end
 
 function NavbarChoice:SetDescription(desc)
-	local icsz = self.Icon.Size or self.IconSize or self.DefaultIconSize * self:GetTall()
 	self.Description = desc
-	self.WrappedDescription = desc:WordWrap2(self:GetWide() - icsz - 8 - 20, self.DescriptionFont)
+	self:_WrapDescription()
 end
 
 function NavbarChoice:ActiveMask(w, h, frac)
@@ -143,8 +151,14 @@ function NavbarChoice:GetExpFrac(frac, easein, easeout)
 	return frac
 end
 
-function NavbarChoice:Draw(w, h)
+function NavbarChoice:Think()
+	self:HoverAnim(0.1, 0, 0.2)
+	self:DownAnim(0, 0, 1)
+end
 
+local colHov = Colors.Sky:Copy()
+
+function NavbarChoice:Draw(w, h)
 	local nav = self.Navbar
 
 	if not self.Active then
@@ -152,6 +166,10 @@ function NavbarChoice:Draw(w, h)
 	else
 		self:To("ActiveFrac", 1, 0.4, 0, 0.3)
 	end
+
+	colHov.a = math.max(self.HovFrac * 0.3, self.DownFrac * 0.75, self.ActiveFrac) * 50
+	surface.SetDrawColor(colHov:Unpack())
+	surface.DrawRect(0, 0, w, h)
 
 	draw.Masked(self.ActiveMask, self.ActivePaint, nil, nil, self, w, h, self.ActiveFrac)
 
@@ -171,9 +189,13 @@ function NavbarChoice:Draw(w, h)
 
 	local limW = iw < ih and iw
 	local limH = ih <= iw and ih
+	local iy = h / 2
+
+	ix = ix + self.HovFrac * 3
+	iy = iy + self.DownFrac * 3
 
 	self.Icon:SetAlignment(5)
-	self.Icon:Paint(ix, h/2, limW, limH)
+	self.Icon:Paint(ix, iy, limW, limH)
 	--surface.DrawOutlinedRect(ix, h / 2 - ih / 2, iw, ih)
 
 	local frac = self:GetExpFrac(nav.ExpandFrac, 1.8, 1.5) 	--different frac; more eased so text goes to the right faster than the icon

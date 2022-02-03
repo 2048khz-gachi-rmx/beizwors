@@ -15,20 +15,30 @@ function ENT:DrawDisplay()
 
 	local tx = "No research queued."
 
+	local dots
+
 	if self:GetRSPerk() ~= "" then
 		local perk = Research.GetPerk(self:GetRSPerk())
 		if not perk then
 			tx = "WTF? " .. self:GetRSPerk()
+		elseif self:GetResearchFrac() == 1 then
+			tx = "Research complete!"
 		else
 			tx = "Researching " .. perk:GetName()
+			dots = ("."):rep(CurTime() * 2 % 4)
 		end
 	end
 
 	local fr = self.ResFr or 0
 
-	local fnt = Fonts.PickFont("EXSB", tx, w * 0.9, h, 72)
+	local fnt = Fonts.PickFont("EXSB", tx, w * 0.9 - (dots and dots:GetSize() or 0), h, 72)
+
 	draw.SimpleText2(tx, fnt, x + w / 2, y + h / 2,
 		color_white, 1, 1)
+
+	if dots then
+		surface.DrawText(dots)
+	end
 end
 
 local tcol = Color(0, 0, 0)
@@ -184,6 +194,7 @@ function ENT:OpenMenu()
 
 	f:MakePopup()
 	f:PopIn()
+	f.Navbar:Expand()
 
 	local side = vgui.Create("ResearchSidebar", f)
 	local pos, sz = f:GetPositioned(side)
@@ -202,10 +213,18 @@ function ENT:OpenMenu()
 
 	canv:Populate()
 
+	local initial = true
+
 	for k,v in pairs(trees) do
-		f:AddTab(v:GetName(), function(...)
+		local tab = f:AddTab(v:GetName(), function(...)
 			canv:SetTree(v)
+			if initial then
+				initial = false
+				f.Navbar:Retract()
+			end
 		end)
+
+		tab:SetDescription(v:GetDescription())
 	end
 
 	side:On("ResearchStarted", "Disappear", function(_, lv)

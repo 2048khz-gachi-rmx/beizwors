@@ -42,7 +42,6 @@ function PANEL:_AnimateTitle(level, old, unset)
 		return
 	end
 
-
 	local perk = level:GetPerk()
 	local num = self.PDT[perk]
 
@@ -106,12 +105,15 @@ function PANEL:_AnimateDescription(level, old)
 		level:FillMarkup(mup)
 
 		mups[level] = mup
+		mup:InvalidateLayout(true)
 	else
 		mup:Stop()
 		mup.Y = mup.IntendedY - 16
 		mup:MoveBy(0, 16, 0.6, delay, 0.3)
 		mup:PopInShow(0.2, delay)
 	end
+
+	self:InvalidateLayout(true)
 end
 
 function PANEL:GetDescPanel(lv)
@@ -266,6 +268,13 @@ function PANEL:_AnimateRequirements(level, old)
 		req = vgui.Create("InvisPanel", self)
 		self._Reqs[level] = req
 		local desc = self:GetDescPanel(level)
+
+		desc:Recalculate()
+
+		--[[for k,v in pairs(desc:GetPieces()) do
+			v:Recalculate()
+		end]]
+
 		req:PopIn(0.2, 0.4)
 		req:SetSize(self:GetWide(), 64)
 		req.IntendedY = desc.IntendedY + desc:GetTall() + 32
