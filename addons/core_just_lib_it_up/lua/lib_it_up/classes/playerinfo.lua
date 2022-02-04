@@ -511,6 +511,12 @@ function GetAllPlayerInfos()
 end
 
 
+function PInfoAlias(k)
+	PLAYER[k] = function(self, ...)
+		local pin = self:GetPInfo()
+		return pin[k](pin, ...)
+	end
+end
 
 function PInfoAccessor(k)
 	PLAYER["Get" .. k] = function(self)
