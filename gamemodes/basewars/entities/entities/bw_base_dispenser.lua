@@ -84,6 +84,14 @@ if SERVER then
 		local rate = dat.ChargeRate or 1
 		local max = dat.MaxCharge or 100
 
+		local ow = self:BW_GetOwner()
+		if ow then
+			local perk = ow:GetPerkLevel("dispcharge")
+			if perk then
+				rate = rate * perk.TotalRate
+			end
+		end
+
 		if self:GetDispenserCharge() == max then
 			self:SetConsumptionMult_Mult("DispenserIdle", self.IdlePowerMult)
 		else
