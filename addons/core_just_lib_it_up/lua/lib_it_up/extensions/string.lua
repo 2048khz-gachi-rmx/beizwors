@@ -328,7 +328,7 @@ local function WrapWord(word, curwid, fullwid, widtbl, line, first)
 	return ret, curwid, line, wrapped
 end
 
-local nonWords = "()[].,!?;:-" -- i don't like what lua's %p matches so i'll make my own list
+local nonWords = ".,!?;:-" -- i don't like what lua's %p matches so i'll make my own list
 nonWords = nonWords:PatternSafe()
 nonWords = nonWords .. "%s%c"
 
