@@ -559,8 +559,8 @@ local function createNewFaction(f)
 		surface.SetDrawColor(bgCol)
 		surface.DrawRect(0, 0, w, h)
 
-		surface.SetDrawColor(gradCol)
-		self:DrawGradientBorder(w, h, 3, 3)
+		surface.SetDrawColor(0, 0, 0)
+		self:DrawGradientBorder(w, h, 3, 3, true, false, false, false)
 
 		-- drawing faction name
 		local tx = name:GetValue()
