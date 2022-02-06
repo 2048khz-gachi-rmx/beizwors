@@ -1,14 +1,14 @@
 --
 
 local PLAYER = FindMetaTable("Player")
+local PIN = LibItUp.PlayerInfo
 
-
-function PLAYER:GetPerkLevelNumber(nm)
+function PIN:GetPerkLevelNumber(nm)
 	if Research.IsPerk(nm) then nm = nm:GetID() end
 	return self:GetResearchedPerks()[nm] or 0
 end
 
-function PLAYER:GetPerkLevel(nm)
+function PIN:GetPerkLevel(nm)
 	local perk
 	if Research.IsPerk(nm) then
 		perk = nm
@@ -24,7 +24,7 @@ function PLAYER:GetPerkLevel(nm)
 	return perk:GetLevel(num)
 end
 
-function PLAYER:HasPerkLevel(nm, need)
+function PIN:HasPerkLevel(nm, need)
 	if Research.IsPerkLevel(nm) then
 		need = nm:GetLevel()
 		nm = nm:GetPerk():GetID()
@@ -36,9 +36,14 @@ function PLAYER:HasPerkLevel(nm, need)
 	return self:GetPerkLevelNumber(nm) >= need
 end
 
-function PLAYER:Research(lv)
+function PIN:Research(lv)
 	Research.ResearchLevel(self, lv)
 end
+
+PInfoAlias("GetPerkLevelNumber")
+PInfoAlias("GetPerkLevel")
+PInfoAlias("HasPerkLevel")
+PInfoAlias("Research")
 
 function Research.ResearchLevel(what, lv)
 	assert(Research.IsPerkLevel(lv))

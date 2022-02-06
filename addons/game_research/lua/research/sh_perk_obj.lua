@@ -165,7 +165,7 @@ function level:FillMarkup(mup)
 		local i = 0
 		local pattern = "[%" .. table.concat(string.Prefixes, "%") .. "]"
 
-		for s, match in eachMatch(ret, pattern .. "%S+") do
+		for s, match in eachMatch(ret, pattern .. "[^%s%p]+") do
 			i = i + 2
 			t[i - 1] = s
 			t[i] = match and match:sub(2)
