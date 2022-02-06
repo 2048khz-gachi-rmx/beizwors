@@ -48,6 +48,31 @@ function file.GetPathTable(path)
 	return ret, len
 end
 
+-- adds an / at the end if there isn't one
+function file.HasInPath(path, fld, ptrn)
+	for f in path:gmatch("[^" .. sep .. "]+") do
+		if ptrn then
+			if f:match(fld) then
+				return true
+			end
+		else
+			if f == fld then
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
+-- adds an / at the end if there isn't one
+function file.GetPath(path)
+	local ret = path:match("(.+[" .. sep .. "]).+") or ""
+	if not ret:sub(-1) == "/" then ret = ret .. "/" end
+
+	return ret
+end
+
 function file.ForEveryFile(path, where, func, recurse)
 
 	local wildcard = path:match("[^" .. sep .. "]+$")
