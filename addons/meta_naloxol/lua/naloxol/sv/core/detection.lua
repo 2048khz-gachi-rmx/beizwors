@@ -49,7 +49,8 @@ NX.PlayerList = NX.PlayerList or {}
 function NX.ShouldIgnore(ply)
 	return not NX.PlayerList[ply] or
 		ply:IsTimingOut() or
-		ply:IsBot()
+		ply:IsBot() or
+		ply.NX_Ignore
 end
 
 hook.Add("PlayerFullyLoaded", "NX_Ready", function(ply)
