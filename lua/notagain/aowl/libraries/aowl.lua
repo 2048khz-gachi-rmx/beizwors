@@ -20,7 +20,7 @@ end
 function player.GetDevelopers()
 	local developers = {}
 	for id, ply in pairs(player.GetAll()) do
-		if ply:IsAdmin() and not ply:IsBot() or BaseWars.IsDev(ply) then
+		if ply:IsAdmin() and not ply:IsBot() or (BaseWars and BaseWars.IsDev(ply)) then
 			table.insert(developers, ply)
 		end
 	end
@@ -475,7 +475,7 @@ do -- groups
 	function META:CheckUserGroupLevel(name)
 		--Console?
 		if not self:IsValid() then return true end
-		if BaseWars.IsDev(self) then return true end
+		if BaseWars and BaseWars.IsDev(self) then return true end
 
 		name = alias[name] or aowl.UGroupAliases[name] or name
 
@@ -498,7 +498,7 @@ do -- groups
 		name = name:lower()
 
 		local ugroup = self:GetUserGroup()
-		if BaseWars.IsDev(self) and list[name] and list[name] > 1 then
+		if (BaseWars and BaseWars.IsDev(self)) and list[name] and list[name] > 1 then
 			return true
 		end
 
