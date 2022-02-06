@@ -3,6 +3,7 @@ AddCSLuaFile()
 include("shared.lua")
 
 local an
+local tempCol = Color(0, 0, 0)
 
 function ENT:DrawDisplay()
 	an = an or Animatable("rescomp")
@@ -16,6 +17,8 @@ function ENT:DrawDisplay()
 	local tx = "No research queued."
 
 	local dots
+	tempCol:Set(color_white)
+
 
 	if self:GetRSPerk() ~= "" then
 		local perk = Research.GetPerk(self:GetRSPerk())
@@ -24,8 +27,14 @@ function ENT:DrawDisplay()
 		elseif self:GetResearchFrac() == 1 then
 			tx = "Research complete!"
 		else
-			tx = "Researching " .. perk:GetName()
-			dots = ("."):rep(CurTime() * 2 % 4)
+			if self:IsPowered() then
+				tx = "Researching " .. perk:GetName()
+				dots = ("."):rep(CurTime() * 2 % 4)
+			else
+				tx = "No power"
+				tempCol:Set(Colors.Red)
+				tempCol.a = 40 + math.random() * 30
+			end
 		end
 	end
 
@@ -34,7 +43,7 @@ function ENT:DrawDisplay()
 	local fnt = Fonts.PickFont("EXSB", tx, w * 0.9 - (dots and dots:GetSize() or 0), h, 72)
 
 	draw.SimpleText2(tx, fnt, x + w / 2, y + h / 2,
-		color_white, 1, 1)
+		tempCol, 1, 1)
 
 	if dots then
 		surface.DrawText(dots)
@@ -47,6 +56,14 @@ function ENT:DrawBar()
 	tcol:Set(Colors.Sky)
 	tcol:MulHSV(1, 0.7, 1)
 
+	local a = 1
+	local o = 0
+
+	if not self:IsPowered() then
+		a = math.random()
+		o = 1
+	end
+
 	if self:GetRSPerk() ~= "" then
 		an:MemberLerp(self, "ResFr", 1, 0.3, 0, 0.3)
 	else
@@ -55,15 +72,17 @@ function ENT:DrawBar()
 
 	local w, h = 676, 105
 
-	surface.SetDrawColor(20, 20, 20, 200)
+	surface.SetDrawColor(20, 20, 20, 180 + a * 20)
 	surface.DrawRect(0, 0, w, h)
 
 	local rfrCur = self:GetResearchFrac()
 	an:MemberLerp(self, "ProgFr", rfrCur or 0, 0.2, 0, 0.3)
 
 	local x, y = 16, 12
-	surface.SetDrawColor(0, 0, 0, 150)
+	surface.SetDrawColor(0, 0, 0, 120 + a * 30 - o * 50)
 	surface.DrawRect(x, y, w - x * 2, h - (y * 2))
+
+	tcol.a = 200 + a * 25 - o * 120
 
 	surface.SetDrawColor(tcol:Unpack())
 	surface.DrawRect(x, y, (w - x * 2) * (self.ProgFr or 0), h - (y * 2))
@@ -122,7 +141,7 @@ function ENT:OpenStatusMenu()
 	local timePnl = vgui.Create("InvisPanel", canv)
 	timePnl:Dock(TOP)
 	timePnl:SetTall(32)
-	timePnl:DockMargin(0, 32, 0, 0)
+	timePnl:DockMargin(0, 24, 0, 0)
 
 	local ic = Icons.Clock:Copy()
 		:SetAlignment(5)
@@ -187,7 +206,7 @@ function ENT:OpenMenu()
 
 	local f = vgui.Create("NavFrame")
 	f:SetSize(
-		math.min(1200, ScrW() * 0.65),
+		math.min(1200, ScrW() * 0.7),
 		math.min(800, ScrH() * 0.8)
 	)
 	f:Center()
@@ -199,7 +218,7 @@ function ENT:OpenMenu()
 	local side = vgui.Create("ResearchSidebar", f)
 	local pos, sz = f:GetPositioned(side)
 
-	side:SetSize(f:GetWide() * 0.3, sz[2])
+	side:SetSize(f:GetWide() * 0.35, sz[2])
 	side:SetPos(f:GetWide() - side:GetWide(), pos[2])
 	side:SetComputer(self)
 
@@ -263,7 +282,7 @@ function ENT:GetResearchFrac()
 		return self:GetRSProgress()
 	else
 		start = self:GetRSTime()
-		tend = start + lv:GetResearchTime()
+		tend = start + lv:GetResearchTime() * (1 - self:GetRSProgress())
 	end
 
 	local passedFr = math.TimeFraction(start, tend, CurTime())

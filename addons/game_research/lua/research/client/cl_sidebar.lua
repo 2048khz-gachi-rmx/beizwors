@@ -97,7 +97,7 @@ function PANEL:_AnimateDescription(level, old)
 		mup:SetPos(0, draw.GetFontHeight(self.Title:GetFont()) + TitleY * 2)
 		mup.IntendedY = mup.Y
 		mup.Y = mup.IntendedY - 16
-		mup:SetWide(self:GetWide() * 0.9)
+		mup:SetWide(self:GetWide() * 0.95)
 		mup:CenterHorizontal()
 		mup:MoveBy(0, 16, 0.6, delay, 0.3)
 		mup:PopIn(0.2, delay)
