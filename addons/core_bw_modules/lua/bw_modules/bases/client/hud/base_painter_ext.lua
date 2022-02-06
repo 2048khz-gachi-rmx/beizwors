@@ -97,4 +97,4 @@ end
 
 hud.RestartPainters()
 
-FInc.FromHere("*.lua", FInc.CLIENT, false, FInc.RealmResolver():SetDefault(true))
+FInc.FromHere("*.lua", FInc.CLIENT, FInc.RealmResolver():SetDefault(true))

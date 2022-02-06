@@ -71,7 +71,7 @@ local function init(force)
 		end
 	end
 
-	FInc.FromHere("bases/*.lua", FInc.SHARED, true, FInc.RealmResolver():SetDefault(true))
+	FInc.FromHere("bases/*.lua", FInc.SHARED, FInc.RealmResolver():SetDefault(true))
 
 	if (force or not reload) and SERVER then
 		-- either forced reload or initial; resync from sql

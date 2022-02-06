@@ -9,7 +9,7 @@ BaseWars.Bases.MarkTool = TOOL
 EndTool(TOOL)
 
 _wAODIJAHOD = true
-	FInc.FromHere("*.lua", FInc.SHARED, false, FInc.RealmResolver():SetDefault(true))
+	FInc.FromHere("*.lua", FInc.SHARED, FInc.RealmResolver():SetDefault(true))
 _wAODIJAHOD = nil
 
 FInc.OnStates(function()

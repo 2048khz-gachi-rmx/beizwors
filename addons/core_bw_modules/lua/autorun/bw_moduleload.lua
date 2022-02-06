@@ -30,10 +30,10 @@ function IncludeBasewarsModules()
 
 	local s = SysTime()
 
-		FInc.Recursive(path .. "*.lua", FInc.SHARED, true, moduleLoaded, incrementModule)
-		FInc.Recursive(path .. "server/*.lua", FInc.SERVER, nil, moduleLoaded, incrementModule)
-		FInc.Recursive(path .. "map_edits/*.lua", FInc.SERVER, nil, moduleLoaded, incrementModule)
-		FInc.Recursive(path .. "client/*.lua", FInc.CLIENT, nil, moduleLoaded, incrementModule)
+		FInc.Recursive(path .. "*.lua", FInc.SHARED, moduleLoaded, incrementModule)
+		FInc.Recursive(path .. "server/*.lua", FInc.SERVER, moduleLoaded, incrementModule)
+		FInc.Recursive(path .. "map_edits/*.lua", FInc.SERVER, moduleLoaded, incrementModule)
+		FInc.Recursive(path .. "client/*.lua", FInc.CLIENT, moduleLoaded, incrementModule)
 
 	s = SysTime() - s
 

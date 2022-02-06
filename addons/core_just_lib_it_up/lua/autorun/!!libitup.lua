@@ -260,7 +260,7 @@ end
 
 libTbl.MarkLoaded = onLoad
 
-local inc = FInc.RealmResolver():SetDefault(true):SetVerbose()
+local inc = FInc.RealmResolver():SetDefault(true)
 
 local function shouldInc(fn)
 	if fn:match("/cl_") or fn:match("/sh_") or fn:match("/sv_") then return false, false end
@@ -268,21 +268,21 @@ local function shouldInc(fn)
 end
 
 local path = libTbl.ExtensionsFolder:gsub("/$", "")
-	FInc.Recursive(path .. "/sh_*.lua", _SH, true, nil)
-	FInc.Recursive(path .. "/*.lua", _SH, true, shouldInc)
-	FInc.Recursive(path .. "/cl_*.lua", _CL, true, nil)
-	FInc.Recursive(path .. "/sv_*.lua", _SV, true, nil)
-	FInc.Recursive(path .. "/client/*", _CL, false, nil)
-	FInc.Recursive(path .. "/server/*", _SV, false, nil)
+	FInc.Recursive(path .. "/sh_*.lua", _SH, nil)
+	FInc.Recursive(path .. "/*.lua", _SH, shouldInc)
+	FInc.Recursive(path .. "/cl_*.lua", _CL, nil)
+	FInc.Recursive(path .. "/sv_*.lua", _SV, nil)
+	FInc.Recursive(path .. "/client/*", _CL, nil)
+	FInc.Recursive(path .. "/server/*", _SV, nil)
 
 
 path = libTbl.DependenciesFolder:gsub("/$", "")
-	FInc.Recursive(path .. "/sh_*.lua", _SH, true, nil, onLoad)
-	FInc.Recursive(path .. "/*.lua", _SH, true, shouldInc, onLoad)
-	FInc.Recursive(path .. "/cl_*.lua", _CL, true, nil, onLoad)
-	FInc.Recursive(path .. "/sv_*.lua", _SV, true, nil, onLoad)
-	FInc.Recursive(path .. "/client/*", _CL, false, nil, onLoad)
-	FInc.Recursive(path .. "/server/*", _SV, false, nil, onLoad)
+	FInc.Recursive(path .. "/sh_*.lua", _SH, nil, onLoad)
+	FInc.Recursive(path .. "/*.lua", _SH, shouldInc, onLoad)
+	FInc.Recursive(path .. "/cl_*.lua", _CL, nil, onLoad)
+	FInc.Recursive(path .. "/sv_*.lua", _SV, nil, onLoad)
+	FInc.Recursive(path .. "/client/*", _CL, nil, onLoad)
+	FInc.Recursive(path .. "/server/*", _SV, nil, onLoad)
 
 
 local deps_t2 = SysTime()
