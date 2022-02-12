@@ -39,25 +39,9 @@ function sm.MakeHeader(pnl)
 	local hd, ics = pnl.Header, pnl.Icons
 	local dat = pnl.Data
 
-	local titleFont = "OSB28"
+	if table.Count(dat.Tiers) <= 1 then return end
 
-	surface.SetFont(titleFont)
-	local tw, th = surface.GetTextSize(dat.Name)
-
-	local tierX = tw + (dat.Icon and (dat.Icon:GetWide() + 4) or 0) + 4 + 8
-
-	function hd:Paint(w, h)
-		local tX = 4
-
-		if dat.Icon then
-			local iW, iH = dat.Icon:GetSize()
-							-- V the top part is 32px iirc
-			dat.Icon:Paint(tX, 16 - iH / 2)
-			tX = tX + iW + 4
-		end
-
-		draw.SimpleText(dat.Name, "OSB28", tX, h / 2 - th / 2, color_white)
-	end
+	local tierX = pnl:GetWide() / 2 + pnl.HeaderW / 2 + 16
 
 	local tBtns = {}
 	pnl.ActiveCat = "All"
@@ -128,7 +112,7 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 	hd:SetTall(headerSize)
 	pnl.Header = hd
 
-	local pnlcol = Colors.LightGray:Copy()
+	local pnlcol = Colors.Gray:Copy()
 	pnlcol.a = 160
 
 	local ics = vgui.Create("FIconLayout", pnl)
@@ -189,7 +173,20 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 		return newh
 	end)
 
-	local icscol = Color(205, 205, 205)
+	local icscol = Color(240, 240, 240, 60)
+
+	local bSz = 1
+	local hdFont = "EX28"
+	local hdHgt = draw.GetFontHeight(hdFont)
+	local halfHgt = math.ceil(hdHgt / 2)
+	local fontOffset = 0.125 -- I HATE TEXT RENDERING!!!
+	local onefO = 1 - fontOffset
+
+	local tw, th = surface.GetTextSizeQuick(subcat_name, hdFont)
+	local iw = data.Icon and (data.Icon:GetWide() + 4) or 0
+	tw = tw + iw
+
+	pnl.HeaderW = tw
 
 	sm.MakeHeader(pnl)
 
@@ -197,10 +194,39 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 		draw.RoundedBox(8, 0, 0, w, h, icscol)
 	end
 
+	local boksCol = Colors.LightGray:Copy()
+	boksCol.a = 200
+
 	function pnl:Paint(w, h)
-		draw.RoundedBox(8, 0, 0, w, h, pnlcol)
+		DisableClipping(true)
+		draw.BeginMask()
+
+		--draw.DeMask()
+
+			draw.RoundedStencilBox(8, bSz, bSz + halfHgt, w - bSz * 2, h - bSz * 2 - halfHgt, color_white)
+
+			draw.SetMaskDraw(true)
+			draw.RoundedBox(8, w / 2 - tw / 2 - halfHgt, 0, tw + halfHgt * 2, hdHgt * onefO, boksCol)
+			draw.SimpleText2(subcat_name, hdFont, w / 2, -hdHgt * fontOffset, color_white, 1, nil, -iw)
+
+			if data.Icon then
+				data.Icon:Paint(w / 2 - (tw - iw) / 2 - iw / 2, 0, nil, hdHgt * onefO)
+			end
+
+			--surface.DrawOutlinedRect(w / 2 - tw / 2, 0, tw, th)
+			
+			draw.SetMaskDraw(false)
+			--surface.DrawRect(w / 2 - tw / 2 - 8, 0, tw + 16, hdHgt)
+		draw.DrawOp(1)
+			draw.RoundedBox(8, 0, halfHgt, w, h - halfHgt, pnlcol)
+		draw.FinishMask()
+
+		DisableClipping(false)
+
 		draw.EnableFilters()
 	end
+
+	
 
 	function pnl:PaintOver()
 		draw.DisableFilters()
@@ -225,7 +251,7 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 
 			for _, dat in ipairs(its) do
 				local btn = pnl.Items[dat]
-				btn:PopInShow(0.1, 0, nil, true)
+				btn:PopInShow(0.1, 0.05, nil, true)
 				btn._NoMove = btn._FilteredOut
 				btn._FilteredOut = false
 			end
@@ -242,7 +268,7 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 				-- keeping this button in
 				keep[dat] = true
 				local btn = pnl.Items[dat]
-				btn:PopInShow(0.1, 0, nil, true)
+				btn:PopInShow(0.1, 0.05, nil, true)
 				btn._NoMove = btn._FilteredOut
 				btn._FilteredOut = false
 				keepBtns[#keepBtns + 1] = btn
@@ -278,10 +304,10 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 		bclass = baseclass.Get("FButton")
 	end
 
-	local enoughColor = Color(50, 240, 50, 150)
+	local enoughColor = Color(100, 200, 100, 180)
 	local notEnoughColor = Color(220, 50, 50, 150)
-	local wayEnoughColor = Color(35, 95, 255, 180)
-	local barelyEnoughColor = Color(220, 210, 110, 150)
+	local wayEnoughColor = Color(75, 125, 235, 180)
+	local barelyEnoughColor = Color(200, 180, 110, 150)
 	--local notEvenCloseColor = Color(85, 85, 85)
 
 	for _, dat in ipairs(its) do
@@ -508,8 +534,10 @@ local function openCategory(pnl, btn)
 		canv:SetSize(w, h)
 	end)
 
+	local boxHeight = 36
+
 	canv.NoDraw = true
-	canv:GetCanvas():DockPadding(8, 36, 8, 4)
+	canv:GetCanvas():DockPadding(8, boxHeight + 8, 8, 4)
 	canv.Category = cat
 
 	pnl.OpenCategory = canv
@@ -525,16 +553,18 @@ local function openCategory(pnl, btn)
 	local ic = IsIcon(btn.Icon) and btn.Icon:Copy()
 
 	local iconPadding = 4
-	local boxPadding = 8
+	local boxPadding = 12
+	
 
 	if ic then
 		ic:SetColor(iconCol)
+		ic:SetAlignment(4)
 	end
 
 	canv:GetCanvas().Paint = function(self, w, h)
-		surface.SetFont("BS32")
+		surface.SetFont("EX40")
 
-		local tw = (surface.GetTextSize(cat))
+		local tw, th = surface.GetTextSize(cat)
 		local tx = w/2 - tw/2
 
 		if ic then
@@ -542,13 +572,13 @@ local function openCategory(pnl, btn)
 			tx = w/2 - tw/2 + (ic:GetSize()) + iconPadding
 		end
 
-		draw.RoundedBox(8, w/2 - tw/2 - boxPadding, 5, tw + boxPadding * 2, 34, boxcol)
+		draw.RoundedBoxEx(16, w/2 - tw/2 - boxPadding, 0, tw + boxPadding * 2, boxHeight, boxcol, false, false, true, true)
 
 		if ic then
-			ic:Paint(w/2 - tw/2, 8)
+			ic:Paint(w/2 - tw/2, boxHeight / 2)
 		end
 
-		surface.SetTextPos(tx, 8)
+		surface.SetTextPos(tx, boxHeight - th)
 		surface.SetTextColor(titleCol)
 		surface.DrawText(cat)
 	end
@@ -573,9 +603,9 @@ local function MakeSpawnList()
 	cats:GetCanvas():DockPadding(0, 4, 0, 4)
 	cats:Dock(LEFT)
 	cats:SetWide(192)
-	cats:DockMargin(0, 24, 16, 0)
+	cats:DockMargin(0, 0, 16, 0)
 	cats.GradBorder = true
-	cats.BackgroundColor = Color(200, 200, 200)
+	cats.BackgroundColor = Color(200, 200, 200, 200)
 	cats.Categories = {}
 
 	local active
@@ -682,7 +712,7 @@ local function MakeSpawnList()
 
 	its = vgui.Create("GradPanel", pnl)
 	its:Dock(FILL)
-	its:SetColor(Color(130, 130, 130))
+	its:SetColor(Color(110, 110, 110, 150))
 
 
 	function its:PostPaint(w, h)

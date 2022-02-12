@@ -47,7 +47,7 @@ local families = {
 
 FontFamilies = families
 
-local sizes = {12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 44, 48, 56, 64, 72, 96, 128}
+local sizes = {12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 40, 44, 48, 56, 64, 72, 96, 128}
 
 for k,v in pairs(families) do
 
