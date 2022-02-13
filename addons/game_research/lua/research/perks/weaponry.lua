@@ -9,11 +9,61 @@ base_att:SetTreeName("Weaponry")
 base_att:SetColor(Color(230, 210, 130))
 
 base_att.Levels = {
-	{{"optic", "optic_lp", "optic_sniper"}, "Optics", "Unlocks the ability to install optics onto ArcCW guns."},
-	{{"tac", "foregrip"}, "Tactical", "Unlocks the ability to install tactical and foregrip attachments onto ArcCW guns."},
-	{"muzzle", "Muzzles", "Unlocks the ability to install muzzle attachments onto ArcCW guns."},
-	{{"grip", "stock", "go_stock", "go_stock_pistol_bt"}, "Grips", "Unlocks the ability to install grip and stock attachments onto ArcCW guns."},
-	{{"magazine", "slide"}, "Conversions", "Unlocks the ability to install slides and magazines onto ArcCW guns."},
+	{	Unlocks = {"optic", "optic_lp", "optic_sniper"},
+		Name = "Optics",
+		Description = "Unlocks the ability to install optics onto ArcCW guns.",
+		Reqs = {
+			Items = {
+				iron_bar = 3,
+				copper_bar = 2,
+				-- weaponparts = 1,
+				laserdiode = 2,
+			}
+		}
+	}, {
+		Unlocks = {"tac", "foregrip"},
+		Name = "Tactical",
+		Description = "Unlocks the ability to install tactical and foregrip attachments onto ArcCW guns.",
+		Reqs = {
+			Items = {
+				weaponparts = 1,
+				laserdiode = 5,
+			}
+		}
+	}, {
+		Unlocks = "muzzle",
+		Name = "Muzzles",
+		Description = "Unlocks the ability to install muzzle attachments onto ArcCW guns.",
+		Reqs = {
+			Items = {
+				weaponparts = 3,
+				iron_bar = 20,
+				-- todo: titanium
+			}
+		}
+	}, {
+		Unlocks = {"grip", "stock", "go_stock", "go_stock_pistol_bt"},
+		Name = "Grips",
+		Description = "Unlocks the ability to install grip and stock attachments onto ArcCW guns.",
+		Reqs = {
+			Items = {
+				weaponparts = 5,
+				wepkit = 1,
+			}
+		}
+	}, {
+		Unlocks = {"magazine", "slide"},
+		Name = "Conversions",
+		Description = "Unlocks the ability to install slides and magazines onto ArcCW guns.",
+		Reqs = {
+			Items = {
+				weaponparts = 10,
+				blank_bp = 250,
+				lube = 5,
+				wepkit = 2,
+			}
+		}
+	},
 }
 
 local function isSlide(s, t)
@@ -54,14 +104,14 @@ end
 base_att.LookupLvs = {}
 
 for k,v in ipairs(base_att.Levels) do
-	if isstring(v[1]) then
-		base_att.LookupLvs[v[1]] = k
-	elseif istable(v[1]) then
-		for _, att in pairs(v[1]) do
+	if isstring(v.Unlocks) then
+		base_att.LookupLvs[v.Unlocks] = k
+	elseif istable(v.Unlocks) then
+		for _, att in pairs(v.Unlocks) do
 			base_att.LookupLvs[att] = k
 		end
-	elseif isfunction(v[1]) then
-		base_att.LookupLvs[v[2]] = v[1]
+	elseif isfunction(v.Unlocks) then
+		base_att.LookupLvs[v.Name] = v.Unlocks
 	end
 end
 
@@ -71,8 +121,11 @@ for k,v in pairs(base_att.Levels) do
 	local level = base_att:AddLevel(k)
 	level:SetPos(i * 2, 0)
 	level:SetIcon(CLIENT and Icons.Plus)
-	level:SetDescription(v[3])
-	level:SetNameFragments({base_att:GetName(), ": ", v[2]})
+	level:SetDescription(v.Description)
+	if v.Reqs then
+		level:SetRequirements(v.Reqs)
+	end
+	level:SetNameFragments({base_att:GetName(), ": ", v.Name})
 end
 
 function Research.AttAllowed(ply, attName)
@@ -122,6 +175,7 @@ hook.Add("ArcCW_PlayerCanAttach", "Research", function(ply, wep, attname, slot, 
 	if not Research.AttAllowed(ply, attname) then
 		return false
 	end
+
 end)
 
 if CLIENT then

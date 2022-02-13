@@ -18,7 +18,6 @@ hook.Add("ArcCW_CL_GenAttInfo", "Research_Info", function(pnl, att, attName, wep
 	local slotName = slot.Slot
 
 	local can, needLv = Research.AttAllowed(CachedLocalPlayer(), attName, true)
-	PrintTable(att)
 
 	if not can then
 		local tx = vgui.Create("DPanel", pnl)
