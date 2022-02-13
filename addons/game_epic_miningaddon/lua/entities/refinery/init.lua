@@ -127,7 +127,7 @@ function ENT:Think()
 	local prs = {}
 
 	for name, amt in pairs(fin_amt) do
-		local pr, what = self.OreOutput:NewItem(name, nil, nil, {Amount = amt})
+		local pr, what = self.OreOutput:NewItem(name, nil, {Amount = amt})
 
 		if pr then
 			table.insert(prs, pr)
@@ -217,10 +217,6 @@ function ENT:QueueRefine(ply, inv, item, slot, bulk)
 		end, GenerateErrorer("RefineryPromise"))
 
 	end
-
-	--[[self.OreInput:NewItem(item:GetItemID(), function(new)
-
-	end, slot, item:GetData(), true)]]
 end
 
 -- deposit request
