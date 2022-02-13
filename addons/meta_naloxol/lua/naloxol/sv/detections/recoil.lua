@@ -88,17 +88,19 @@ hook.Add("StartCommand", "NX_Norecoil", function(ply, cmd)
 
 	if offAmt > dat.p * 0.5 then return end -- the aim is off-center
 
+	local punchMult = 3.5 -- punch -> angle (this is a random number picked by trial and error)
+
 	-- they dont move their mouse enough
-	local mouse_bad = ang.p < 88 and dat.my < dat.usep * 10
+	local mouse_bad = ang.p < 88 and dat.my < dat.usep * punchMult
 
 	--[[if true then
-		printf("bad mouse? %s: %d < %d", mouse_bad, dat.my, dat.usep * 10)
+		printf("bad mouse? %s: %d < %d", mouse_bad, dat.my, dat.usep * punchMult)
 		printf("	aim offset: %.3f, %.3f\n", offAmt, dat.usep * 0.5)
 	end]]
 
 	-- or they try too hard to pretend
 	local pull_too_much = dat.my > dat.p * 200 and -- mouseY is through the fucking roof
-		offAmt > dat.p * -10 -- but their aim is not too low
+		offAmt > dat.p * -punchMult -- but their aim is not too low
 
 
 	if pull_too_much and ang.p < 85 then -- if they look straight down they can pull too much
@@ -137,7 +139,7 @@ hook.Add("StartCommand", "NX_Norecoil", function(ply, cmd)
 		--if cmd:GetMouseY() + 2 < wep:GetRecoil() * 4 then
 			dat.viols = (dat.viols or 0) + 1
 			--print(dat.viols, 1 / engine.TickInterval() * timeToDetect)
-			print("detected norecoil!", ply)
+			print("detected norecoil!", ply, dat.my, dat.usep * 10)
 			if dat.viols > 1 / engine.TickInterval() * timeToDetect then
 				dt:Detect(ply, {
 					MYSum = dat.my,
