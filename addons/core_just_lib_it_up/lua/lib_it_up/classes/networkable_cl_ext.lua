@@ -105,7 +105,7 @@ local function ReadChange(obj)
 
 	local v_encID
 
-	if not obj.__AliasesTypes[decoded_key] then
+	if not obj or not obj.__AliasesTypes[decoded_key] then
 		v_encID = net.ReadUInt(encoderIDLength)
 	else
 		v_encID = obj.__AliasesTypes[decoded_key]
