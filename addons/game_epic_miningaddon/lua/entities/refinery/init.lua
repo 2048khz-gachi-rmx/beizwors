@@ -260,3 +260,28 @@ function ENT:Use(ply)
 		net.WriteUInt(0, 4)
 	net.Send(ply)
 end
+
+local function dropItms(self, inv)
+	local spos = self:GetPos() + self:OBBCenter()
+
+	for k,v in pairs(inv:GetItems()) do
+		local drop = ents.Create("dropped_item")
+
+		drop:PickDropSpot({self}, {
+			DropOrigin = spos,
+		})
+
+		inv:RemoveItem(v, true)
+
+		drop:SetCreatedTime(CurTime())
+		drop:SetItem(v)
+		drop:Spawn()
+		drop:Activate()
+		--drop:PlayDropSound(i2)
+	end
+end
+
+function ENT:OnRemove()
+	dropItms(self, self.OreInput)
+	dropItms(self, self.OreOutput)
+end

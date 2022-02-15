@@ -28,6 +28,25 @@ function ENT:SendInfo(ply)
 	ply:UpdateInventory(self.InVault)
 end
 
+function ENT:OnRemove()
+	local spos = self:GetPos() + self:OBBCenter()
+	for k,v in pairs(self.InVault:GetItems()) do
+		local drop = ents.Create("dropped_item")
+
+		drop:PickDropSpot({self}, {
+			DropOrigin = spos,
+		})
+
+		self.InVault:RemoveItem(v, true)
+
+		drop:SetCreatedTime(CurTime())
+		drop:SetItem(v)
+		drop:Spawn()
+		drop:Activate()
+		--drop:PlayDropSound(i2)
+	end
+end
+
 function ENT:RequestInVault(ply)
 	-- im pretty sure like all of this is redundant; i could just
 	-- use crossinv and hook onto pre/post, lol

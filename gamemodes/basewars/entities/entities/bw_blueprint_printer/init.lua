@@ -29,6 +29,26 @@ function ENT:IsFull()
 
 end
 
+function ENT:OnRemove()
+	local spos = self:GetPos() + self:OBBCenter()
+
+	for k,v in pairs(self.Storage:GetItems()) do
+		local drop = ents.Create("dropped_item")
+
+		drop:PickDropSpot({self}, {
+			DropOrigin = spos,
+		})
+
+		self.Storage:RemoveItem(v, true)
+
+		drop:SetCreatedTime(CurTime())
+		drop:SetItem(v)
+		drop:Spawn()
+		drop:Activate()
+		--drop:PlayDropSound(i2)
+	end
+end
+
 function ENT:ThinkFunc()
 	local diff = CurTime() - self.LastThink
 	if diff < math.min(CurTime() - self:GetNextFinish(), 0.5) then
@@ -58,8 +78,9 @@ function ENT:ThinkFunc()
 
 		self.LastPrint = CurTime()
 		self:SetNextFinish(self.LastPrint + self.PrintTime)
-	end
 
+		self:SendInfo()
+	end
 end
 
 function ENT:Use(ply)
