@@ -22,6 +22,7 @@ st:SetDefaultValue(true)
 	:SetCategory("HUD")
 
 DarkHUD.SettingFrame = st
+DarkHUD.VenomPulseInterval = 0.2
 
 local scale = DarkHUD.Scale
 
@@ -455,6 +456,12 @@ function DarkHUD.CreateVitals()
 		end
 	end
 
+	local warnIc = Icons.Unsafe:Copy()
+	warnIc:SetAlignment(4)
+
+	local warnGrad = Icons.RadGradient:Copy()
+	warnGrad:SetAlignment(5)
+
 	function vls:Paint(w, h)
 		local x, y = 12, barPad
 
@@ -507,11 +514,29 @@ function DarkHUD.CreateVitals()
 			draw.RoundedBox(rndrad, barX, barY, barW, barH, gray)
 
 			local venomW = math.min(math.ceil(barW * vfr), barW)
+
 			self:DrawBar(rndrad, barX, barY,
 				venomW, barH, venomCol, venomBorderCol, vfr > 0)
 
 			self:DrawBar(rndrad, barX, barY,
 				math.ceil(barW * hpfr), barH, hpCol, hpBorderCol, vfr > 0)
+
+			if venom >= me:Health() then
+				-- paint warning abt lethal venom
+				local b = DisableClipping(true)
+
+					local sz = scale * 48
+					local col = warnIc:GetColor()
+					local pi = DarkHUD.VenomPulseInterval
+					local aFr = math.Remap(CurTime() % pi, 0, pi, 1, 0)
+					col.a = aFr * 145 + 110
+
+					warnGrad:SetColor(200, 30, 30, 150 + 90 * aFr)
+					warnGrad:Paint(w + 8 + sz / 2, barY + barH / 2, sz * 6 + sz * aFr * 2, sz * 6 + sz * aFr * 2)
+					warnIc:Paint(w + 8, barY + barH / 2, sz, sz)
+
+				if not b then DisableClipping(false) end
+			end
 
 			--[[
 			if not round then

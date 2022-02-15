@@ -23,7 +23,7 @@ Icon.AutoInitialize = false
 local doGet = function(...) return draw.GetMaterial(...) end -- index on call
 LibItUp.IncludeIfNeeded("extensions/player.lua")
 
-function Icon:Initialize(url, name)
+function Icon:Initialize(url, name, flags, cb)
 	if not url then error("Icon.Initialize: expected IMaterial in arg #1 or URL + name, got nothing instead") return end
 
 	local is_url = isstring(url) and url:match("^https?://")
@@ -41,7 +41,7 @@ function Icon:Initialize(url, name)
 			-- start downloading before we actually need it
 			if CLIENT then
 				-- wait for ISteamHTTP
-				OnFullyLoaded(doGet, url, name)
+				OnFullyLoaded(doGet, url, name, flags, cb)
 			end
 		else
 			local mat = draw.GetMaterialInfo(url) or Material(url)
@@ -61,7 +61,22 @@ function Icon:Initialize(url, name)
 	self.__parent.Initialize(self, false)
 end
 
-ChainAccessor(Icon, "Color", "Color")
+ChainAccessor(Icon, "Color", "Color", true)
+
+function Icon:SetColor(col, g, b, a)
+	if IsColor(col) then
+		self.Color:Set(col)
+		return
+	end
+
+	local c = self.Color
+	c.r = col or 70
+	c.g = g or 70
+	c.b = b or 70
+	c.a = a or 255
+end
+
+
 ChainAccessor(Icon, "Filter", "Filter")
 ChainAccessor(Icon, "_Debug", "Debug")
 
@@ -283,3 +298,5 @@ Icons.Star = Icon("https://i.imgur.com/YYXglpb.png", "star.png")
 -- https://www.flaticon.com/free-icon/money_61584?term=money&page=1&position=16&page=1&position=16&related_id=61584&origin=tag
 Icons.Money64 = Icon("https://i.imgur.com/NVl7wuF.png", "moneybag_64.png")
 Icons.Money32 = Icon("https://i.imgur.com/lRpS2NE.png", "moneybag_32.png")
+Icons.Unsafe = Icon("https://i.imgur.com/Xq0xmuF.png", "unsafe.png")
+Icons.RadGradient = Icon("https://i.imgur.com/uk9gDB8.png", "radial2.png")

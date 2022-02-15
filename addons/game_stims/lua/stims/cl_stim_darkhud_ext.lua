@@ -72,6 +72,9 @@ local stimCol = haveStimsCol:Copy()
 
 local cdBoxColor = Colors.Gray:Copy()
 
+local warnGrad = Icons.RadGradient:Copy()
+warnGrad:SetAlignment(5)
+
 Stims.OffhandTable.Paint = function(pnl, x, y, size)
 	local sX, sY = x, y
 
@@ -97,6 +100,24 @@ Stims.OffhandTable.Paint = function(pnl, x, y, size)
 	pnl:LerpColor(stimCol, me:GetStims() > 0 and haveStimsCol or noStimsCol, 0.3, 0, 0.3)
 
 	local gsX, gsY = sX, sY
+	local cX, cY = gsX + size / 2, gsY + size / 2
+
+	local me = CachedLocalPlayer()
+	local venom = me:GetNWInt("Venom", 0)
+
+	if venom >= me:Health() then
+		-- paint warning abt lethal venom
+		local b = DisableClipping(true)
+
+			local sz = scale * 40
+			local pi = DarkHUD.VenomPulseInterval * 2
+			local aFr = math.Remap(CurTime() % pi, 0, pi, 1, 0)
+
+			warnGrad:SetColor(200, 230, 30, 30 + 30 * aFr)
+			warnGrad:Paint(cX, cY, sz * 4 + sz * aFr * 2, sz * 4 + sz * aFr * 2)
+
+		if not b then DisableClipping(false) end
+	end
 
 	draw.EnableFilters(true, false)
 
