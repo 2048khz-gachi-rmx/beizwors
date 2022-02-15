@@ -115,6 +115,25 @@ function ENT:GenerateOptions(qm, pnl)
 	return gen, pw
 end
 
+local rbow = Color(0, 0, 0)
+
+function ENT:PaintStructureInfo(w, y)
+	local add = self.BaseClass.PaintStructureInfo(self, w, y)
+	y = y + add
+
+	if not cookie.GetNumber("BaseWars_UsedManualGen", false) then
+		local fr = 1 - (CurTime() * 1.5) % 1
+		rbow:SetHSV( 60 + math.sin(CurTime() * 2) * 10, 0.45 + 0.4 * fr, 0.5 + 0.5 * fr)
+
+		local tw, th = draw.SimpleText("(hold USE)", "BSB24",
+			w / 2, y, rbow, 1, 5)
+		return add + th
+	end
+
+	return add
+end
+
+
 if SERVER then
 	net.Receive("ManualGen", function(_, ply)
 		local gen = net.ReadEntity()
