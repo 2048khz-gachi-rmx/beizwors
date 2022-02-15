@@ -65,7 +65,7 @@ hook.Add("StartCommand", "NX_Norecoil", function(ply, cmd)
 	dat.p = dat.p or 0
 	dat.usep = math.min(dat.p, math.Approach(dat.usep or 0, dat.p, engine.TickInterval() * 5))
 
-	if dat.usep < 1 then return end -- dont even bother for small recoil
+	if dat.usep < 2 then return end -- dont even bother for small recoil
 
 	local sinceStart = CurTime() - dat.st
 	local sinceLast = dat.st - (dat.ended or 0)
@@ -88,7 +88,7 @@ hook.Add("StartCommand", "NX_Norecoil", function(ply, cmd)
 
 	if offAmt > dat.p * 0.5 then return end -- the aim is off-center
 
-	local punchMult = 3.5 -- punch -> angle (this is a random number picked by trial and error)
+	local punchMult = 1.5 -- punch -> angle (this is a random number picked by trial and error)
 
 	-- they dont move their mouse enough
 	local mouse_bad = ang.p < 88 and dat.my < dat.usep * punchMult
