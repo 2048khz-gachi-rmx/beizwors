@@ -18,8 +18,15 @@ ENT.SizeInfo = {
 ENT.TypeInfo = {
 	weapon = {
 		models = {
+			small = {
+				"models/maver1k_xvii/stalker/props/box/box_1a.mdl",
+				"models/maver1k_xvii/stalker/props/army_base/prop_army_base_17.mdl",
+			},
+
 			medium = {
 				"models/props/de_prodigy/ammo_can_02.mdl",
+				"models/z-o-m-b-i-e/st/equipment_cache/st_equipment_box_01.mdl skin_0",
+				"models/z-o-m-b-i-e/st/equipment_cache/st_equipment_box_01.mdl skin_1",
 			}
 		},
 	},
@@ -35,8 +42,8 @@ ENT.TypeInfo = {
 
 			medium = {
 				"models/props_junk/cardboard_box001a.mdl",
-				"models/props_c17/suitcase001a.mdl",
 				"models/Items/item_item_crate.mdl",
+				"models/z-o-m-b-i-e/st/kitchen/st_box_paper_01.mdl",
 			}
 		},
 	},

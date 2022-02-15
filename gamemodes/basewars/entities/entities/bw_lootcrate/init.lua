@@ -11,6 +11,8 @@ function ENT:Init(me)
 	self.TimesUsed = 0
 	self.LastUse = 0
 	self.TimesToOpen = 4
+
+	self.LastTypes = {}
 end
 
 function ENT:OnRemove()
@@ -142,63 +144,12 @@ function ENT:Use(ply)
 
 	for k,v in ipairs(sort) do
 		local drop = ents.Create("dropped_item")
-		table.insert(ignoreTable, drop)
 
-		local dropDist = 48
-		local dropHeight = 64
-
-		local dropDir = math.random() * 360
-		local off = Vector(
-			math.cos(math.rad(dropDir)) * dropDist,
-			math.sin(math.rad(dropDir)) * dropDist,
-			0)
-
-		local lastPos = sPos
-
-		local segs = 32
-		local hitPos
-
-		for i=0, 1, 1 / segs do
-			local newPos = LerpVector(i, sPos, sPos + off)
-			newPos[3] = newPos[3] + math.sin(i * math.pi) * dropHeight
-
-			local tr = util.TraceHull({
-				mins = -dropBounds,
-				maxs = dropBounds,
-
-				start = lastPos,
-				endpos = newPos,
-				filter = ignoreTable,
-			})
-
-			if tr.Hit then
-				hitPos = tr.HitPos
-				break
-			end
-
-			lastPos = newPos
-		end
-
-		-- trace downwards till ground
-		hitPos = hitPos or lastPos
-
-		local tr = util.TraceHull({
-			mins = -dropBounds * 0.8,
-			maxs = dropBounds * 0.8,
-
-			start = hitPos,
-			endpos = hitPos - Vector(0, 0, 4096),
-			filter = ignoreTable,
+		drop:PickDropSpot({self}, {
+			DropOrigin = sPos,
 		})
 
-		local dropPos = hitPos
-
-		if tr.Hit then
-			dropPos = tr.HitPos
-		end
-
 		self.Storage:RemoveItem(v, true)
-		v:SetSlot(nil)
 
 		local pos = self:GetPos()
 
@@ -207,9 +158,9 @@ function ENT:Use(ply)
 		timer.Simple(del, function()
 			drop:SetCreatedTime(CurTime())
 			drop:SetItem(v)
-			drop:SetDropOrigin(pos)
+			-- drop:SetDropOrigin(pos)
 			drop:Spawn()
-			drop:SetPos(dropPos)
+			-- drop:SetPos(dropPos)
 			drop:Activate()
 			drop:PlayDropSound(i2)
 		end)
@@ -222,25 +173,54 @@ function ENT:Use(ply)
 	self:Remove()
 end
 
+function ENT:ParseModel(str)
+	local mdl = str:match("^%S+")
+	local data = str:match("%s(.+)$")
 
+	self:SetModel(mdl)
+	self:SetSkin(0)
+
+	if data then
+		local skin = data:match("skin_(%d+)")
+		if skin then self:SetSkin(tonumber(skin)) end
+
+		-- ? scale?
+	end
+
+	self.OriginalModel = str
+end
 
 function ENT:ChangeProperties(ply)
 	local typ = ply:KeyDown(IN_WALK)
 	if typ then
-		for k,v in RandomPairs(self.TypeInfo) do
-			if k ~= self.CrateType then
-				self.CrateType = k
+		local preOBB = self:OBBCenter()
 
-				local models, newSize = table.Random(v.models)
-				self.Size = newSize
-				self.Model = models[math.random(#models)]
-				self:SetModel(self.Model)
-				self:PhysicsInit(SOLID_VPHYSICS)
-				break
+		local v
+
+		if #self.LastTypes == table.Count(self.TypeInfo) then
+			local popped = table.remove(self.LastTypes)
+			table.insert(self.LastTypes, 1, popped)
+
+			self.CrateType = popped
+			v = self.TypeInfo[popped]
+		else
+			for k,v2 in SortedPairs(self.TypeInfo) do
+				if k ~= self.CrateType then
+					self.CrateType = k
+					table.insert(self.LastTypes, k)
+					v = v2
+					break
+				end
 			end
 		end
 
-		self:SetPos(self:GetPos() - self:OBBCenter())
+		local models, newSize = table.Random(v.models)
+		self.Size = newSize
+		self.Model = models[math.random(#models)]
+		self:ParseModel(self.Model)
+		self:PhysicsInit(SOLID_VPHYSICS)
+
+		self:SetPos(self:GetPos() - preOBB + self:OBBCenter())
 		return
 	end
 
@@ -276,16 +256,20 @@ function ENT:ChangeProperties(ply)
 		PrintTable(self.ModelCopies)
 	end
 
+	print("-----")
+	print("size: ", self.Size)
 	print("model: ", self.ModelNum, "/", self.ModelNum + table.Count(self.ModelCopies) - 1)
 	self.Model = self.ModelCopies[self.ModelNum]
 	self.ModelCopies[self.ModelNum] = nil
 
 	self.ModelNum = self.ModelNum + 1
 
-	self:SetModel(self.Model)
+	local preOBB = self:OBBCenter()
+
+	self:ParseModel(self.Model)
 	self:PhysicsInit(SOLID_VPHYSICS)
 
-	self:SetPos(self:GetPos() - self:OBBCenter())
+	self:SetPos(self:GetPos() - preOBB + self:OBBCenter())
 end
 
 PermaLootCrates = PermaLootCrates or {}
@@ -293,7 +277,7 @@ PermaLootCrates = PermaLootCrates or {}
 function ENT:AddPerma()
 	local saveTbl = {
 		self:GetPos(), self:GetAngles(),
-		self.CrateType, self.Size, self:GetModel()
+		self.CrateType, self.Size, self.OriginalModel or self:GetModel()
 	}
 
 	if self.SavedKey then
@@ -308,6 +292,35 @@ function ENT:RemovePerma()
 	if not self.SavedKey then return end
 	PermaLootCrates[self.SavedKey] = nil
 	self:Remove()
+end
+
+function TempLootCratesToStorage()
+	local json = util.TableToJSON(PermaLootCrates)
+	if not json or #json < 10 then
+		errorf("something wrong: couldn't json-ify")
+		return
+	end
+
+	local map = game.GetMap()
+
+	for i=5, 0, -1 do
+		local fn = "inventory/lootboxes/" .. map .. "_manual" .. (i == 0 and "" or i) .. ".dat"
+		local new = "inventory/lootboxes/" .. map .. "_manual" .. i+1 .. ".dat"
+		print(fn, new)
+
+		if not file.Exists(fn, "DATA") then
+			continue
+		end
+
+		file.Rename(fn, new)
+	end
+
+	file.Write("inventory/lootboxes/" .. map .. "_manual.dat", json)
+end
+
+function StorageLootCratesToTemp()
+	PermaLootCrates = {}
+	table.Merge(PermaLootCrates, Inventory.LootCratePositions)
 end
 
 function ENT:CanTool(ply, tr, name, tool)
