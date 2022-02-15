@@ -5,13 +5,13 @@ include("shared.lua")
 local an
 local tempCol = Color(0, 0, 0)
 
-function ENT:DrawDisplay()
+function ENT:DrawDisplay(aMult)
 	an = an or Animatable("rescomp")
 
 	local x, y = 32, 16
 	local w, h = 738 - x * 2, 160 - y * 2
 
-	surface.SetDrawColor(20, 20, 20, 200)
+	surface.SetDrawColor(20, 20, 20, 200 * aMult)
 	surface.DrawRect(x, y, w, h)
 
 	local tx = "No research queued."
@@ -38,6 +38,8 @@ function ENT:DrawDisplay()
 		end
 	end
 
+	tempCol.a = tempCol.a * aMult
+
 	local fr = self.ResFr or 0
 
 	local fnt = Fonts.PickFont("EXSB", tx, w * 0.9 - (dots and dots:GetSize() or 0), h, 72)
@@ -52,9 +54,10 @@ end
 
 local tcol = Color(0, 0, 0)
 
-function ENT:DrawBar()
+function ENT:DrawBar(aMult)
 	tcol:Set(Colors.Sky)
 	tcol:MulHSV(1, 0.7, 1)
+	tcol.a = tempCol.a * aMult
 
 	local a = 1
 	local o = 0
@@ -72,17 +75,17 @@ function ENT:DrawBar()
 
 	local w, h = 676, 105
 
-	surface.SetDrawColor(20, 20, 20, 180 + a * 20)
+	surface.SetDrawColor(20, 20, 20, (180 + a * 20) * aMult)
 	surface.DrawRect(0, 0, w, h)
 
 	local rfrCur = self:GetResearchFrac()
 	an:MemberLerp(self, "ProgFr", rfrCur or 0, 0.2, 0, 0.3)
 
 	local x, y = 16, 12
-	surface.SetDrawColor(0, 0, 0, 120 + a * 30 - o * 50)
+	surface.SetDrawColor(0, 0, 0, (120 + a * 30 - o * 50) * aMult)
 	surface.DrawRect(x, y, w - x * 2, h - (y * 2))
 
-	tcol.a = 200 + a * 25 - o * 120
+	tcol.a = (200 + a * 25 - o * 120) * aMult
 
 	surface.SetDrawColor(tcol:Unpack())
 	surface.DrawRect(x, y, (w - x * 2) * (self.ProgFr or 0), h - (y * 2))
@@ -290,15 +293,19 @@ function ENT:GetResearchFrac()
 	return Lerp(passedFr, self:GetRSProgress(), 1)
 end
 
-local ct = CurTime()
 
 function ENT:Draw()
-
 	self:DrawModel()
 
 	local dist = EyePos():Distance(self:GetPos())
+	if dist > 512 then return end
+
+	local a = math.min(math.Remap(dist, 512, 384, 0, 1), 1)
+
 	dist = dist - 256 -- I LOVE THE DEPTH BUFFER I LOVE THE DEPTH BUFFER
 	off[1] = Lerp(dist / 384, closeX, farX)
+
+	
 
 	local pos = self:LocalToWorld(off)
 	local ang = self:GetAngles()
@@ -307,13 +314,13 @@ function ENT:Draw()
 	ang:RotateAroundAxis(ang:Forward(), 90)
 
 	cam.Start3D2D(pos, ang, 0.05)
-		xpcall(self.DrawDisplay, GenerateErrorer("ResearchStationRender"), self)
+		xpcall(self.DrawDisplay, GenerateErrorer("ResearchStationRender"), self, a)
 	cam.End3D2D()
 
 	pos = self:LocalToWorld(barOff)
-	
+
 	cam.Start3D2D(pos, ang, 0.05)
-		xpcall(self.DrawBar, GenerateErrorer("ResearchStationRender"), self)
+		xpcall(self.DrawBar, GenerateErrorer("ResearchStationRender"), self, a)
 	cam.End3D2D()
 end
 
