@@ -35,7 +35,12 @@ local function CreateSubcategory(cat, subcat)
 		t.Priority = -tonumber(subcat:match("[%p%s]T(%d+)[%p%s]"))
 	end
 
-	BaseWars.SpawnList[cat].Subcategories[subcat] = t
+	local subcats = BaseWars.SpawnList[cat].Subcategories
+	subcats[subcat] = t
+	
+	local cnt = table.Count(subcats)
+	t.Priority = -cnt
+
 	return t
 end
 
@@ -406,8 +411,10 @@ SetType(nil)
 		AddRecreational("Media Players", "mediaplayer_tv", "Big TV", m * 500, "models/gmod_tower/suitetv_large.mdl")
 
 
+--[[
 SetType("Consumables")
 	ReuseEntities("bw_repairkit", "Repair Kit", k * 2.5, "models/Items/car_battery01.mdl", 3)
+]]
 
 SetCat("Electricity")
 SetType("Generators")
@@ -593,17 +600,18 @@ SetTier(nil)
 
 SetType("Refinement")
 	ReuseInventory("refinery", "Smeltery", 500 * k, "models/props/CS_militia/furnace01.mdl", 1)
-		.Limit = 1
-
-	ReuseInventory("bw_blueprint_ctor", "Blueprint Constructor", 2.5 * m, "models/grp/bpmachine/bpmachine.mdl", 1)
-		.Limit = 1
+	ReuseInventory("bw_blueprint_ctor", "Blueprint Constructor", 2.5 * m,
+		"models/grp/bpmachine/bpmachine.mdl", 1)
 
 SetType("Production")
-	ReuseInventory("bw_blueprint_printer", "Blueprint Printer", 1 * m, "models/props_lab/plotter.mdl", 1)
-		.Limit = 1
-	ReuseInventory("workbench", "Workbench", 2.5 * m, "models/props/CS_militia/table_shed.mdl", 1)
-		.Limit = 1
+	ReuseInventory("bw_blueprint_printer", "Blueprint Printer", 1 * m,
+		"models/props_lab/plotter.mdl", 1)
+	ReuseInventory("workbench", "Workbench", 2.5 * m,
+		"models/props/CS_militia/table_shed.mdl", 1)
 
+SetType("Storage")
+	ReuseInventory("bw_matter_digitizer", "Matter Digitizer", 250 * k,
+		"models/props_combine/combine_mortar01b.mdl", 1)
 hook.Run("BW_CatalogueFilled")
 
 end)
