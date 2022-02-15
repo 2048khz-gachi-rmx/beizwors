@@ -8,28 +8,44 @@ audio.Stream = stream
 
 ChainAccessor(stream, "Handle", "Handle")
 
-local function StreamAccessor(name)
-	stream["Get" .. name] = function(self)
-		return self[name]
+local meta = FindMetaTable("IGModAudioChannel")
+
+local function StreamAccessor(name, onStream, fl)
+	if meta["Get" .. name] then
+		stream["Get" .. name] = function(self)
+			if onStream and self:GetHandle() then
+				return meta["Get" .. name] (self:GetHandle())
+			end
+
+			return self[name]
+		end
 	end
 
-	stream["Set" .. name] = function(self, v)
-		self[name] = v
-		if self:GetHandle() then
-			self:GetHandle()["Set" .. name] (self:GetHandle(), v)
+	if meta["Set" .. name] then
+		stream["Set" .. name] = function(self, v)
+			if fl then self:_AddFlag(fl) end
+			self[name] = v
+			if self:GetHandle() then
+				self:GetHandle()["Set" .. name] (self:GetHandle(), v)
+			end
 		end
 	end
 end
 
-local function StreamAccessorMulti(name)
-	stream["Get" .. name] = function(self)
-		return unpack(self[name])
+local function StreamAccessorMulti(name, fl)
+	if meta["Get" .. name] then
+		stream["Get" .. name] = function(self)
+			return unpack(self[name])
+		end
 	end
 
-	stream["Set" .. name] = function(self, ...)
-		self[name] = {...}
-		if self:GetHandle() then
-			self:GetHandle()["Set" .. name] (self:GetHandle(), ...)
+	if meta["Set" .. name] then
+		stream["Set" .. name] = function(self, ...)
+			if fl then self:_AddFlag(fl) end
+			self[name] = {...}
+			if self:GetHandle() then
+				self:GetHandle()["Set" .. name] (self:GetHandle(), ...)
+			end
 		end
 	end
 end
@@ -37,9 +53,29 @@ end
 StreamAccessor("Volume")
 StreamAccessor("Pan")
 StreamAccessor("PlaybackRate")
-StreamAccessor("Time")
+StreamAccessor("Length", true)
+StreamAccessor("Time", "noblock")
 
 StreamAccessorMulti("3DFadeDistance")
+
+function stream:RandomizeTime()
+	if self:GetHandle() and not self:_HasFlag("noblock") then
+		errorf("Can't randomize time of a started stream without noblock flag.")
+		return
+	end
+
+	print("randomize time:", self:GetHandle())
+	if not self:GetHandle() then
+		self.RandomTime = true
+		print("bruh")
+		return
+	end
+
+	local l = self:GetLength()
+	local rand = math.random()
+	print("set to", l * rand)
+	self:SetTime(l * rand)
+end
 
 function stream:Initialize(url, path, flags)
 	assert(isstring(url))
@@ -67,7 +103,11 @@ end
 
 
 function stream:_AddFlag(fl)
-	self.Flags = (self.Flags:find(fl) and self.Flags) or (self.Flags .. " " .. fl)
+	self.Flags = (self:_HasFlag(fl) and self.Flags) or (self.Flags .. " " .. fl)
+end
+
+function stream:_HasFlag(fl)
+	return self.Flags:find(fl)
 end
 
 function stream:Preload()
@@ -91,7 +131,6 @@ function stream:_LoadAudio(pr)
 	end
 
 	self.Loading = true
-	print("loading audio...", self.Flags)
 
 	local cb = function(chan, errID, errName)
 		self.Loading = nil
@@ -116,6 +155,16 @@ function stream:_LoadAudio(pr)
 			chan:SetPlaybackRate(self:GetPlaybackRate())
 			chan:SetPan(self:GetPan())
 			chan:Set3DFadeDistance(self:Get3DFadeDistance())
+
+			if self.Time then
+				chan:SetTime(self.Time)
+			elseif self.RandomTime then
+				local l = chan:GetLength()
+				local rand = math.random()
+				self:SetTime(l * rand)
+				print("set random time:", l * rand)
+			end
+
 			if self.WantState then
 				chan[self.WantState] (chan)
 				self.WantState = nil
@@ -241,14 +290,11 @@ hook.Add("Think", "AudioStream", function()
 	for ent, sts in pairs(audio.EntBound) do
 		if #sts == 0 then
 			audio.EntBound[ent] = nil
-			print("no streams; killing", ent, table.Count(sts))
 		end
 
 		if not ent:IsValid() then
-			print("entity", ent, "gone; stopping all streams")
 			for k,v in ipairs(sts) do
 				v:Stop()
-				print("	stopped", v.Path)
 			end
 
 			audio.EntBound[ent] = nil

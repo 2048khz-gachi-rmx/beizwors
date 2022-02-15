@@ -238,3 +238,19 @@ for k,v in pairs(toChain) do
 		return self
 	end
 end
+
+local lerp = Lerp
+
+function LerpSource(dlt, from, to)
+	from[1] = Lerp(dlt, from[1], to[1])
+	from[2] = Lerp(dlt, from[2], to[2])
+	from[3] = Lerp(dlt, from[3], to[3])
+end
+
+function LerpInto(dlt, from, to, into)
+	into[1] = Lerp(dlt, from[1], to[1])
+	into[2] = Lerp(dlt, from[2], to[2])
+	into[3] = Lerp(dlt, from[3], to[3])
+
+	return into
+end
