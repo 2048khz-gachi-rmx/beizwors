@@ -39,13 +39,13 @@ function BaseWars.Menu.ReScale()
 	sz.Small = 8 + 12 * scale
 	sz.Small = 6 + 12 * scale
 
-	local family = "Open Sans Regular"
+	local family = "Exo 2"
 
 	for k,v in pairs(sz) do
-		local fn = "BWMenu_" .. k
+		local fn = "EX_BWMenu_" .. k
 		surface.CreateFont(fn, {
 			font = family,
-			size = v
+			size = v / 0.875 -- exo is really tiny
 		})
 
 		fonts[k] = fn
@@ -64,20 +64,20 @@ function BaseWars.Menu.ReScale()
 
 	BaseWars.Menu.Scale = scale
 
-	family = "BreezeSans Medium"
+	family = "Exo 2 Medium"
 
 	for k,v in pairs(bsz) do
-		local fn = "BWMenu_Bold" .. k
+		local fn = "EX_BWMenu_Bold" .. k
 		surface.CreateFont(fn, {
 			font = family,
-			size = v
+			size = v / 0.875
 		})
 
 		fonts["Bold" .. k] = fn
 	end
 
 	for k,v in pairs(bsz) do
-		local fn = "BWMenu_Blur" .. k
+		local fn = "EX_BWMenu_Blur" .. k
 		surface.CreateFont(fn, {
 			font = family,
 			size = v,

@@ -62,7 +62,7 @@ else
 			sl:SetDecimals(2)
 			sl:SetValue(PZVolume)
 
-			sl.Label:SetFont("TW24")
+			sl.Label:SetFont("EXM24")
 
 			sl.OnValueChanged = function(self, val)
 				cookie.Set("HotelRadioVolume", val)	-- cookie lib takes care of ratelimiting for me

@@ -13,45 +13,45 @@ PlayerTitles = playertitles
 
 surface.CreateFont("TitleName", {
 	font = "Helvetica",
-    size = 128,
-    weight = 600,
-    antialias = true,
+	size = 128,
+	weight = 600,
+	antialias = true,
 	})
 
 surface.CreateFont("TitleNameRound", {
 	font = "Helvetica",
-    size = 128,
-    weight = 600,
-    blursize = 8,
-    antialias = false,
-    shadow = true,
+	size = 128,
+	weight = 600,
+	blursize = 8,
+	antialias = false,
+	shadow = true,
 })
 
 surface.CreateFont("Status", {
 	font = "Helvetica",
-    size = 48,
-    weight = 600,
-    antialias = true,
+	size = 48,
+	weight = 600,
+	antialias = true,
 	})
 
 surface.CreateFont("StatusShadow", {
 	font = "Helvetica",
-    size = 48,
-    weight = 600,
-    blursize = 8,
-    antialias = false,
-    shadow = true,
+	size = 48,
+	weight = 600,
+	blursize = 8,
+	antialias = false,
+	shadow = true,
 })
 
 surface.CreateFont("Title", {
 	font = "Roboto Light",
-    size = 72,
-    weight = 400,
-    blursize = 0,
-    antialias = true,
-    --shadow = true,
+	size = 72,
+	weight = 400,
+	blursize = 0,
+	antialias = true,
+	--shadow = true,
 	})
-	
+
 local emoticon_cache = ChatHUDEmoticonCache or {}
 local busy = {}
 
@@ -81,7 +81,7 @@ file.CreateDir("emoticon_cache/ffz")
 local function CreateFFZShortcuts(update)
 
 		local function DownloadChannelInfo(chan)
-		 	local chan = string.lower(chan)
+			local chan = string.lower(chan)
 			local filename = "emoticon_cache/ffz_global_emotes_" .. chan .. ".dat"
 			Msg("[NT]: FFZ data for channel "..chan.." not found! Downloading... \n")
 
@@ -97,13 +97,13 @@ local function CreateFFZShortcuts(update)
 								name=_
 							end
 						continue
-						end 
+						end
 
 					end
 
 					if istable(name["emoticons"]) then
 						for num, cont in pairs(name["emoticons"]) do
-								if (cont.name) and not EmoteShortcuts[cont.name] then 
+								if (cont.name) and not EmoteShortcuts[cont.name] then
 									local url
 									if cont.urls[4] then url=cont.urls[4] elseif cont.urls[2] then url=cont.urls[2] else url=cont.urls[1] end
 									EmoteShortcuts[cont.display_name or cont.name] = string.Replace( url, "//cdn.frankerfacez.com/", "" )
@@ -149,7 +149,7 @@ local function CreateFFZShortcuts(update)
 
 				if istable(name["emoticons"]) then
 					for num, cont in pairs(name["emoticons"]) do
-							if (cont.name) and not EmoteShortcuts[cont.name] then 
+							if (cont.name) and not EmoteShortcuts[cont.name] then
 								local url
 								if cont.urls[4] then url=cont.urls[4] elseif cont.urls[2] then url=cont.urls[2] else url=cont.urls[1] end
 
@@ -165,7 +165,7 @@ local function CreateFFZShortcuts(update)
 		local found = file.Find("emoticon_cache/ffz_global_emotes_*.dat", "DATA")
 
 		for k,chan in pairs(FFZChannels) do
-			if table.HasValue(found,"ffz_global_emotes_"..string.lower(chan)..".dat") then 
+			if table.HasValue(found,"ffz_global_emotes_"..string.lower(chan)..".dat") then
 				ReadChannelInfo("emoticon_cache/ffz_global_emotes_"..string.lower(chan)..".dat", string.lower(chan))
 			else
 				DownloadChannelInfo(string.lower(chan))
@@ -220,16 +220,16 @@ local function ParseTitle(txt)
 	for i=1, 6 do --up to 6 tags
 
 		 local tag = string.match(txt,"%b<>")
-		 if tag then 
+		 if tag then
 
-		 	local pos1, pos2 = string.find(txt, tag, 1, true)
-		 	if not pos1 or not pos2 then continue end
+			local pos1, pos2 = string.find(txt, tag, 1, true)
+			if not pos1 or not pos2 then continue end
 
-		  	txt = string.sub( txt, 1, pos1 - 1 ) .. string.sub( txt, pos2 + 1 )
+			txt = string.sub( txt, 1, pos1 - 1 ) .. string.sub( txt, pos2 + 1 )
 
-		  	table.insert(tags, {[1] = tag, [2] = pos1}) 
+			table.insert(tags, {[1] = tag, [2] = pos1})
 		 end
-		 
+
 	end
 
 	return tags, txt
@@ -238,7 +238,7 @@ end
 function PLAYER:UpdateTitle()
 	local title = self:GetNWString("Title", false)
 	if not self:SteamID64() then return end
- 	if title and isstring(title) then 
+	if title and isstring(title) then
 		playertitles[self:SteamID64()] = title
 	end
 
@@ -293,7 +293,7 @@ function Title:CompileExpression(expression)
 		return "expression: invalid character " .. ch
 	end
 
-	for word in expression:gmatch("(.-)%s") do 
+	for word in expression:gmatch("(.-)%s") do
 		if badlua[word] then return "simple expressions please" end
 	end
 
@@ -340,7 +340,7 @@ function Title:Emote(txt)
 		surface.SetMaterial(mat)
 		surface.SetDrawColor(255,255,255,(self.cra or 255))
 		local x = self.x - self.textsize/2 + (self.modX or 0)
-		
+
 		surface.DrawTexturedRect(x, fonty*1.5-tonumber(ey*1.5)+(self.modY or 0), tonumber(ex*3), tonumber(ey*3))
 		self.x = (self.x or 0) + ex*3 + 12
 
@@ -350,20 +350,20 @@ end
 
 function Title.TextColor(self, col)
 	local curc = self.TextColorMod or {}
-	if col then 
+	if col then
 		local r, g, b = tonumber(col[1]), tonumber(col[2]), tonumber(col[3])
 		r, g, b = math.Clamp(r or 0, 0, 255), math.Clamp(g or 0, 0, 255), math.Clamp(b or 0, 0, 255)		--so the user doesn't have to deal with wrapping
 
 		local c = Color(r, g, b, tonumber(col[4]) or curc.a or 255)
 		self.TextColorMod = c or Color(205,205,205, curc.a or 255)
-	else 
+	else
 		self.TextColorMod = Color(205,205,205, curc.a or 255)
 	end
 end
 
 function Title:HSV(col)
 	local curc = self.TextColorMod
-	if col then 
+	if col then
 		local hsv = HSVToColor((tonumber(col[1]) or 0)%360, tonumber(col[2]) or 1, tonumber(col[3]) or 1)
 		hsv.a = curc.a or 255
 		self.TextColorMod = hsv or Color(205,205,205, curc.a or 255)
@@ -378,13 +378,13 @@ local UpdatedViaCam = false
 
 local actions = {
 
-	["color"] = Title.TextColor, 
+	["color"] = Title.TextColor,
 	["translate"] = Title.TextPos,
 	["emote"] = Title.Emote,
 	["hsv"] = Title.HSV,
 }
 local onetags = {
-	
+
 	["emote"] = true,
 
 }
@@ -405,28 +405,28 @@ local ARs = {}
 
 surface.CreateFont("TitleName2d", {
 	font = "Helvetica",
-    size = 64,
-    weight = 600,
-    antialias = true,
+	size = 64,
+	weight = 600,
+	antialias = true,
 	})
 
 surface.CreateFont("TitleNameRound2d", {
 	font = "Helvetica",
-    size = 64,
-    weight = 600,
-    blursize = 8,
-    antialias = false,
-    shadow = true,
+	size = 64,
+	weight = 600,
+	blursize = 8,
+	antialias = false,
+	shadow = true,
 })
 
 
 surface.CreateFont("Title2d", {
 	font = "Roboto Light",
-    size = 36,
-    weight = 400,
-    blursize = 0,
-    antialias = true,
-    --shadow = true,
+	size = 36,
+	weight = 400,
+	blursize = 0,
+	antialias = true,
+	--shadow = true,
 })
 
 local ARAlpha = 255
@@ -443,8 +443,8 @@ function Titles.Draw(ply)
 
 	local pos = me:GetPos()
 	if pos:DistToSqr(ply:GetPos()) > 1048576 then return end --1024 ^ 2
-	if UpdatedViaCam then 
-		pos = myPos 
+	if UpdatedViaCam then
+		pos = myPos
 	end
 
 	local vec = ( ply:GetPos() - pos ):GetNormalized()
@@ -476,24 +476,24 @@ function Titles.Draw(ply)
 
 	local tags = {}
 	local x = 0
-	
-	
-    if ply:GetNW2Int("AFK", 0) ~= 0 and CurTime() - ply:GetNW2Int("AFK", 0) > 30 then
-        afk[sid] = true
-    else
-        afk[sid] = false
-    end
+
+
+	if ply:GetNW2Int("AFK", 0) ~= 0 and CurTime() - ply:GetNW2Int("AFK", 0) > 30 then
+		afk[sid] = true
+	else
+		afk[sid] = false
+	end
 
 	cam.Start3D2D(pos, ang, scale)
-        
-		if ply:Crouching() then
-            cra[sid] = Lerp(FrameTime()*10, (cra[sid] or 10), 10)
-        else
-            cra[sid] = Lerp(FrameTime()*5, (cra[sid] or 200), 200)
-        end
-        hps[sid] = Lerp(FrameTime()*5, (hps[sid] or ply:GetMaxHealth()), math.min(ply:Health(), ply:GetMaxHealth()))
 
-        local maxHp = ply:GetMaxHealth()
+		if ply:Crouching() then
+			cra[sid] = Lerp(FrameTime()*10, (cra[sid] or 10), 10)
+		else
+			cra[sid] = Lerp(FrameTime()*5, (cra[sid] or 200), 200)
+		end
+		hps[sid] = Lerp(FrameTime()*5, (hps[sid] or ply:GetMaxHealth()), math.min(ply:Health(), ply:GetMaxHealth()))
+
+		local maxHp = ply:GetMaxHealth()
 
 		local bw = 600*(hps[sid]/maxHp)
 		local bx = -300
@@ -501,18 +501,6 @@ function Titles.Draw(ply)
 		local bh = 30
 		local slant = 16
 		local a = cra[sid]
-		--[[
-		Spectre.Mask({
-			{x = bx+slant, y = y},
-			{x = bx+bw, y = y},
-			{x = bx+bw-slant, y = y+bh},
-			{x = bx, y = y+bh}
-		}, function()
-			Spectre.DrawGradientBar(bx, y, bw, bh, ColorAlpha(Color(168, 66, 64), a), ColorAlpha(Color(215, 147, 102), a))
-		end)
-
-		draw.SimpleText(math.Round(math.max(ply:Health(), hps[sid])), "TW72", bx+bw+slant, y+bh/2, Color(255,255,255), 0, 1)
-		]]
 
 		y = y + 40
 		bh = 30
@@ -523,23 +511,9 @@ function Titles.Draw(ply)
 
 		local arCol = 9
 		local arColL = 9
-		--[[
-		Spectre.Mask({
-			{x = bx+slant, y = y},
-			{x = bx+bw, y = y},
-			{x = bx+bw-slant, y = y+bh},
-			{x = bx, y = y+bh}
-		}, function()
-			Spectre.DrawGradientBar(bx, y, bw+2, bh, ColorAlpha(arCol, a), ColorAlpha(arColL, a))
-		end)
-		
-		ARAlpha = Lerp(FrameTime()*5, ARAlpha, (ply:Armor()>0 and 255) or 0)
 
-		draw.SimpleText(math.Round(math.max(ply:Armor(), ARs[sid])), "TW72", bx+bw+slant, y+bh/2, Color(255,255,255,ARAlpha), 0, 1)
-		]]
+		local pln = string.gsub(ply:Name(), "#", "")
 
-        local pln = string.gsub(ply:Name(), "#", "")
-        
 		surface.SetFont("TitleNameRound")   --blur
 		local s = surface.GetTextSize(pln)
 		surface.SetTextPos( 0 - s/2, -50 )	--ok?
@@ -550,12 +524,12 @@ function Titles.Draw(ply)
 		surface.SetFont("TitleName")
 		surface.SetTextPos( 0 - s/2, -50 )	--ok?
 		surface.SetTextColor(ColorAlpha(team.GetColor(ply:Team()), cra[sid]))
-        
+
 		surface.DrawText(pln)
 
-		--if afk[sid]]then 
+		--if afk[sid]]then
 		if ply:GetNW2Bool("IsAFK") then
-			local afktxt = "AFK for " 
+			local afktxt = "AFK for "
 			local tabbed = ( ply:GetNW2Bool("AFKFocused", true) and "") or " (tabbed out)"
 			local timetxt = string.NiceTime(CurTime() - ply:GetNW2Float("AFK", 0)) .. tabbed .. "..."
 			surface.SetFont("Status")
@@ -580,26 +554,26 @@ function Titles.Draw(ply)
 
 			surface.DrawText(afktxt)
 		end
-		if playertitles[sid] then 
+		if playertitles[sid] then
 
 			Title.Player = {}
-			local self = Title.Player 
+			local self = Title.Player
 			self.x = 0
-			
-            self.cra = cra[sid]
-                
+
+			self.cra = cra[sid]
+
 			local tag, title = ParseTitle(playertitles[sid])
 			self.text = title
 
 
 			for k,v in pairs(tag) do
-				local tag = v[1]	
-				local pos = v[2]	
+				local tag = v[1]
+				local pos = v[2]
 
 				tag = string.sub(tag, 2, #tag - 1)
 
 					local op = string.match(tag, "^([%a]+)=")
-					if not op then 
+					if not op then
 						op = string.match(tag, "^(/[%a]+)")
 						if not op then continue end
 					end
@@ -613,7 +587,7 @@ function Titles.Draw(ply)
 			end
 
 
-			--tags: 
+			--tags:
 				--1: tag name
 				--2: position in text
 				--3: arguments
@@ -626,7 +600,7 @@ function Titles.Draw(ply)
 			local fullx = surface.GetTextSize(title)
 			for k,v in pairs(tags) do
 
-				if v[1] == "emote" then 
+				if v[1] == "emote" then
 
 					local ex, ey = unpack(EmoteSize[unpack(v[3])] or {32, 32})
 					fullx = fullx+ex*3+8
@@ -635,12 +609,12 @@ function Titles.Draw(ply)
 			end
 
 			self.textsize = fullx
-			
+
 
 			local activetags = {}
 
 			for t=1, #title+1 do
-				
+
 				local txt = title[t]
 
 				local tx = surface.GetTextSize(txt)
@@ -652,9 +626,9 @@ function Titles.Draw(ply)
 					local pos = v[2]
 					local args = v[3]
 
-					
 
-					if t>=pos then 
+
+					if t>=pos then
 						if op[1]~="/" then
 							activetags[op] = {pos, args}
 						else
@@ -678,36 +652,36 @@ function Titles.Draw(ply)
 						for k,v in pairs(args) do
 							local exp = string.match(v, "%b[]")
 
-							if exp and #exp > 2 then 	
+							if exp and #exp > 2 then
 								exp = string.sub(exp, 2, #exp-1)
 								local compiled = Title.CompileExpression(self, exp)
-								local ok, ret 
+								local ok, ret
 
-								if isfunction(compiled) then 
+								if isfunction(compiled) then
 									ok, ret = pcall(compiled)
 								end
 
 								if ok and tonumber(ret) then args[k] = tonumber(ret) end
 
-								if not ok then 
-									if ply==LocalPlayer() then 
-									    if not ErroredTitles[playertitles[sid]] or not ErroredTitlesStr[exp] then
-										    print('Your title is erroring out.\n', ret) 
-										    ErroredTitles[playertitles[sid]] = true
-										    ErroredTitlesStr[exp] = true
+								if not ok then
+									if ply==LocalPlayer() then
+										if not ErroredTitles[playertitles[sid]] or not ErroredTitlesStr[exp] then
+											print('Your title is erroring out.\n', ret)
+											ErroredTitles[playertitles[sid]] = true
+											ErroredTitlesStr[exp] = true
 										end
 									end
 								end
 
 							end
 						end
-						
-					if actions[k] and not onetags[k] then 
+
+					if actions[k] and not onetags[k] then
 
 						actions[k](self, args)
 
-					elseif onetags[k] and (pos>=t) then 
-						
+					elseif onetags[k] and (pos>=t) then
+
 						actions[k](self, args)
 						activetags[k] = nil
 
@@ -732,8 +706,8 @@ function Titles.Draw(ply)
 
 				TextTranslate = {0, 0}
 			end
-			
-		else 
+
+		else
 			ply:UpdateTitle()
 		end
 		--surface.DrawText( ply:Nick() )
@@ -744,44 +718,44 @@ end
 
 
 function Titles.DrawNonPlayer(title, color, name, pnl, x, y, font1)
-	
+
 
 	local tags = {}
 	local pnlX = x
 	local pnlY = y
 	local pln = (name or "<no name>"):gsub("#", "")
-	local err = nil 
+	local err = nil
 	local fulltextwidth = 0
 
-	local a = color.a or 255 
+	local a = color.a or 255
 
 	local font = font1 or "Title2d"
 
-	if name then 
+	if name then
 		draw.SimpleText(pln, "TitleNameRound2d", 0+pnlX, -80+pnlY, Color(0,0,0,255), 1, 0)
 		draw.SimpleText(pln, "TitleName2d", 0+pnlX, -80+pnlY, color or Color(60,60,60), 1, 0)
 	end
 
-		if title then 
+		if title then
 
 			Title.Player = {}
-			local self = Title.Player 
+			local self = Title.Player
 			self.x = pnlX
-			
-            self.cra = 255
-                
+
+			self.cra = 255
+
 			local tag, title = ParseTitle(title)
 			self.text = title
 
 
 			for k,v in pairs(tag) do
-				local tag = v[1]	
-				local pos = v[2]	
+				local tag = v[1]
+				local pos = v[2]
 
 				tag = string.sub(tag, 2, #tag - 1)
 
 					local op = string.match(tag, "^([%a]+)=")
-					if not op then 
+					if not op then
 						op = string.match(tag, "^(/[%a]+)")
 						if not op then continue end
 					end
@@ -795,7 +769,7 @@ function Titles.DrawNonPlayer(title, color, name, pnl, x, y, font1)
 			end
 
 
-			--tags: 
+			--tags:
 				--1: tag name
 				--2: position in text
 				--3: arguments
@@ -808,7 +782,7 @@ function Titles.DrawNonPlayer(title, color, name, pnl, x, y, font1)
 			local fullx = surface.GetTextSize(title)
 			for k,v in pairs(tags) do
 
-				if v[1] == "emote" then 
+				if v[1] == "emote" then
 
 					local ex, ey = unpack(EmoteSize[unpack(v[3])] or {32, 32})
 					fullx = fullx+ex*3+8
@@ -817,12 +791,12 @@ function Titles.DrawNonPlayer(title, color, name, pnl, x, y, font1)
 			end
 
 			self.textsize = fullx
-			
+
 
 			local activetags = {}
 
 			for t=1, #title+1 do
-				
+
 				local txt = title[t]
 
 				local tx = surface.GetTextSize(txt)
@@ -834,9 +808,9 @@ function Titles.DrawNonPlayer(title, color, name, pnl, x, y, font1)
 					local pos = v[2]
 					local args = v[3]
 
-					
 
-					if t>=pos then 
+
+					if t>=pos then
 						if op[1]~="/" then
 							activetags[op] = {pos, args}
 						else
@@ -860,19 +834,19 @@ function Titles.DrawNonPlayer(title, color, name, pnl, x, y, font1)
 
 							local exp = string.match(v, "%b[]")
 
-							if exp and #exp > 2 then 	
+							if exp and #exp > 2 then
 								exp = string.sub(exp, 2, #exp-1)
 								local compiled = Title.CompileExpression(self, exp)
-								local ok, ret 
-								
-								if isfunction(compiled) then 
+								local ok, ret
+
+								if isfunction(compiled) then
 									ok, ret = pcall(compiled)
 								end
 								--print(compiled, ok, ret)
 
 								if ok and tonumber(ret) then args[k] = tonumber(ret) end
 
-								if not ok then 
+								if not ok then
 									local errstr = ""
 
 									if isstring(compiled) then errstr=compiled else errstr=ret end
@@ -889,12 +863,12 @@ function Titles.DrawNonPlayer(title, color, name, pnl, x, y, font1)
 
 							end
 						end
-						
-					if actions[k] and not onetags[k] then 
+
+					if actions[k] and not onetags[k] then
 
 						actions[k](self, args)
-					elseif onetags[k] and (pos>=t) then 
-						
+					elseif onetags[k] and (pos>=t) then
+
 						actions[k](self, args)
 						activetags[k] = nil
 

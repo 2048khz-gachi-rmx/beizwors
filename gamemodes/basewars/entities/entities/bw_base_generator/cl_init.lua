@@ -52,26 +52,28 @@ function ENT:PaintStructureInfo(w, y)
 	if self.PowerGenerated == 0 then return 0 end
 
 	local ic = Icons.Electricity
-	local icSz = 24
+	local icSz = 20
 	local icPad = 4
 
-	local smallFont = "OSB18"
+	local smallFont = "EX16"
 	local tw2, th2 = surface.GetTextSizeQuick(tx2, smallFont)
-	local tw, th = surface.GetTextSizeQuick(txt, "OSB24")
+	local tw, th = surface.GetTextSizeQuick(txt, "EXSB24")
 
 	local totalW = tw + icSz + icPad + tw2
 
 	ic:Paint(w / 2 - totalW / 2, y, icSz, icSz)
 
-	surface.SetTextColor(Colors.Money)
+	y = y - th * 0.125
 	draw.SimpleText2(txt, nil,
-		w/2 - totalW / 2 + icSz, y, nil, 0, 5)
+		w/2 - totalW / 2 + icSz, y, Colors.Money)
 
 	surface.SetFont(smallFont)
 	surface.SetTextPos(w/2 - totalW/2 + icSz + tw, y + th * 0.875 - th2 * 0.875)
 	surface.DrawText(tx2)
 
-	return math.max(icSz, draw.GetFontHeight(smallFont)) + 4
+	local ny = math.max(icSz, th2 + th * 0.875 - th2 * 0.875)
+
+	return ny
 end
 
 function ENT:CLInit()

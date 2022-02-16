@@ -12,10 +12,10 @@ local surface = surface
 local dh = DarkHUD
 local fonts = DarkHUD.Fonts
 
-fonts.NameFont = "Open Sans Semibold"
-fonts.FactionFont = "Open Sans"
-fonts.MoneyFont = "Open Sans"
-fonts.VitalsNumberFont = "Open Sans"
+fonts.NameFont = "Exo 2 SemiBold"
+-- fonts.FactionFont = "Exo 2"
+fonts.MoneyFont = "Exo 2 Medium"
+fonts.VitalsNumberFont = "Exo 2 Bold"
 
 local st = DarkHUD.SettingFrame or Settings.Create("darkhud_drawframe", "bool")
 st:SetDefaultValue(true)
@@ -33,7 +33,7 @@ local function createFonts()
 
 	fonts.NameHeight = 40 * scale
 	fonts.FactionHeight = 16 + 12 * scale
-	fonts.MoneyHeight = 28 * scale
+	fonts.MoneyHeight = 30 * scale
 	fonts.VitalsNumberHeight = 12 + 16 * scale
 
 	surface.CreateFont("DarkHUD_Name", {
@@ -41,10 +41,10 @@ local function createFonts()
 		size = fonts.NameHeight
 	})
 
-	surface.CreateFont("DarkHUD_Faction", {
+	--[[surface.CreateFont("DarkHUD_Faction", {
 		font = fonts.FactionFont,
 		size = fonts.FactionHeight
-	})
+	})]]
 
 	surface.CreateFont("DarkHUD_Money", {
 		font = fonts.MoneyFont,
@@ -132,7 +132,7 @@ function DarkHUD.CreateVitals()
 	av:SetPaintedManually(true)
 
 	function f:ResizeElements()
-		fw, fh = scale * 500, scale * 220
+		fw, fh = scale * 500, scale * 210
 
 		recalcBarH()
 
@@ -146,7 +146,7 @@ function DarkHUD.CreateVitals()
 		av:SetSize(64 * scale, 64 * scale)
 		av:SetPos(16, hs + 8)
 
-		local moneyY = av.Y + av:GetTall() / 2 + 6 + 36 * scale
+		local moneyY = av.Y + av:GetTall() + 2
 
 		local vlsH = f:GetTall() - moneyY
 		--math.max(barH, draw.GetFontHeight("DarkHUD_VitalsNumber")) * 2 + barPad
@@ -319,6 +319,7 @@ function DarkHUD.CreateVitals()
 			local boxY, boxH = -mf * 36, 32
 
 			local am = surface.GetAlphaMultiplier()
+
 			surface.SetAlphaMultiplier(surface.GetAlphaMultiplier() * mf)
 			DisableClipping(true)
 				draw.RoundedBox(8, 12, boxY, mw + 8 + 24 + 6 + 8, boxH, boxcol)
@@ -371,22 +372,23 @@ function DarkHUD.CreateVitals()
 		local nameY = y + h2 / 2
 		local fh = draw.GetFontHeight("DarkHUD_Name")
 
-		local tw, th = draw.SimpleText(me:Nick(), "DarkHUD_Name",
-			x + w2 + 12, nameY + fh * 0.125 / 2, curTeamCol, 0, 4)
+		draw.SimpleText(me:Nick(), "DarkHUD_Name",
+			x + w2 + 12, nameY, curTeamCol, 0, 4)
 
-		local sz = 36 * scale
+		local sz = 30 * scale
 		local ic = ic2
 		if sz <= 32 then
 			ic = ic1
 		end
 
-		local moneyY = nameY + 6 - popups.BounceMoney * 6
+		local moneyY = math.floor(y + h2 - fonts.MoneyHeight + 6 - popups.BounceMoney * 6)
 
 		surface.SetDrawColor(moneyIconCol:Unpack())
 
 		ic:Paint(x + w2 + 12, moneyY, sz, sz)
 
-		moneyY = moneyY - popups.BounceMoney * 2
+		moneyY = moneyY - popups.BounceMoney * 2 - fonts.MoneyHeight * 0.125 / 2
+
 		draw.SimpleText2(Language("Price", me:GetMoney()), "DarkHUD_Money",
 			x + w2 + 12 + sz + 4, moneyY + sz/2, popups.MoneyColor, 0, 1)
 
@@ -538,41 +540,8 @@ function DarkHUD.CreateVitals()
 				if not b then DisableClipping(false) end
 			end
 
-			--[[
-			if not round then
-				--draw.RoundedBox(8, avx, avy, hpw, 16, Color(240, 70, 70))
-				if barW * hpfr < barH then
-					render.SetScissorRect(sx, sy - 2, sx + math.floor(barW * hpfr), sy + barH + 2, true)
-						draw.RoundedBoxEx(rndrad, barX, barY, barH, barH, hpCol, true, true, true, true)
-					render.SetScissorRect(0, 0, 0, 0, false)
-				else
-
-					draw.RoundedBox(rndrad, barX, barY - 1,
-						math.ceil(barW * hpfr), barH + 2, hpBorderCol)
-					draw.RoundedBox(rndrad, barX, barY, math.ceil(barW * hpfr), barH, hpCol)
-				end
-
-			elseif round then
-
-				if vfr > 0 then
-					DarkHUD.RoundedBoxCorneredSize(rndrad, barX, barY - 1,
-						math.ceil(barW * vfr), barH + 2, venomBorderCol, rndrad, round, rndrad, round)
-					DarkHUD.RoundedBoxCorneredSize(rndrad, barX, barY,
-						math.ceil(barW * vfr), barH, venomCol, rndrad, round, rndrad, round)
-				end
-
-				local borderRight = vfr > 0 and 1 or 0
-
-				DarkHUD.RoundedBoxCorneredSize(rndrad, barX, barY - 1,
-					math.ceil(barW * hpfr) + borderRight, barH + 2, hpBorderCol, rndrad, round, rndrad, round)
-				DarkHUD.RoundedBoxCorneredSize(rndrad, barX, barY,
-					math.ceil(barW * hpfr), barH, hpCol, rndrad, round, rndrad, round)
-				
-			end
-			]]
-
 			draw.SimpleText(hpText, font,
-				barX + barW + 6, barY + barH/2 - 1, color_white, 0, 1)
+				barX + barW + 6, barY + barH/2 - fonts.VitalsNumberHeight * 0.125 / 2, color_white, 0, 1)
 
 
 		--[[
@@ -606,7 +575,7 @@ function DarkHUD.CreateVitals()
 			end
 
 			draw.SimpleText(arText, font,
-				barX + barW + 6, barY + barH/2 - 1, color_white, 0, 1)
+				barX + barW + 6, barY + barH/2  - fonts.VitalsNumberHeight * 0.125 / 2, color_white, 0, 1)
 
 			DarkHUD:Emit("VitalsBarsPainted", w, h)
 	end

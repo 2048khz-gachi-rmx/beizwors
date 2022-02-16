@@ -11,9 +11,6 @@ local families = {
 	["Roboto"] = "R",
 	["Roboto Light"] = "RL",
 
-	["Titillium Web"] = "TW",
-	["Titillium Web SemiBold"] = "TWB",
-
 	["Open Sans"] = "OS",
 	["Open Sans SemiBold"] = "OSB",
 	["Open Sans Light"] = "OSL",
@@ -21,10 +18,10 @@ local families = {
 	["Arial"] = "A",
 	["Helvetica"] = "HL",
 
-	["Exo Regular"] = "EX",
-	["Exo SemiBold"] = "EXSB",
-	["Exo Bold"] = "EXB",
-	["Exo Medium"] = "EXM",
+	["Exo 2 Regular"] = "EX",
+	["Exo 2 SemiBold"] = "EXSB",
+	["Exo 2 Bold"] = "EXB",
+	["Exo 2 Medium"] = "EXM",
 
 	["Montserrat"] = "MR",
 	["Montserrat Medium"] = "MRM",
@@ -39,8 +36,6 @@ local families = {
 	["BreezeSans Bold"] = "BSB",
 
 	["DejaVu Sans"] = "DV",
-
-	["Sydnie"] = "SYD",
 
 	["Remington Noiseless"] = "WEIRD",
 }

@@ -24,11 +24,13 @@ function sin:PaintName(cury)
 
 	local offy = cury
 
-	local font, sz = Fonts.PickFont("OSB", self._EntName, w * 0.8,
-		DarkHUD.Scale * 40, nil, 24)
+	local font, sz = Fonts.PickFont("EXSB", self._EntName, w * 0.8,
+		DarkHUD.Scale * 44, nil, 24)
 
 	local tw, th = draw.SimpleText(self._EntName, font,
-		self:GetWide() / 2, cury, color_white, 1, 5)
+		self:GetWide() / 2, cury - sz * 0.125, color_white, 1, 5)
+
+	th = th * 0.875
 
 	offy = math.floor(offy + th + 2 * scale)
 

@@ -2,7 +2,7 @@ local bw = BaseWars.Bases
 local nw = bw.NW
 local hud = bw.HUD
 
-local titleFont = "MR36"
+local titleFont = "EXM36"
 
 function hud:GetNameDT()
 	if self._NameDT then return self._NameDT end
@@ -11,7 +11,7 @@ function hud:GetNameDT()
 	local zname = zone and zone:GetName() ~= "" and zone:GetName()
 
 	local dt = DeltaText()
-		:SetFont("MRM24")
+		:SetFont("EXM24")
 
 	local piece, key = dt:AddText("")
 	dt._zonelesspiece = piece
@@ -21,7 +21,7 @@ function hud:GetNameDT()
 
 	dt.AlignY = -2 --use paint's Y as bottom
 
-	piece:SetFont("MR18")
+	piece:SetFont("EX18")
 	piece:SetColor(Color(150, 150, 150))
 	dt.BaseStarter = piece:AddFragment("(", 1)
 	dt.BaseName = piece:AddFragment(zname or "", 2)
@@ -82,7 +82,7 @@ function hud:PaintName(cury)
 		self:SetWide(wantW)
 	end
 
-	return math.max(th * 0.875, dth) + 4
+	return math.max(th * 0.875, dth)
 end
 
 hud.AddPaintOp(9998, "PaintName", hud)

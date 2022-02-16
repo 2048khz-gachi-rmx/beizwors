@@ -146,6 +146,10 @@ function COLOR:SetText()
 	surface.SetTextColor(self.r, self.g, self.b, self.a or 255)
 end
 
+function COLOR:Lerp(fr, from, to)
+	draw.LerpColor(fr, self, to, from)
+end
+
 function IsMaterial(m)
 	return type(m) == "IMaterial"	--we can't really compare m.MetaName because m might not even be a table
 end

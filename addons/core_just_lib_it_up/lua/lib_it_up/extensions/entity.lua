@@ -199,9 +199,11 @@ function ENTITY:BaseRecurseCall(methodName, ...)
 	local base = scripted_ents.GetStored(self.Base).t
 	local lastBaseName = self.Base
 
+	local a, b, c, d, e, f
+
 	while base do
 		if base[methodName] then
-			base[methodName] (self, ...)
+			a, b, c, d, e, f = base[methodName] (self, ...)
 		end
 		if not base.Base or base.Base == lastBaseName then break end
 		lastBaseName = base.Base
@@ -209,6 +211,7 @@ function ENTITY:BaseRecurseCall(methodName, ...)
 	end
 
 	self._recursing[methodName] = nil
+	return a, b, c, d, e, f
 end
 
 function ENTITY:GetSubscribersKeys()

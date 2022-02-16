@@ -137,13 +137,18 @@ function Animatable:AnimationThink()
 			
 			if ( anim.Think ) then
 
-				local Frac = Fraction ^ anim.Ease
+				local Frac
+				if anim.EaseFn then
+					Frac = anim.EaseFn(Fraction)
+				else
+					Frac = Fraction ^ anim.Ease
 
-				-- Ease of -1 == ease in out
-				if ( anim.Ease < 0 ) then
-					Frac = Fraction ^ ( 1.0 - ( ( Fraction - 0.5 ) ) )
-				elseif ( anim.Ease > 0 && anim.Ease < 1 ) then
-					Frac = 1 - ( ( 1 - Fraction ) ^ ( 1 / anim.Ease ) )
+					-- Ease of -1 == ease in out
+					if ( anim.Ease < 0 ) then
+						Frac = Fraction ^ ( 1.0 - ( ( Fraction - 0.5 ) ) )
+					elseif ( anim.Ease > 0 && anim.Ease < 1 ) then
+						Frac = 1 - ( ( 1 - Fraction ) ^ ( 1 / anim.Ease ) )
+					end
 				end
 
 				anim.Frac = Frac
@@ -188,6 +193,7 @@ function Animatable:NewAnimation( length, delay, ease, callback )
 		EndTime = delay + length,
 		StartTime = delay,
 		Ease = ease,
+		EaseFn = isfunction(ease) and ease or nil,
 		OnEnd = callback,
 		Parent = self,
 		Valid = true,
@@ -254,7 +260,7 @@ function Animatable:Lerp(key, val, dur, del, ease, forceswap)
 	end)
 
 	anim.Think = function(anim, self, fr)
-		self[key] = Lerp(fr, from, val)
+		self[key] = UnboundedLerp(fr, from, val)
 	end
 
 	self:Emit("NewAnimation", anim, self, key, val)
@@ -303,7 +309,7 @@ function Animatable:MemberLerp(tbl, key, val, dur, del, ease, forceswap)
 	end)
 
 	anim.Think = function(anim, self, fr)
-		tbl[key] = Lerp(fr, from, val)
+		tbl[key] = UnboundedLerp(fr, from, val)
 	end
 
 	self:Emit("NewAnimation", anim, tbl, key, val)
@@ -317,23 +323,23 @@ Animatable.LerpMember = Animatable.MemberLerp
 --src will be the source color from which the lerp starts
 local function LerpColor(frac, col1, col2, src)
 
-	col1.r = Lerp(frac, src.r, col2.r)
-	col1.g = Lerp(frac, src.g, col2.g)
-	col1.b = Lerp(frac, src.b, col2.b)
+	col1.r = UnboundedLerp(frac, src.r, col2.r)
+	col1.g = UnboundedLerp(frac, src.g, col2.g)
+	col1.b = UnboundedLerp(frac, src.b, col2.b)
 
 	if src.a ~= col2.a then
-		col1.a = Lerp(frac, src.a, col2.a)
+		col1.a = UnboundedLerp(frac, src.a, col2.a)
 	end
 
 end
 
 local function LerpColorFrom(frac, col1, col2, col3) --the difference is that the result is written into col3 instead, acting like classic lerp
-	col3.r = Lerp(frac, col1.r, col2.r)
-	col3.g = Lerp(frac, col1.g, col2.g)
-	col3.b = Lerp(frac, col1.b, col2.b)
+	col3.r = UnboundedLerp(frac, col1.r, col2.r)
+	col3.g = UnboundedLerp(frac, col1.g, col2.g)
+	col3.b = UnboundedLerp(frac, col1.b, col2.b)
 
 	if col1.a ~= col2.a then
-		col3.a = Lerp(frac, col1.a, col2.a)
+		col3.a = UnboundedLerp(frac, col1.a, col2.a)
 	end
 end
 

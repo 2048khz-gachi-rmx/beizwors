@@ -27,7 +27,7 @@ function hud:GetPowerDT()
 	dt._acpiece = piece
 	dt:CycleNext()
 
-	piece:SetFont("MR20")
+	piece:SetFont("EXSB20")
 	piece:SetColor(neutralColor)
 	piece:SetLiftStrength(-8)
 	piece:SetDropStrength(8)

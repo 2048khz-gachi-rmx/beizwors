@@ -460,6 +460,8 @@ function button:Draw(w, h)
 
 		self:PreLabelPaint(w, h)
 
+		local THIS_IS_SUCH_A_SHITTY_HACK = t.Font:match("^EX") and 0.125 * (ay / 2) or 0
+
 		if newlines > 0 then
 			surface.SetFont(t.Font)
 			surface.SetTextColor(lblCol:Unpack())
@@ -480,7 +482,7 @@ function button:Draw(w, h)
 					lY = ty - lH * (ay / 2)
 				end
 
-				surface.SetTextPos(tx - tW * (ax / 2) + (iW + iconX) / 2, lY + tH * (num - 1))
+				surface.SetTextPos(tx - tW * (ax / 2) + (iW + iconX) / 2, lY + tH * (num - 1) - tH * THIS_IS_SUCH_A_SHITTY_HACK)
 				surface.DrawText(s)
 			end
 
@@ -507,7 +509,7 @@ function button:Draw(w, h)
 			local tX = math.Round(iX + iconX + iW)
 			local tY = math.Round(ty - tH * (ay / 2))
 
-			surface.SetTextPos(tX, tY)
+			surface.SetTextPos(tX, tY - tH * THIS_IS_SUCH_A_SHITTY_HACK)
 			surface.SetTextColor(lblCol:Unpack())
 			surface.DrawText(label)
 		end

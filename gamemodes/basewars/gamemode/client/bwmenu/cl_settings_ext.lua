@@ -2,13 +2,6 @@ local tab = {}
 tab.Order = -1
 BaseWars.Menu.Tabs["Settings"] = tab
 
-surface.CreateFont("Settings_Blur", {
-	size = 36,
-	font = "BreezeSans",
-	blursize = 8,
-	weight = 400
-})
-
 local function createTitle(scr, cat)
 	local title = scr:Add("Panel", cat)
 	local font = BaseWars.Menu.Fonts.BoldBig

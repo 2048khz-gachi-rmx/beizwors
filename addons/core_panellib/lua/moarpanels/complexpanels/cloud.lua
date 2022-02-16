@@ -83,6 +83,8 @@ function Cloud:Init()
 
 	self.Font = "OS24"
 	self.DescFont = "OSL18"
+	self.FontShit = 0
+
 	self.IsCloud = true
 
 	self:SetSize(2,2)
@@ -269,6 +271,8 @@ function Cloud:Paint()
 	local ch = 0
 
 	local tw, th = surface.GetTextSize(lab)
+	local Lplusratio = 1 - self.FontShit
+	th = math.floor(th * Lplusratio)
 
 	ch = self.HOverride or th
 
@@ -367,7 +371,7 @@ function Cloud:Paint()
 			labX = X + cw - 8
 		end
 
-		draw.DrawText(lab, self.Font, labX, Y + 2, self.TextColor, self.AlignLabel)
+		draw.DrawText(lab, self.Font, labX, Y + 2 - math.floor(th * self.FontShit), self.TextColor, self.AlignLabel)
 
 		local offy = finY + ch + 2
 

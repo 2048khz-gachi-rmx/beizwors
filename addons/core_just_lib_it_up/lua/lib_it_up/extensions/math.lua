@@ -120,6 +120,10 @@ function FPSLerp(vel, from, to, ft)
 	return Lerp(fr, from, to)
 end
 
+function UnboundedLerp(fr, from, to)
+	return from + (to - from) * fr
+end
+
 function bit.bool(bool)
 	return bool and 1 or 0
 end

@@ -242,7 +242,7 @@ function CreateRaidButton(id, v)
 		f.Start = v.Start
 		f.PartOf = v:IsParticipant(LocalPlayer())
 
-		f.Font = "TW18"
+		f.Font = "EXM20"
 
 		if raid.MyRaid and raid.MyRaid.Panel and IsValid(raid.MyRaid.Panel) then
 			raid.MyRaid.Panel:Remove()

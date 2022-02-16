@@ -53,14 +53,14 @@ _ = cout64:IsError() and hdl.DownloadFile("https://i.imgur.com/kY0Isiz.png", "ci
 
 local function LerpColor(frac, into, to, from)
 
-	into.r = Lerp(frac, from.r, to.r)
-	into.g = Lerp(frac, from.g, to.g)
-	into.b = Lerp(frac, from.b, to.b)
+	into.r = UnboundedLerp(frac, from.r, to.r)
+	into.g = UnboundedLerp(frac, from.g, to.g)
+	into.b = UnboundedLerp(frac, from.b, to.b)
 
 	local sA, c1A, c2A = from.a, into.a, to.a
 
 	if sA ~= c2A or c1A ~= c2A then
-		into.a = Lerp(frac, sA, c2A)
+		into.a = UnboundedLerp(frac, sA, c2A)
 	end
 
 end

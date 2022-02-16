@@ -268,7 +268,7 @@ function CreatePlayerFrame(sb, ply)
 		-- centervertical wont work properly due to expand button
 		av.Y = h / 2 - av:GetTall() / 2 
 
-		draw.SimpleText(lastnick .. " ", "TW32", 88, 2, color_white)
+		draw.SimpleText(lastnick .. " ", "EXM32", 88, 2, color_white)
 
 		local infoFont = "OS20"
 		local lines = 2
