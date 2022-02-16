@@ -3,6 +3,7 @@ AddCSLuaFile()
 ENT.Base 			= "bw_base_generator"
 ENT.PrintName 		= "Solar Panel"
 ENT.Model 			= "models/props_lab/miniteleport.mdl"
+ENT.RenderGroup 	= RENDERGROUP_TRANSLUCENT
 
 ENT.TransmitRadius 	= 200
 
@@ -30,9 +31,16 @@ end
 
 function ENT:Think()
 	self.BaseClass.Think(self)
-	if CLIENT then return end
+	if CLIENT then
+		self.PowerGenerated = self:GetSunAccess() and skyPower or skylessPower
+		return
+	end
 	return BaseWars.Solar.Think(self)
 end
+
+local activeCol = Color(235, 180, 70)
+local inactiveCol = Color(90, 90, 90)
+local txCol = Color(95, 95, 95)
 
 function ENT:GenerateOptions(qm, pnl)
 	local ind = vgui.Create("GradPanel", pnl)
@@ -48,10 +56,6 @@ function ENT:GenerateOptions(qm, pnl)
 
 	local tx = "%d%%"
 	local pwtx = "( %dpw/s )"
-
-	local activeCol = Color(235, 180, 70)
-	local inactiveCol = Color(60, 60, 60)
-	local txCol = Color(95, 95, 95)
 
 	local sun = ent:GetSunAccess()
 	local base = ent:GetBaseAccess()
@@ -119,4 +123,41 @@ function ENT:Draw()
 		render.DrawBeam(pos, pos2, 8, 0, 1, color_white)
 		-- draw a beam from sun scanner pos
 	end
+end
+
+local anim
+local Frs = {}
+
+local tCol = Color(0, 0, 0)
+
+function ENT:PaintStructureInfo(w, y)
+	local add = self:BaseRecurseCall("PaintStructureInfo", w, y)
+	y = y + add
+
+	anim = anim or Animatable("SolarDisplay")
+
+	local sun = self:GetSunAccess()
+	local base = self:GetBaseAccess()
+
+	local sz = 20
+	local col = sun and activeCol or inactiveCol
+
+	local tx = ("Sun access (+%dpw)"):format(skyPower - skylessPower)
+	local font = "EXM20"
+	local tw, th = surface.GetTextSizeQuick(tx, font)
+
+	local fw = tw + sz + 4
+
+	local eid = self:EntIndex()
+
+	anim:MemberLerp(Frs, eid, sun and 1 or 0, 0.4, 0, math.ease.OutBack)
+	local fr = Frs[eid] or 0
+	tCol:Lerp(fr, inactiveCol, activeCol)
+
+	surface.SetDrawColor(tCol:Unpack())
+	surface.DrawMaterial("https://i.imgur.com/QLZ1kck.png", "sun64.png", w/2 - fw/2, y, sz, sz)
+
+	draw.SimpleText2(tx, nil, w/2 - fw/2 + sz + 4, y + sz / 2 - th * 1.125 / 2, tCol)
+
+	return sz + 2 + add
 end
