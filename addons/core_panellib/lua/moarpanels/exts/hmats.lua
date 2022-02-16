@@ -35,7 +35,7 @@ local function GetOrDownload(url, name, flags, cb, errFn)
 
 		if file.Exists("hdl/" .. name, "DATA") then 		--mat existed on disk: load it in
 
-			local cmat = Material("data/hdl/" .. name, flags or "smooth ignorez")
+			local cmat = Material("data/hdl/" .. name, flags and tostring(flags) or "smooth ignorez")
 
 			mat.mat = cmat
 

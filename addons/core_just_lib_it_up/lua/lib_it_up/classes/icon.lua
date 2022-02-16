@@ -25,6 +25,8 @@ LibItUp.IncludeIfNeeded("extensions/player.lua")
 
 function Icon:Initialize(url, name, flags, cb)
 	if not url then error("Icon.Initialize: expected IMaterial in arg #1 or URL + name, got nothing instead") return end
+	if flags then CheckArg(3, flags, isstring, "string") end
+	if cb then CheckArg(4, cb, isfunction, "function") end
 
 	local is_url = isstring(url) and url:match("^https?://")
 

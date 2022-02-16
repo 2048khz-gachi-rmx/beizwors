@@ -39,7 +39,7 @@ local flagIcon = Icons.Flag128:Copy()
 flagIcon:SetSize(24, 24)
 flagIcon.IconX = 4
 
-local startIcon = Icon("https://i.imgur.com/xyrD9OM.png", "salilsawaarim.png", 24, 24)
+local startIcon = Icon("https://i.imgur.com/xyrD9OM.png", "salilsawaarim.png")
 startIcon:SetSize(24, 24)
 startIcon.IconX = 4
 
