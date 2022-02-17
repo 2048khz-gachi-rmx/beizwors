@@ -218,11 +218,13 @@ function ENT:OpenMenu()
 	menu:MakePopup()
 	menu.Inventory = inv
 
-	local tab = menu:AddTab("blueprints n shizz", function(_, _, old) self:GenerateWithdrawMenu(menu, old) end)
+	local tab = menu:AddTab("Storage", function(_, _, old) self:GenerateWithdrawMenu(menu, old) end)
 	tab.Font = "BS16"
 	tab:Select(true)
 	tab:SetTall(48)
 end
+
+local off = Vector(-12, -14, 79)
 
 function ENT:Draw()
 	self.Slots = self:GetLevel() * 2
@@ -230,7 +232,7 @@ function ENT:Draw()
 	self:CalculateScrollSpeed()
 	self:DrawModel()
 
-	local pos = self:LocalToWorld(Vector(-12, -14, 79))
+	--[[local pos = self:LocalToWorld(off)
 	local ang = self:GetAngles()
 
 	ang:RotateAroundAxis(ang:Forward(), 90)
@@ -245,7 +247,7 @@ function ENT:Draw()
 
 	if not ok then
 		print("err", err)
-	end
+	end]]
 
 end
 
