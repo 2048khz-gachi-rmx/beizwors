@@ -812,3 +812,81 @@ function draw.OnOffSlider(fr, x, y, w, h)
 	surface.SetDrawColor(knobcur)
 	draw.DrawMaterialCircle(kx, y + math.ceil(h / 2), knob)
 end
+
+local rbow_mat
+local rbow_mat_v
+
+local fn = "rainbow_gen.png"
+local fnver = "rainbow_gen_v.png"
+
+if not file.Exists(fn, "DATA") or not file.Exists(fnver, "DATA") then
+	local width, height = 512, 64
+	local outRT = GetRenderTarget(
+			"rainbow_gen" .. width .. "x" .. height,
+			width, height)
+
+	local outVerRT = GetRenderTarget(
+		"rainbow_genvert" .. width .. "x" .. height,
+		height, width)
+
+
+	-- horizontal
+	render.PushRenderTarget(outRT)
+	cam.Start2D()
+	render.Clear(0, 0, 0, 0, true)
+
+	render.OverrideAlphaWriteEnable(true, true)
+
+	for i=0, width - 1 do
+		surface.SetDrawColor(HSVToRGB(360 / width * i, 1, 1))
+		surface.DrawRect(i, 0, 1, 9999)
+	end
+
+	file.Write(fn, render.Capture({
+		format = "png",
+		x = 0, y = 0,
+		w = width, h = height,
+	}))
+
+	render.PopRenderTarget()
+	cam.End2D()
+
+	local t = width
+	width = height
+	height = t
+
+
+	-- vertical
+	render.PushRenderTarget(outVerRT)
+	cam.Start2D()
+	render.Clear(0, 0, 0, 0, true)
+
+	for i=0, height - 1 do
+		surface.SetDrawColor(HSVToRGB(360 / height * i, 1, 1))
+		surface.DrawRect(0, i, 9999, 1)
+	end
+
+	file.Write(fnver, render.Capture({
+		format = "png",
+		x = 0, y = 0,
+		w = width, h = height,
+	}))
+
+	render.PopRenderTarget()
+
+	render.OverrideAlphaWriteEnable(false, true)
+	cam.End2D()
+end
+
+rbow_mat = Material("data/" .. fn, "noclamp")
+rbow_mat_v = Material("data/" .. fnver, "noclamp")
+
+function draw.GetRainbowGradient(ver)
+	return ver and rbow_mat_v or rbow_mat
+end
+draw.GetRainbowGrad = draw.GetRainbowGradient
+
+function draw.SetRainbowGradient(ver)
+	surface.SetMaterial(draw.GetRainbowGradient(ver))
+end
+draw.SetRainbowGrad = draw.SetRainbowGradient

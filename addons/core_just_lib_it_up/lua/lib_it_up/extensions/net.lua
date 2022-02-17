@@ -69,12 +69,28 @@ function net.ReadSteamID()
 	return ("STEAM_%d:%d:%d"):format(univ, y, acc_id)
 end
 
---[[
-function net.WriteSteamID64()
 
+function net.WriteSteamID64(sid)
+	local is_autismal = not sid:match("^76561")
+
+	net.WriteBool(is_autismal)
+
+	if is_autismal then
+		net.WriteString(sid)
+	else
+		net.WriteDouble(sid:match("76561(%d+)"))
+	end
 end
 
 function net.ReadSteamID64()
+	local is_shit = net.ReadBool()
+	local ret
 
+	if is_shit then
+		ret = net.ReadString()
+	else
+		ret = "76561" .. net.ReadDouble()
+	end
+
+	return ret
 end
-]]

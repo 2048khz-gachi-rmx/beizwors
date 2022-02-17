@@ -81,6 +81,8 @@ local function HSVToColorRGB(hue, saturation, value)
 	return rets[hue_sector + 1] (value, p, q, t)
 end
 
+HSVToRGB = HSVToColorRGB
+
 local function ColorModHSV(col, h, s, v)
 	col.r, col.g, col.b = HSVToColorRGB(h, s, v)
 	return col
