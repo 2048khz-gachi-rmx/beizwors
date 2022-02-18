@@ -1,6 +1,8 @@
 --
 
 hook.Add("ArcCW_CL_AttAllowed", "Research_Lock", function(attId)
+	do return end
+
 	if not attId or attId == "" then return end
 
 	if not Research.AttAllowed(CachedLocalPlayer(), attId) then
@@ -14,6 +16,8 @@ local fnt = "EX32"
 local bfnt = Fonts.GenerateBlur(fnt, 3)
 
 hook.Add("ArcCW_CL_GenAttInfo", "Research_Info", function(pnl, att, attName, wep, i)
+	do return end
+
 	local slot = wep.Attachments[i]
 	local slotName = slot.Slot
 

@@ -129,6 +129,8 @@ for k,v in pairs(base_att.Levels) do
 end
 
 function Research.AttAllowed(ply, attName)
+	do return true end
+
 	local att
 	if istable(attName) then att = attName else att = ArcCW.AttachmentTable[attName] end
 
@@ -170,6 +172,7 @@ end
 
 
 hook.Add("ArcCW_PlayerCanAttach", "Research", function(ply, wep, attname, slot, detach, slotTbl)
+	do return end
 	if not attname or attname == "" or detach then return end
 
 	if not Research.AttAllowed(ply, attname) then
