@@ -92,6 +92,8 @@ function pd.SyncBWIntoSQL()
 
 			MySQLQuery(db:query(qry), true)
 				:Catch(mysqloo.CatchError)
+
+			hook.NHRun("BW_DataSynced" .. name, pi, val)
 		end
 
 		toSet[pi] = nil

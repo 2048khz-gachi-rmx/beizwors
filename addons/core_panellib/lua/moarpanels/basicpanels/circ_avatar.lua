@@ -4,13 +4,16 @@ local err = Material("__error")
 
 function AV:Init()
 	self.Rounding = 16
+	self.Corners = {true, true, true, true}
 end
 
 function AV:StencilAvatar(w, h)
 	surface.SetDrawColor(255, 255, 255)
 	--surface.DrawRect(0, 0, w, h)
 	draw.NoTexture()
-	draw.RoundedStencilBox(self.Rounding, 0, 0, w, h, color_white)
+	local cr = self.Corners
+	draw.RoundedStencilBox(self.Rounding, 0, 0, w, h, color_white,
+		cr[1], cr[2], cr[3], cr[4])
 end
 
 

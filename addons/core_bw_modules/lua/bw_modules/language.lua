@@ -86,7 +86,7 @@ if KROMER then
 		if isnumber(s) then s = BaseWars.NumberFormat(s) end
 		return ("YOU WERE REFUNDED %s [[KR0MER]] AFTER [[Server Burning Down]]."):format(CURRENCY)
 	end
-	
+
 	Strings.Price = function(str)
 		if isnumber(str) then
 			return BaseWars.NumberFormat(str) .. " [[KROMER]]"
@@ -94,12 +94,14 @@ if KROMER then
 			return (str or "???") .. " [[KROMER]]"
 		end
 	end
+
+	Strings.Money = Strings.Price
 else
 	Strings.Refunded			= function(s)
 		if isnumber(s) then s = BaseWars.NumberFormat(s) end
 		return ("You were refunded %s%s after a crash."):format(CURRENCY, s)
 	end
-	
+
 	Strings.Price = function(str)
 		if isnumber(str) then
 			return CURRENCY .. BaseWars.NumberFormat(str)
@@ -107,6 +109,8 @@ else
 			return CURRENCY .. (str or "???")
 		end
 	end
+
+	Strings.Money = Strings.Price
 end
 
 Strings.Health 			= "Health: %s/%s"

@@ -30,7 +30,7 @@ function meta:AnimationThinkInternal()
 	if ( !self.m_AnimList ) then return end -- This can happen if we only have term
 
 	for k, anim in pairs( self.m_AnimList ) do
-		if anim.Ended then continue end
+		if anim.Ended then self.m_AnimList[k] = nil continue end
 
 		if ( systime >= anim.StartTime ) then
 			if not anim._Started then
@@ -128,6 +128,10 @@ function meta:AnimTail()
 
 	return last
 
+end
+
+function meta:HasAnimations()
+	return self.m_AnimList and not table.IsEmpty(self.m_AnimList)
 end
 
 --[[---------------------------------------------------------

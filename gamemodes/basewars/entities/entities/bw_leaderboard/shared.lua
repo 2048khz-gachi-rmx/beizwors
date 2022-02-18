@@ -3,6 +3,7 @@ AddCSLuaFile()
 BW.LeaderBoard = BW.LeaderBoard or {}
 BW.Leaderboard = BW.LeaderBoard
 
+
 ENT.Base = "bw_base"
 ENT.Type = "anim"
 ENT.PrintName = "Template Entity"
@@ -27,6 +28,7 @@ if CLIENT then
 
 	function BW.Leaderboard.OnCreateNW(nw)
 		nw:On("CustomReadChanges", "Decode", function(self, changes)
+			BW.Leaderboard.LastUpdate = CurTime()
 			local amt = net.ReadUInt(8)
 
 			for i=1, amt do
@@ -45,6 +47,8 @@ if CLIENT then
 end
 
 local function load()
+	if SERVER then include("sv_dbdata.lua") end
+
 	nw = Networkable("bw_leaderboard")
 	BW.Leaderboard.NW = nw
 	BW.Leaderboard.OnCreateNW(nw)
