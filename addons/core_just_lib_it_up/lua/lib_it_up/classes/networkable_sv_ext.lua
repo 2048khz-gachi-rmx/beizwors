@@ -191,11 +191,12 @@ function nw:_SVSetTable(k, v)
 
 	-- for tables, however, we can check if the data is exact
 
+	self.Networked[k] = v
 	local last_von = self.__LastSerialized[v]
 
-	local err, new_von = pcall(von.serialize, v)
+	local ok, new_von = pcall(von.serialize, v)
 
-	if err then
+	if not ok then
 		errorf("%s: Attempted to serialize a non-vON'able table! %s = %s\n%s", self, k, v, new_von)
 	else
 		if last_von == new_von then --[[ adios ]] return self end
