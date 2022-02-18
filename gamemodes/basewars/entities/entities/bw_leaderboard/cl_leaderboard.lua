@@ -172,15 +172,8 @@ function CANV:PaintRT(w, h)
 			y = inY
 		end
 	end
-
-	if have_me then return end
-
-	local dotFont = "EXB128"
-	local th = draw.GetFontHeight(dotFont)
-	draw.SimpleText(". . .", dotFont, col + colSz / 2, y + needH / 2 - th * 0.25, color_white, 1, 1)
 end
 
-local b = bench("LBRender")
 BW.Leaderboard.LastUpdate = 0
 
 function CANV:Paint(w, h)

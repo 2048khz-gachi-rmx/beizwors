@@ -6,7 +6,7 @@ BaseWars.Config = {
 	DiscordLink = "https://discord.gg/TCVwCAZqGW",
 
 	AFKTime = 60,
-	AFKConserveTime = 90, -- FPS gets limited after this time
+	AFKConserveTime = 180, -- FPS gets limited after this time
 
 	RespawnTime = 5, -- base respawn time
 	RespawnRaider = 15,
@@ -23,7 +23,7 @@ BaseWars.Config = {
 	SpawnWeps = {
 		"weapon_physcannon",
 		"hands",
-		"dash"
+		--"dash"
 	},
 
 	WeaponDropBlacklist = {
