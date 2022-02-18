@@ -7,6 +7,8 @@ do -- give weapon
 		"weapon_cs_",
 		"tf_weapon_",
 		"tfa_cso_",
+		"arccw_",
+		"arccw_go_",
 		"cw_gau_",
 		"cw_",
 		"cw_g4p_",
@@ -86,7 +88,7 @@ end
 
 aowl.AddCommand("ammo", function(ply, line,ammo,ammotype)
 	if !ply:Alive() and !IsValid(ply:GetActiveWeapon()) then return end
-	local amt = tonumber(ammo) or 500
+	local amt = tonumber(ammo) or 2500
 	local wep = ply:GetActiveWeapon()
 	if not ammotype or ammotype:len() <= 0 then
 		if wep.GetPrimaryAmmoType and wep:GetPrimaryAmmoType() != none then
