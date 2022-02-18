@@ -37,12 +37,18 @@ function ENT:Initialize()
 	self.BoxCol = Color(25,225,25,0)
 end
 
-local a = 0
 local ba = 0
 local exp = Vector(2, 2, 0)
 local drawDist = 2048
+
+local colInac = Color(5, 5, 5)
+local colAc = Color(25, 225, 25)
+local useCol = Color(0, 0, 0)
+
 function ENT:Draw()		--shhhh sneaky workaround
+	self.A = self.A or 0
 	local pos = self:GetPos()
+	local in_sz = CachedLocalPlayer():GetNWInt("Safezone", 0) ~= 0
 
 	local min = self:GetMinsZone()
 	local max = self:GetMaxsZone()
@@ -51,61 +57,63 @@ function ENT:Draw()		--shhhh sneaky workaround
 	local bmin = min - pos
 	local bmax = max - pos
 
-	bmin.z = -32768
-	bmax.z = 32768
+	bmin.z = -512
+	--bmax.z = 512
 
-	local rbmin, rbmax = self:GetRenderBounds()
-
-	local rbsum = math.abs(rbmin.x + rbmin.y + rbmin.z) --totally not how vectors work but who cares?
-	local bsum = math.abs(bmin.x + bmin.y + bmin.z)		--also this is to set renderbounds if they're not what they're supposed to be: Initialize() seems to..not work?
-	if rbsum - bsum < 6 then
-		self:SetRenderBoundsWS(min, max, Vector(2,2,2))
-	end
+	self:SetRenderBoundsWS(min, max, Vector(2, 2, 2))
 
 	render.SetColorMaterial()
 
-	render.DrawBox(pos, Angle(0,0,0), bmin, bmax, self.BoxCol)	--render outwards
+	render.DrawBox(pos, angle_zero, bmin, bmax, self.BoxCol)	--render outwards
 	bmin:Sub(exp)
 	bmax:Sub(exp)
-	render.DrawBox(pos, Angle(0,0,0), bmax, bmin, self.BoxCol)	--render inwards
+	render.DrawBox(pos, angle_zero, bmax, bmin, self.BoxCol)	--render inwards
 
-	local desCol = Color(5, 5, 5, ba * 2)
+	local desCol = colInac
 
 	if mepos:WithinAABox(min, max) then
 		ba = math.min(L(ba, 20, 15), 20)
-		desCol = Color(25, 225, 25, ba)
-		self.BoxCol = LC(self.BoxCol, desCol)
+		desCol = colAc
+		self.BoxCol:Lerp(FrameTime() * 15, self.BoxCol, desCol)
+		self.BoxCol.a = ba
+
 		return
 	end
 
-	self.BoxCol = LC(self.BoxCol, desCol)
+	-- cba to do proper anim
+	self.BoxCol:Lerp(FrameTime() * 15, self.BoxCol, desCol)
+	self.BoxCol.a = ba * 2
 
-	local vec, dir, frac = 	util.IntersectRayWithOBB(mepos, LocalPlayer():EyeAngles():Forward()*drawDist, pos, Angle(0,0,0), bmin, bmax )
+	if not in_sz then
+		local vec, dir, frac = 	util.IntersectRayWithOBB(mepos, LocalPlayer():EyeAngles():Forward() * drawDist,
+			pos, angle_zero, bmin, bmax )
 
-	if vec then
-		ba = L(ba, 60, 15)
-		local ang = dir:Angle()
+		if vec then
+			ba = L(ba, 60, 15)
+			local ang = dir:Angle()
 
-		ang.p = 0
-		ang:RotateAroundAxis(ang:Up(),90)
-		ang:RotateAroundAxis(ang:Forward(),90)
-		--ang:RotateAroundAxis(ang:Right(),90)
-		cam.Start3D2D(vec, ang, 0.1)
-			local dist = frac * 2048
-			 if dist < 512 and dist > 256 then
-			 	a=math.max(frac*50, L(a, 255, 15))
-			 else
-			 	a=math.min(frac*1000, L(a, 0, 25))
-			 end
-			--surface.SetDrawColor(20, 20, 20, 50)
-			--surface.DrawRect(0,0,64,64)
-			draw.SimpleText("SAFEZONE","A128", 0, 0, ColorAlpha(color_white, a),1,1)
-		cam.End3D2D()
+			ang.p = 0
+			ang:RotateAroundAxis(ang:Up(), 90)
+			ang:RotateAroundAxis(ang:Forward(), 90)
 
-	 else
+			cam.Start3D2D(vec, ang, 0.2)
+				local dist = frac * 2048
 
-	 	ba = L(ba, 0, 2)
+				if dist < 512 and dist > 192 then
+					self.A = math.max(frac*50, L(self.A, 255, 15))
+				else
+					self.A = math.min(frac*1000, L(self.A, 0, 25))
+				end
+				--surface.SetDrawColor(20, 20, 20, 50)
+				--surface.DrawRect(0,0,64,64)
+				surface.SetTextColor(255, 255, 255, self.A)
+				draw.SimpleText2("SAFEZONE", "OSB128", 0, 0, nil, 1, 1)
+			cam.End3D2D()
 
-	 end
+		 else
 
+		 	ba = L(ba, 0, 2)
+
+		 end
+	end
 end
