@@ -6,7 +6,7 @@ local BWAddons = {
 	"922947756", --synths
 
 	game.GetMap() == "rp_downtown_tits_v2" and "1590239460" or -- tits
-	game.GetMap():match("evocity") and "296828130", --bw evocity
+	game.GetMap():match("evocity") and "296828130" or "", --bw evocity
 
 	"546392647", --media players
 
