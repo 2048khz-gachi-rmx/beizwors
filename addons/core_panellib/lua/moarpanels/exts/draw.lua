@@ -838,7 +838,7 @@ if not file.Exists(fn, "DATA") or not file.Exists(fnver, "DATA") then
 	render.OverrideAlphaWriteEnable(true, true)
 
 	for i=0, width - 1 do
-		surface.SetDrawColor(HSVToRGB(360 / width * i, 1, 1))
+		surface.SetDrawColor(HSVToRGB(360 / width * i, 0.65, 1))
 		surface.DrawRect(i, 0, 1, 9999)
 	end
 
@@ -862,7 +862,7 @@ if not file.Exists(fn, "DATA") or not file.Exists(fnver, "DATA") then
 	render.Clear(0, 0, 0, 0, true)
 
 	for i=0, height - 1 do
-		surface.SetDrawColor(HSVToRGB(360 / height * i, 1, 1))
+		surface.SetDrawColor(HSVToRGB(360 / height * i, 0.65, 1))
 		surface.DrawRect(0, i, 9999, 1)
 	end
 
