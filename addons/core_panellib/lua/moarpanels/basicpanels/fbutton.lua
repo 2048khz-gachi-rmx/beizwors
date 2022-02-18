@@ -617,7 +617,7 @@ function button:Paint(w, h)
 
 		draw.EnableFilters(true)
 
-		cam.PushModelMatrix(mx)
+		cam.PushModelMatrix(mx, true)
 
 		self.ActiveMatrix = mx
 		fbuttonMatrices[self] = mx
