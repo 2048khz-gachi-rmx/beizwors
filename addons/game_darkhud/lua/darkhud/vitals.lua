@@ -523,7 +523,7 @@ function DarkHUD.CreateVitals()
 			self:DrawBar(rndrad, barX, barY,
 				math.ceil(barW * hpfr), barH, hpCol, hpBorderCol, vfr > 0)
 
-			if venom >= me:Health() then
+			if venom >= me:Health() and me:Health() > 0 then
 				-- paint warning abt lethal venom
 				local b = DisableClipping(true)
 

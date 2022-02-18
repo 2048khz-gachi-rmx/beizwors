@@ -102,10 +102,9 @@ Stims.OffhandTable.Paint = function(pnl, x, y, size)
 	local gsX, gsY = sX, sY
 	local cX, cY = gsX + size / 2, gsY + size / 2
 
-	local me = CachedLocalPlayer()
 	local venom = me:GetNWInt("Venom", 0)
 
-	if venom >= me:Health() then
+	if venom >= me:Health() and me:Health() > 0 then
 		-- paint warning abt lethal venom
 		local b = DisableClipping(true)
 
