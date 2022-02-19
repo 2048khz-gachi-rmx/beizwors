@@ -222,7 +222,7 @@ function Bind:SetExclusive(b) --, prevent_default)	-- gmod sucks, cant prevent d
 end
 
 
-ChainAccessor(Bind, "Exclusive", "Exclusive")
+ChainAccessor(Bind, "Exclusive", "Exclusive", true)
 ChainAccessor(Bind, "Key", "Key")
 ChainAccessor(Bind, "ID", "ID")
 
