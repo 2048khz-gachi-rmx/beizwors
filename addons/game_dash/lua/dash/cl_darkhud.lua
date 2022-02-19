@@ -15,8 +15,17 @@ handle:SetGenerator(function(self, w, h)
 end)
 
 local spr = {16, 8}
-local flash = Material("sprites/light_glow02_add")
-flash:SetInt("$vertexalpha", 1)
+
+local flash = CreateMaterial("dashflash4", "UnlitGeneric", {
+	["$basetexture"] = "sprites/light_glow02.vtf",
+	["$additive"] = "1",
+	["$translucent"] = "1",
+	["$vertexcolor"] = "1",
+	["$vertexalpha"] = "1",
+})
+
+flash:SetInt("$flags", bit.bor(flash:GetInt("$flags"), 128, 2097152))
+flash:Recompute()
 
 local an = Animatable("dash")
 
@@ -29,7 +38,7 @@ function Dash.OnReady(ply)
 	an:To("ReadyAlpha", 0, 0.3, 0.1, 0.3, true)
 end
 
-function Dash.PaintAbility(fr, x, y, sz)
+function Dash.PaintAbility(self, x, y, sz)
 	local me = CachedLocalPlayer()
 	local cd, till = Offhand.GetCooldown("Dash", me)
 	cd = math.max(0, till - PredTime())
@@ -37,14 +46,14 @@ function Dash.PaintAbility(fr, x, y, sz)
 	local frac = 1 - math.TimeFraction(0, Dash.DashCooldown, cd)
 
 	local ac = frac == 1 and me:GetNW2Bool("DashReady", true)
-	fr:To("DashRdyFr", ac and 1 or 0, ac and 0.3 or 0, 0, 0.3)
+	self:To("DashRdyFr", ac and 1 or 0, ac and 0.3 or 0, 0, 0.3)
 
-	draw.LerpColor(fr.DashRdyFr or 0, Dash.Icon:GetColor(),
+	draw.LerpColor(self.DashRdyFr or 0, Dash.Icon:GetColor(),
 		color_white, Colors.LightGray)
 
-	if ac then
+	if ac and not DarkHUD.Setting3D:GetValue() then -- additive doesnt work on RTs !?
 		local fr = an.ReadyFlash or 0
-		local a = an.ReadyAlpha or 0
+		local a =  an.ReadyAlpha or 0
 		local fH = ScrH() * 1.4 * fr
 
 		local fsz = sz * 3 + 200 * math.max(0, 0.7 - fr) -- wtf

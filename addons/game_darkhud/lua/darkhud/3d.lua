@@ -16,7 +16,7 @@ local function pushStuff()
 	if not DarkHUD.Setting3D:GetValue() then return end
 
 	render.PushRenderTarget(rt)
-	render.Clear(0, 0, 0, 0, true)
+	render.Clear(0, 0, 0, 0)
 	render.OverrideAlphaWriteEnable(true, true)
 end
 
@@ -27,7 +27,6 @@ local flat = Angle()
 
 local diff_vec = Vector()
 local diff_vecease = Vector()
-local prevVel = Vector()
 
 local dir = 1
 local side = 0
@@ -137,6 +136,7 @@ local function doRender(_, f)
 	ang_c:RotateAroundAxis(ang_c:Right(), yaw)
 
 
+	
 	cam.Start3D(nil, nil, 90)
 	cam.Start3D2D(pos, ang_c, 2)
 
@@ -151,6 +151,7 @@ local function doRender(_, f)
 	cam.PopModelMatrix()
 	cam.End3D()
 	cam.End3D2D()
+
 	--draw.DisableFilters()
 end
 
