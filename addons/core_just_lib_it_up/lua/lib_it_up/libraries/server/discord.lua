@@ -146,6 +146,41 @@ hook.NHAdd("PlayerSay", "Discord", function(ply, msg)
 
 end)
 
+hook.NHAdd("AnnounceJoin", "Discord", function(name, sid)
+	if not discord.Enabled then return end
+	if not discord.DB then return end
+
+	discord.QueueEmbed("joinleave", "Join/Leave",
+		Embed()
+			:SetText("Player " .. name .. " has joined the server.")
+			:SetColor(70, 200, 70)
+		)
+end)
+
+hook.NHAdd("AnnounceConnect", "Discord", function(name, sid)
+	if not discord.Enabled then return end
+	if not discord.DB then return end
+
+	discord.QueueEmbed("joinleave", "Join/Leave",
+		Embed()
+			:SetText("Player " .. name .. " has started connecting to the server.")
+			:SetColor(230, 200, 70)
+		)
+end)
+
+hook.NHAdd("AnnounceLeave", "Discord", function(name, sid, ip, injoin)
+	if not discord.Enabled then return end
+	if not discord.DB then return end
+
+	discord.QueueEmbed("joinleave", "Join/Leave",
+		Embed()
+			:SetText("Player " .. name .. " has " ..
+				(injoin and "given up on connecting." or "left the server.")
+			)
+			:SetColor(200, 70, 70)
+		)
+end)
+
 Embed = {}
 
 EmbedMeta = {}
@@ -280,6 +315,8 @@ function discord.SendEmbed(mode, name, t, cb, fail)
 	end
 
 	local function callback(urls)
+		print(util.TableToJSON(em))
+
 		http.Post("https://vaati.net/Gachi/shit.php", {
 			name = name or "lodestar/generic",
 			api = "disrelay",
@@ -345,3 +382,24 @@ hook.Add("Tick", "ServerNotify", function()
 	end)
 
 end)
+
+
+local sendQueue = muldim:new()
+
+local function flush()
+	for chan, names in pairs(sendQueue) do
+		for name, ems in pairs(names) do
+			discord.SendEmbed(chan, name, ems)
+		end
+	end
+
+	table.Empty(sendQueue)
+end
+
+function discord.QueueEmbed(chan, name, em)
+	sendQueue:Insert(em, chan, name)
+
+	if not timer.Exists("DiscordFlush" .. name) then
+		timer.Create("DiscordFlush" .. name, 0.5, 1, flush)
+	end
+end

@@ -52,13 +52,13 @@ function an.AnnounceJoin(name, sid64, ip, sub)
 
 	joinTimes[sid64] = joinTimes[sid64] or SysTime() - (sub or 0)
 	IPs[sid64] = ip
+
+	hook.Run("AnnounceConnect", name, sid64, ip)
 end
 
 function an.OnJoin(name, sid64, ip)
 	local time, was = getLeaveTime(sid64)
 	local cd = announceCD - time
-
-	print("OnJoin:", time, was)
 
 	if was and cd > 0 then
 		timer.Create("announcejoin_" .. sid64, cd, 1, function()
@@ -88,13 +88,10 @@ function an.AnnounceLeave(name, sid64, reason)
 		TX1 = "Player ",
 		NAME = name .. " ",
 		DETAILS = ("(%s @ %s) "):format(sid64, IPs[sid64] or "??? untracked IP?"),
-		TX2 = "has left the server. ",
+		TX2 = ("has given up on connecting after %ds. "):format(passed),
 		WHY = ("(%s)"):format( reason:gsub("^%(", ""):gsub("%)$", "") )
 	}
 
-	if passed ~= 0 then
-		remap.TX2 = ("has given up on connecting after %ds. "):format(passed)
-	end
 
 	table.RemapValues(dat, remap, true)
 
@@ -106,6 +103,9 @@ function an.AnnounceLeave(name, sid64, reason)
 		net.WriteString(sid64)
 		net.WriteUInt(math.floor(passed), 16)
 	net.Broadcast()
+
+	hook.Run("AnnounceLeave", name, sid64, reason, true)
+	hook.Run("AnnounceAbortJoin", name, sid64, reason, true)
 end
 
 function an.AnnounceLeaveGame(name, sid64, reason)
@@ -140,6 +140,9 @@ function an.AnnounceLeaveGame(name, sid64, reason)
 		net.WriteString(sid64)
 		net.WriteUInt(math.floor(passed), 16)
 	net.Broadcast()
+
+	hook.Run("AnnounceLeave", name, sid64, reason, false)
+	hook.Run("AnnounceLeaveGame", name, sid64, reason)
 end
 
 function an.OnLeave(name, sid64, reason)
@@ -157,10 +160,8 @@ function an.OnLeave(name, sid64, reason)
 	print("onLeave:", time, was, sid64)
 
 	if was and cd > 0 then
+		-- on cooldown from announcing; bail
 		return
-		--[[timer.Create("announceleave_" .. sid64, cd, 1, function()
-			an.AnnounceLeave(name, sid64, reason)
-		end)]]
 	else
 		an.AnnounceLeave(name, sid64, reason)
 	end
@@ -223,4 +224,6 @@ hook.Add("PlayerFullyLoaded", "BroadcastJoin", function(ply)
 	net.Broadcast()
 
 	MsgC(unpack(dat))
+
+	hook.Run("AnnounceJoin", ply:Nick(), ply:SteamID64(), ply:IPAddress(), ply)
 end)
