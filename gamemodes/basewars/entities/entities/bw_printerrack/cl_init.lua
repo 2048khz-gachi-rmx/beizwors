@@ -68,14 +68,16 @@ local function CreateFrame(ent)
 		end --bruh
 	end)
 
+	local clip = false
+
 	function f:PrePaint(w, h)
-		DisableClipping(true)
+		clip = DisableClipping(true)
 		draw.EnableFilters()
 	end
 
 	function f:PaintOver(w, h)
 		draw.DisableFilters()
-		DisableClipping(false)
+		if not clip then DisableClipping(false) end
 	end
 
 	function f:PostPaint(w,h)
