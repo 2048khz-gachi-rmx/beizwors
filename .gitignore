@@ -35,6 +35,7 @@
 
 
 # ?
+_disabledaddons/**
 addons/game_inventory/**
 
 !addons/weps_arccw*/lua
