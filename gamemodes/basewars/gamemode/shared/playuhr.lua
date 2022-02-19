@@ -80,6 +80,8 @@ function PLAYER:GetSessionTable()
 end
 
 -- import old times
+do return end
+
 local _, folders = file.Find("basewars_time/*", "DATA")
 
 for _, sid in ipairs(folders) do
