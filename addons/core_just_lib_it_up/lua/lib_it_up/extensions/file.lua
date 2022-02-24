@@ -48,7 +48,6 @@ function file.GetPathTable(path)
 	return ret, len
 end
 
--- adds an / at the end if there isn't one
 function file.HasInPath(path, fld, ptrn)
 	for f in path:gmatch("[^" .. sep .. "]+") do
 		if ptrn then
@@ -63,14 +62,6 @@ function file.HasInPath(path, fld, ptrn)
 	end
 
 	return false
-end
-
--- adds an / at the end if there isn't one
-function file.GetPath(path)
-	local ret = path:match("(.+[" .. sep .. "]).+") or ""
-	if not ret:sub(-1) == "/" then ret = ret .. "/" end
-
-	return ret
 end
 
 function file.ForEveryFile(path, where, func, recurse)

@@ -155,11 +155,7 @@ function doAnalyze(ply, prev, act)
 
 	if not sus then return end
 
-	print("sus")
 	if dt.WantTrack[ply] and engine.TickCount() - dt.WantTrack[ply] < activeSamples + passiveSamples + 1 then
-		for i=1, 3 do
-			print("turbo sus")
-		end
 		dt:Detect(ply, {
 			SnapAngle = got_bad_dev + avgDeviatThres
 		})

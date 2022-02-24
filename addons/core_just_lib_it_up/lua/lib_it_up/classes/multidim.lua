@@ -8,6 +8,15 @@ if LibItUp then LibItUp.MulDim = muldim end
 local weak = muldim:callable()
 weak.__mode = "kv"
 
+function muldim:Initialize(mode)
+	if mode then
+		if not mode == "k" or mode == "v" or mode == "kv" then
+			errorf("muldim takes mode as `k` or `v` or `kv`, not %s (`%s`)", mode, type(mode))
+		end
+		return weak()
+	end
+end
+
 function muldim:Get(...)
 	local curvar = self
 
@@ -149,14 +158,5 @@ function muldim:RemoveValue(val, ...)
 			tbl[k] = nil
 			break
 		end
-	end
-end
-
-function muldim:Initialize(mode)
-	if mode then
-		if not mode == "k" or mode == "v" or mode == "kv" then
-			errorf("muldim takes mode as `k` or `v` or `kv`, not %s (`%s`)", mode, type(mode))
-		end
-		return weak()
 	end
 end

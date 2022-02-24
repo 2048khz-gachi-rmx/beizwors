@@ -96,7 +96,7 @@ function Class:CopyMetamethods(old)
 end
 
 function Class:AliasMethod(method, ...)
-	if not type(method) == "function" then errorf("arg #1 is not a function (got %q)", type(method)) return end
+	if type(method) ~= "function" then errorf("arg #1 is not a function (got %q)", type(method)) return end
 
 	for k,v in ipairs({...}) do
 		self[v] = method

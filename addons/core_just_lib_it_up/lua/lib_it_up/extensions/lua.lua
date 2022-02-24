@@ -136,6 +136,9 @@ if CLIENT then
 
 	GC_IsManual = (GC_IsManual == nil and cvar:GetBool()) or GC_IsManual
 
+	collectgarbage("setstepmul", 300)
+	collectgarbage("setpause", 300)
+
 	function GC_EnableManual()
 		is_manual = true
 
