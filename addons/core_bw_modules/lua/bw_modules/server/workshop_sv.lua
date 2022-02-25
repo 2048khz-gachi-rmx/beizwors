@@ -12,7 +12,7 @@ local BWAddons = {
 
 	"897690679", -- particles - fa:s
 	"284266415", -- scifi prop pack
-	"1243825019", -- mil cases prop pack
+	-- "1243825019", -- mil cases prop pack
 
 	-- stalker:
 	"430077474", -- 1/4
@@ -34,9 +34,9 @@ local BWAddons = {
 	"2155366756", -- vmanip
 
 	-- cw2
-	"427204862", -- raging bull
+	-- "427204862", -- raging bull
 	"838920776", -- bullpups
-	"591075724", -- mosin
+	-- "591075724", -- mosin
 	"1589205037", -- acr
 	"349050451", -- cw2 base
 	"358608166", -- cw2 unofficial
@@ -47,7 +47,12 @@ local BWAddons = {
 
 
 
+local function shouldAdd(fn, path)
+	if path:find("powerpole") then return false end
+	if fn:match("%.ztmp$") then return false end
 
+	return true
+end
 
 local subdirs = 0
 
@@ -70,7 +75,7 @@ local function DownloadFolder(str, mask)
 
 	for k,v in pairs(files) do
 
-		if not string.find(v, "ztmp") then
+		if shouldAdd(v, str) then
 			resource.AddSingleFile(str .. "/" .. v)
 			if debuggingDownloads then
 				MsgC(Color(160, 230, 80), indent(subdirs), "Added file: ",
@@ -92,7 +97,7 @@ local function DownloadFolder(str, mask)
 				subdirs = subdirs + 1
 			end
 
-			DownloadFolder(str .. "/" .. v)
+			DownloadFolder(str .. "/" .. v, mask)
 
 			subdirs = subdirs - 1
 		end
@@ -119,7 +124,7 @@ timer.Simple(0, function()
 	-- DownloadFolder("models/player/wiltos")
 
 	DownloadFolder("materials/grp")
-	DownloadFolder("materials/effects")
+	DownloadFolder("materials/effects", "tvscreen*")
 	DownloadFolder("materials/zerochain")
 	DownloadFolder("materials/models/props/computers")
 
@@ -129,11 +134,11 @@ timer.Simple(0, function()
 	DownloadFolder("resource/fonts", "*.ttf")
 
 	DownloadFolder("sound/grp")
-	DownloadFolder("sound/gachi")
+	--DownloadFolder("sound/gachi")
 	DownloadFolder("sound/dash")
-	DownloadFolder("sound/snds")
+	-- DownloadFolder("sound/snds")
 	DownloadFolder("sound/playsound")
 	DownloadFolder("sound/stims")
-	DownloadFolder("sound/mus")
+	--DownloadFolder("sound/mus")
 	DownloadFolder("sound/vgui")
 end)
