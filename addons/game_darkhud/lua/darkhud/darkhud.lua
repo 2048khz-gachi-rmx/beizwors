@@ -148,7 +148,7 @@ local function RoundedBoxCorneredSize(bordersize, x, y, w, h, color, btl, btr, b
 
 	-- vertical fill ( |_| )
 
-	local LbordW = math.max(btl, bbl)
+	--local LbordW = math.max(btl, bbl)
 	local RbordW = math.max(btr, bbr)
 
 	if h - bbl - btl > 0 then
@@ -240,21 +240,27 @@ function DarkHUD.PaintBar(rad, x, y, w, h,
 	if allow_stencils ~= false then
 		if bw < rad * 2 then
 			surface.SetDrawColor(255, 255, 255)
-			draw.BeginMask(surface.DrawRect, x, y, bw, h)
+			draw.BeginMask()
+				surface.DrawRect(x, y, bw, h)
 			draw.DrawOp()
 
 			bw = rad * 2
 			stencil = true
 		elseif istable(textData) then
 			draw.BeginMask()
+
+			DarkHUD.RoundedBoxCorneredSize(rad,
+				x, y, bw, h,
+				color_white, rad, rad, rad, rad, true)
+
 			draw.SetMaskDraw(true)
-			stencil = true
+			--stencil = true
 		end
 	end
 
 
 	DarkHUD.RoundedBoxCorneredSize(rad,
-		x , y, bw - 1, h,
+		x, y, bw - 1, h,
 		col_border or color_white,
 		rad, rad, rad, rad, stencil)
 
