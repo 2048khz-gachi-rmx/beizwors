@@ -825,7 +825,6 @@ function META:Bond(to)
 			if not IsValid(to) then
 				if IsValid(self) then self:Remove() end
 				hook.Remove("Think", name)
-				return
 			end
 		end)
 
@@ -836,6 +835,7 @@ function META:Bond(to)
 
 	--self.__HasBonded = to
 end
+META.Bind = META.Bond
 
 function META:GetAutoCanvas(name, class)
 	if not name then return end

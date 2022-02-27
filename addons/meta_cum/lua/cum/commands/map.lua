@@ -60,6 +60,7 @@ end)
 	:SetSilent(true)
 
 	:SetReportFunc(function(self, rply, caller, time)
+		time = math.max(tonumber(time) or 20, 1)
 		return "{1} is restarting server in {2} seconds!", {[3] = "<col=100,220,100>" .. tostring(time)}
 	end)
 
