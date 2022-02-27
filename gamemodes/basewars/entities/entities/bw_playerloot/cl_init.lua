@@ -10,6 +10,8 @@ function ENT:Draw()
 end
 
 function ENT:CreateWindow()
+	self.Storage:SetName(self:GetPlayerName() .. "'s belongings")
+
 	local f = Inventory.Panels.CreateInventory(self.Storage, true)
 	f:Center()
 	f:Bond(self)

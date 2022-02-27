@@ -1,6 +1,6 @@
 --
 
-local disabled = true
+local disabled = false
 
 hook.Add("PlayerDeath", "DropItems", function(ply)
 	if disabled then return end
@@ -21,6 +21,7 @@ hook.Add("PlayerDeath", "DropItems", function(ply)
 
 	loot:SetColor(col)
 	loot:Spawn()
+	loot:SetPlayerName(ply:Nick())
 
 	local fr = math.Sign(math.random() - 0.5) * Lerp(math.random(), 0.6, 1)
 	local fwd = ply:GetAngles():Forward() * -math.random(80, 120)

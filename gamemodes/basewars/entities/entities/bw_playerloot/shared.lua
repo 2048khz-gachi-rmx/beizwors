@@ -13,7 +13,7 @@ ENT.WantBlink = false
 ENT.InteractDistance = 192
 
 function ENT:DerivedDataTables()
-
+	self:NetworkVar("String", 0, "PlayerName")
 end
 
 function ENT:Init()
