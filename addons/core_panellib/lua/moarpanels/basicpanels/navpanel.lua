@@ -53,7 +53,6 @@ function NavbarChoice:Init()
 
 	self.DescriptionFont = "OSL16"
 	self.DescriptionColor = Color(170, 170, 170)
-	self.DescriptionFontShiftUpwards = 4 --source text alignment >:(
 	self.DescriptionFontHeight = 14 --?????????????? draw.DrawText sucks because vertical spacing is fucking HUGE
 									-- 				 amd we're kinda limited on that
 
@@ -109,12 +108,20 @@ end
 
 AccessorFunc(NavbarChoice, "Name", "Name")
 
+function NavbarChoice:_GetDescriptionX()
+	local icsz = self.Icon and self.Icon:GetWide()
+		or self.IconSize
+		or self.DefaultIconSize * self:GetTall()
+
+	return icsz + 16
+end
+
 function NavbarChoice:_WrapDescription()
 	local icsz = self.Icon and self.Icon:GetWide()
 		or self.IconSize
 		or self.DefaultIconSize * self:GetTall()
 
-	self.WrappedDescription = self.Description:WordWrap2(self:GetWide() - icsz - 8 * 2 - 8, self.DescriptionFont)
+	self.WrappedDescription = self.Description:WordWrap2(self:GetWide() - self:_GetDescriptionX() - 4, self.DescriptionFont)
 
 	local _, newlines = self.WrappedDescription:gsub("[^%c]+", "")
 	self.DescripitionNewlines = newlines
@@ -227,13 +234,13 @@ function NavbarChoice:Draw(w, h)
 	surface.SetFont(self.Font or "BS22")
 	--local tW = surface.GetTextSize(self.Name)
 
-	tx = iconArea + Lerp(frac, w - ix - size - 4, 0) + 8	-- left alignment for text
+	tx = iconArea + Lerp(frac, w - ix - size - 4, 0) + 4	-- left alignment for text
 
 	local becomeVisibleAt = 0.5
 	self.TextColor.a = 255 * (nav.ExpandFrac - becomeVisibleAt) * 1/becomeVisibleAt 		--mmmmmm yes cancer maths
 																							--(basically makes so text is invisible until (becomeVisibleAt) expanded)
 
-	draw.SimpleText2(self.Name, nil, tx, 2, self.TextColor, 0, 5)
+	local titleW, titleH = draw.SimpleText2(self.Name, nil, tx, 2, self.TextColor, 0, 5)
 
 	if self.WrappedDescription then
 		local frac = math.max((nav.ExpandFrac - 0.4) * 1/0.6, 0)
@@ -242,8 +249,7 @@ function NavbarChoice:Draw(w, h)
 
 		local height = self.DescripitionNewlines * self.DescriptionFontHeight
 		local space = self:GetTall() - 24
-		local ty = --[[24 + space/2 - height/2 - self.DescriptionFontShiftUpwards]]
-					h / 2 - self.DescriptionFontHeight / 2
+		local ty = 2 + titleH * 0.75 + 2
 		--surface.SetDrawColor(Colors.Red)
 		--surface.DrawOutlinedRect(descx, ty, w - descx, height)
 
@@ -266,8 +272,8 @@ function NavbarChoice:Draw(w, h)
 			local tw = dat[1]
 			local s = dat[2]
 
-			local tx = iconArea + 20
-
+			local tx = iconArea + 4 + 4
+			--surface.DrawOutlinedRect(tx, 0, 96, 96)
 			surface.SetTextPos(tx + maxW * (1 - frac), ty + i * self.DescriptionFontHeight)
 			surface.DrawText(s)
 			i = i + 1
