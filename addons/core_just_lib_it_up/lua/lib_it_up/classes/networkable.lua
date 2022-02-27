@@ -267,6 +267,7 @@ function nw:SetTable(k, v)
 end
 
 function nw:Set(k, v)
+	assert(k ~= nil, "key is nil")
 	-- if you're using a table or an object as `v`, it's assumed you have a custom encoder for it
 	-- if you don't, well, expect issues...
 	self:_ValidateNW(k, v)

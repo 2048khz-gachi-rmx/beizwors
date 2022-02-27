@@ -1,77 +1,119 @@
 MODULE.Name     = "Prestige"
-MODULE.Author   = "1488khz gachi remix"
-MODULE.Credits  = "Copypasted money module where everything is replaced with prestige"
 MODULE.Realm = 1
 
-BaseWars.Prestige = {}
+BaseWars.Prestige = BaseWars.Prestige or {}
 
 local PLAYER = debug.getregistry().Player
+local PInfo = LibItUp.PlayerInfo
 
 util.AddNetworkString("Prestige")
+BaseWars.Prestige = BaseWars.Prestige or {}
+local MODULE = BaseWars.Prestige
 
-function MODULE.NewPlayer(ply, double)
+MODULE.Log = Logger("BW-Prestige", Color(0, 230, 250))
+MODULE.Functions = {}
+local FUNCS = MODULE.Functions
 
-end
-PLAYER.NewPrestige = MODULE.NewPlayer
+local INTERNAL_KEY = "_prestige"
+local FUNC_NAME = "Prestige"
+local BWDATA_NAME = "prestige"
 
-function MODULE.InitPrestige(ply)
-    MODULE.NewPlayer(ply)
-end
-
-function MODULE.GetPrestige(ply, abs)
-
-end
-PLAYER.GetPrestige = MODULE.GetPrestige
-
-function MODULE.GetAbsPrestige(ply)
-
+function FUNCS:SyncPrestige()
+	self:GetPublicNW():Set(BaseWars.Prestige.NWKey, self:GetPrestige())
 end
 
-PLAYER.GetAbsPrestige = MODULE.GetAbsPrestige
-
-function MODULE.SavePrestige(ply, amount)
-
+local function getInt(self)
+	return self[INTERNAL_KEY]
 end
 
-PLAYER.SavePrestige = MODULE.SavePrestige
-
-function MODULE.LoadPrestige(ply)
-
+local function setInt(self, v)
+	self[INTERNAL_KEY] = v
+	self["Sync" .. FUNC_NAME] (self)
 end
 
-PLAYER.LoadPrestige = MODULE.LoadPrestige
-
-function MODULE.SetPrestige(ply, amount)
-
+local function setBWData(self)
+	self:SetBWData(BWDATA_NAME, getInt(self))
 end
 
-PLAYER.SetPrestige = MODULE.SetPrestige
+-->  ==========
+FUNCS["Set" .. FUNC_NAME] = function(self, amt, no_write)
+	self = GetPlayerInfoGuarantee(self)
 
-function MODULE.GivePrestige(ply, amount)
+	if not getInt(self) and not no_write then
+		errorf("attempting to set " .. BWDATA_NAME .. " to a player before their bwdata initializes! ( %s (%s) -> %d )",
+			self:Nick(), self:SteamID64(), amt)
+		return
+	end
 
-end
-PLAYER.GivePrestige = MODULE.GivePrestige
+	setInt(self, math.Round(amt))
 
-function MODULE.TakePrestige(ply, amount)
-
-end
-
-PLAYER.TakePrestige = MODULE.TakePrestige
-
-function MODULE.SetAbsPrestige(ply, amount)
-
-end
-PLAYER.SetAbsPrestige = MODULE.SetAbsPrestige
-
-function MODULE.AddAbsPrestige(ply)
-
-end
-PLAYER.AddAbsPrestige = MODULE.AddAbsPrestige
-
-function MODULE.LoadAbsPrestige(ply)
-
+	if not no_write then
+		setBWData(self)
+	end
 end
 
-function MODULE.StartPrestige(ply)
 
+
+--> +++++++++++
+FUNCS["Add" .. FUNC_NAME] = function(self, amt, no_write)
+	self = GetPlayerInfoGuarantee(self)
+
+	if not self._money then
+		MODULE.Log("Attempt to modify a player's " .. BWDATA_NAME .. " before init.\n	(%s (%s) : +%d)\n	Trace:\n%s",
+			self:Nick(), self:SteamID64(), amt, debug.traceback())
+		return
+	end
+
+	setInt(self, math.Round(getInt(self) + amt))
+
+	if not no_write then
+		setBWData(self)
+	end
 end
+
+
+--> -----------
+FUNCS["Take" .. FUNC_NAME] = function(self, amt, no_write)
+	self = GetPlayerInfoGuarantee(self)
+
+	if not self._money then
+		MODULE.Log("Attempt to modify a player's " .. BWDATA_NAME .. " before init.\n	(%s (%s) : -%d)\n	Trace:\n%s",
+			self:Nick(), self:SteamID64(), amt, debug.traceback())
+		return
+	end
+
+	setInt(self, math.Round(getInt(self) - amt))
+
+	if not no_write then
+		setBWData(self)
+	end
+end
+
+
+FUNCS["Load" .. FUNC_NAME] = function(self, dat, write)
+	local var = dat[BWDATA_NAME]
+
+	if not var then --bruh
+		var = 0
+
+		MODULE.Log("Reset " .. BWDATA_NAME .. " for \"%s\" (%s) to starting (%s)",
+			self:Nick(), self:SteamID64(), var)
+	end
+
+	self["Set" .. FUNC_NAME] (self, var, true)
+	setBWData(self)
+	--applyPreInit(self)
+end
+
+for k,v in pairs(FUNCS) do
+	PLAYER[k] = function(self, ...)
+		local pin = GetPlayerInfoGuarantee(self)
+		return v (pin, ...)
+	end
+
+	PInfo[k] = function(...)
+		return v (...)
+	end
+end
+
+hook.NHAdd( "BW_LoadPlayerData", "BW" .. FUNC_NAME .. ".Load", PLAYER["Load" .. FUNC_NAME] )

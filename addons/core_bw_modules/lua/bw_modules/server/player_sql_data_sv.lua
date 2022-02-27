@@ -58,7 +58,7 @@ end
 
 pd.QueueChange = queueChange
 
-local autoSync = {"money", "xp", "level", "playtime"}
+local autoSync = {"money", "xp", "level", "playtime", "prestige"}
 autoSync = table.KeysToValues(autoSync)
 
 function pd.SyncBWIntoSQL()
@@ -69,14 +69,14 @@ function pd.SyncBWIntoSQL()
 		local sid = pi:GetSteamID64()
 
 		for name, val in pairs(bwd) do
+			if pi._bwSyncedData[name] == val then continue end
+			pi._bwSyncedData[name] = val
+
 			if not autoSync[name] then
 				local ok, doSync = hook.NHRun("BW_DataSync" .. name, pi, val)
 				if ok and not doSync then continue end
 			end
 
-			if pi._bwSyncedData[name] == val then continue end
-
-			pi._bwSyncedData[name] = val
 			name = db:escape(name)
 			val = isnumber(val) and val or db:escape(val)
 
@@ -135,26 +135,21 @@ function BaseWars.PlayerData.SubOffline(sid, name, val)
 	doQry(qries.sub_column_query, true, sid, name, val)
 end
 
-timer.Create("BW_SQLSync", 0.5, 0, function()
+timer.Create("BW_SQLSync", 0.2, 0, function()
 	pd.SyncBWIntoSQL()
 end)
 
-local function setter()
-	-- rep = the column name needs to be repeated
-	return function(self, name, val)
-		local pi = GetPlayerInfo(self)
+function PLAYER:SetBWData(name, val)
+	local pi = GetPlayerInfo(self)
 
-		pi._bwData = pi._bwData or {}
-		pi._bwSyncedData = pi._bwSyncedData or {}
-		if pi._bwData[name] == val then return end
+	pi._bwData = pi._bwData or {}
+	pi._bwSyncedData = pi._bwSyncedData or {}
+	if pi._bwData[name] == val then return end
 
-		pi._bwData[name] = val
+	pi._bwData[name] = val
 
-		queueChange(pi)
-	end
+	queueChange(pi)
 end
-
-PLAYER.SetBWData = setter(qries.set_column_query)
 
 function PLAYER:AddBWData(name, val)
 	return self:SetBWData(name, (self:GetBWData(name) or 0) + val)
@@ -211,3 +206,4 @@ if not mysqloo.GlobalDatabase then
 else
 	onDB(mysqloo.GetDatabase())
 end
+
