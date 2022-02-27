@@ -27,7 +27,9 @@ local overlap = 8
 function ENT:MakeToFrom(width, vault, bp)
 	local ent = self
 
-	local height = 60
+	local height = 48
+
+	local unhovTime = 0
 
 	local toVt = vgui.Create("GradPanel")
 	toVt:Bond(vault)
@@ -36,11 +38,11 @@ function ENT:MakeToFrom(width, vault, bp)
 	toVt:CenterHorizontal()
 	toVt.Y = bp.Y + bp:GetTall() * 0.25
 
-	local arrSize = height * 0.5
-
 	local titleFont, pwFont, timeFont = "OSB20", "BS18", "OS16"
-	local total_h, hdH, pwH, tmH = draw.GetFontHeights(titleFont, pwFont, timeFont)
-	total_h = total_h + 2 + hdH * 0.125
+	local total_h, pwH, tmH = draw.GetFontHeights(pwFont, timeFont)
+	total_h = total_h + 2
+
+	local arrSize = total_h
 
 	local ic = Icons.Electricity:Copy()
 	ic:SetColor(Colors.LighterGray)
@@ -48,18 +50,21 @@ function ENT:MakeToFrom(width, vault, bp)
 	local clock = Icons.Clock:Copy()
 	clock:SetColor(Colors.LighterGray)
 
-	function toVt:PostPaint(w, _h)
-		local h = height
+	local costCol = Colors.LighterGray:Copy()
+	local noPwCol = Colors.Reddish:Copy()
+
+	local function doAlpha(col)
+		local a = unhovTime and math.Remap(SysTime() - unhovTime, 0, 0.8, 1, 0) or 1
+		a = Ease(a, 1.2)
+		col.a = a * 255
+	end
+
+	function toVt:PostPaint(w, h)
 		surface.SetDrawColor(255, 255, 255)
 		surface.DrawMaterial("https://i.imgur.com/jFHSu7s.png", "arr_right.png",
 				arrSize / 2 + w * 0.02, h / 2, arrSize, arrSize, 180)
 
-		local y = height * 0.5 - total_h / 2
-		local tw, th = draw.SimpleText("Cost:", titleFont,
-			w * 0.05 + arrSize, y, color_white)
-		-- surface.DrawOutlinedRect(w * 0.05 + arrSize, y, 128, th)
-		-- surface.DrawOutlinedRect(w * 0.05 + arrSize, y, 128, total_h)
-		y = y + hdH
+		local y = h / 2 - arrSize / 2
 
 		local icSz = pwH
 
@@ -68,8 +73,8 @@ function ENT:MakeToFrom(width, vault, bp)
 		local iw, ih = ic:Paint(x, y, icSz, icSz)
 
 		if self.Cost then
-			draw.SimpleText(Language("Power", self.Cost), pwFont,
-				x + iw, y, Colors.LighterGray)
+			draw.SimpleText(Language("Power", math.floor(self.Cost)), pwFont,
+				x + iw, y, costCol)
 		end
 
 		y = y + pwH + 2
@@ -84,8 +89,9 @@ function ENT:MakeToFrom(width, vault, bp)
 			local rStr = ("    - %s%s"):format(Language("Power", ent:GetTransferRate()),
 				Language("PerTick"))
 
-			draw.SimpleText(tStr, timeFont,
-				x + iw + 2, y, Colors.LighterGray)
+			doAlpha(costCol)
+
+			draw.SimpleText(tStr, timeFont, x + iw + 2, y, costCol)
 			surface.SetFont("EXM16")
 			surface.DrawText(rStr)
 		end
@@ -98,39 +104,46 @@ function ENT:MakeToFrom(width, vault, bp)
 	local fromVt = vgui.Create("GradPanel")
 	fromVt:Bond(vault)
 	fromVt:SetColor(Colors.Gray)
-	fromVt:SetSize(width, 64)
+	fromVt:SetSize(width, height + overlap)
 	fromVt:CenterHorizontal()
 	fromVt.Y = vault.Y + vault:GetTall() * 0.75 - fromVt:GetTall()
 
-	local total_h, hdH, pwH = draw.GetFontHeights(titleFont, pwFont)
+	local total_h = pwH
 
 	function fromVt:PostPaint(w, h)
 		surface.SetDrawColor(255, 255, 255)
 		surface.DrawMaterial("https://i.imgur.com/jFHSu7s.png", "arr_right.png",
 				w - (arrSize / 2 + w * 0.02), h / 2, arrSize, arrSize, 0)
 
-		local y = h * 0.5 - total_h / 2
 		local x = w * 0.05
-		draw.SimpleText("Cost:", titleFont,
-			x, y, color_white)
 
 		x = x + 8
-		y = y + hdH
 
-		local icSz = pwH
+		local icSz = math.ceil(height * 0.4)
 
-		local iw, ih = ic:Paint(x, y, icSz, icSz)
+		local iw, ih = ic:Paint(x, math.ceil(h / 2 - icSz / 2), icSz, icSz)
 
 		if self.Cost then
-			draw.SimpleText(Language("Power", self.Cost), pwFont,
-				x + iw, y, Colors.LighterGray)
-		end
+			local col = costCol
 
-		y = y + pwH + 2
+			local cost = self.Cost
+			local grid = ent:GetPowerGrid()
+
+			if not grid or not grid:HasPower(cost) then
+				col = noPwCol
+			end
+
+			doAlpha(col)
+
+			draw.SimpleText(Language("Power", math.floor(self.Cost)), pwFont,
+				x + iw, h / 2, col, 0, 1)
+		end
 	end
 
 	hook.Add("InventoryItemDragStart", toVt, function(_, itFr, itm)
 		if not itm then return end
+
+		unhovTime = math.huge
 
 		if itFr.IsBuffer then
 			local it = itFr:GetItem(true)
@@ -143,31 +156,55 @@ function ENT:MakeToFrom(width, vault, bp)
 			end
 		end
 
-		if not itm:GetInventory() or not itm:GetInventory().IsBackpack then return end
+		if not itm:GetInventory() then return end
 
-		vault:Dehighlight()
+		if itm:GetInventory().IsVault then
+			vault:FadeQueue(true)
+			return
+		end
+
+		vault:Fade()
 	end)
 
 	hook.Add("InventoryItemDragStop", toVt, function(_, itFr, itm, rec)
+		itm = itm or rec:GetItem() -- huh
+		unhovTime = SysTime()  + 0.25
+
+		if itFr:GetInventory().IsVault then
+			vault:FadeQueue(false)
+			return
+		end
+
 		vault:Unhighlight()
 	end)
 
 	hook.Add("InventoryItemHovered", toVt, function(_, itFr, itm)
 		if not itm then return end
-		if not itm:GetInventory() then return end
+		local inv = itm:GetInventory()
+		if not inv or (not inv.IsVault and not inv.IsBackpack) then return end
+
+		unhovTime = nil
+
 
 		if itm:GetInventory().IsVault then
-			fromVt.Cost = itm:GetTotalTransferCost()
+			fromVt.Cost = fromVt.Cost or 0
+			fromVt:To("Cost", itm:GetTotalTransferCost(), 0.1, 0, 0.3)
+			toVt.Cost = nil
 		elseif itm:GetInventory().IsBackpack then
-			toVt.Cost = itm:GetTotalTransferCost()
+			toVt.Cost = toVt.Cost or 0
+			toVt:To("Cost", itm:GetTotalTransferCost(), 0.1, 0, 0.3)
+			fromVt.Cost = nil
 		end
 	end)
 
 	hook.Add("InventoryItemUnhovered", toVt, function(_, itFr, itm)
 		if not itm then return end
 
-		fromVt.Cost = nil
-		toVt.Cost = nil
+		if unhovTime ~= math.huge then
+			unhovTime = SysTime() + 0.25
+		end
+		--[[fromVt.Cost = nil
+		toVt.Cost = nil]]
 	end)
 
 	return fromVt, toVt
@@ -273,6 +310,16 @@ function ENT:MakeItemFrames(betweenW, vault, bp, inVt, outVt)
 		self:To("GradSize", 4, 0.1, 0, 0.3)
 	end
 
+	function hold:Fade()
+		self:AlphaTo(120, 0.2, 0, 0.3)
+		self:SetMouseInputEnabled(false)
+	end
+
+	function hold:Unfade()
+		self:AlphaTo(255, 0.2, 0, 0.3)
+		self:SetMouseInputEnabled(true)
+	end
+
 	hold.widths = {}
 
 	function hold:PostPaint(w, h)
@@ -280,14 +327,14 @@ function ENT:MakeItemFrames(betweenW, vault, bp, inVt, outVt)
 
 		for k,v in ipairs(self.Panels) do
 			local it = v:GetItem(true)
-			if not it then continue end
+			--if not it then continue end
 
-			local pwNeed = it:GetTotalTransferCost()
-			local fr = math.Remap(ent.Status:Get(k, 0), 0, pwNeed, 0, 1)
+			local pwNeed = it and it:GetTotalTransferCost() or 0
+			local fr = it and math.Remap(ent.Status:Get(k, 0), 0, pwNeed, 0, 1) or 0
 			local left = (pwNeed - ent.Status:Get(k, 0)) / ent:GetTransferRate() * BaseWars.Bases.PowerGrid.ThinkInterval
-			local txt = ("%d%% (%s)"):format(
+			local txt = it and ("%d%% (%s)"):format(
 				fr * 100, string.FormattedTime(left, "%01d:%02d")
-			)
+			) or "0%"
 
 			surface.SetFont("MR16")
 			local tw, th = surface.GetTextSize(txt)
@@ -359,20 +406,31 @@ function ENT:OpenMenu()
 
 	local hgtCol = Color(90, 220, 90)
 
+	function vt:FadeQueue(b)
+		if b then
+			itQ:Fade()
+		else
+			itQ:Unfade()
+		end
+	end
+
 	function vt:Unhighlight()
 		self:AlphaTo(255, 0.2)
 		self:LerpColor(self:GetInventoryPanel().GradColor, color_black, 0.2, 0, 0.3)
+		self:SetMouseInputEnabled(true)
 		itQ:Dehighlight()
 	end
 
 	function vt:Highlight()
 		inv:AlphaTo(255, 0.2)
 		self:LerpColor(self:GetInventoryPanel().GradColor, hgtCol, 0.1, 0, 0.3)
+		self:SetMouseInputEnabled(true)
 	end
 
-	function vt:Dehighlight()
+	function vt:Fade()
 		self:AlphaTo(100, 0.1)
 		self:LerpColor(self:GetInventoryPanel().GradColor, color_black, 0.2, 0, 0.3)
+		self:SetMouseInputEnabled(false)
 		itQ:Highlight()
 	end
 
