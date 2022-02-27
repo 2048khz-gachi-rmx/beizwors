@@ -47,6 +47,8 @@ function NavbarChoice:Init()
 	end)
 
 	self.Icon = Icon(questionMark)
+	self.Icon:SetColor(nil)
+
 	self.DefaultIconSize = 0.7
 
 	self.DescriptionFont = "OSL16"
@@ -184,7 +186,7 @@ function NavbarChoice:Draw(w, h)
 
 	local iw, ih = self.Icon:GetSize()
 
-	local scale = 1 - self.DownFrac * 0.05
+	local scale = 1 - self.DownFrac * 0.075
 
 	iw = iw or self:GetTall() * self.DefaultIconSize
 	ih = ih or self:GetTall() * self.DefaultIconSize
@@ -200,7 +202,7 @@ function NavbarChoice:Draw(w, h)
 	local iy = h / 2
 
 	ix = ix + self.HovFrac * 2
-	iy = iy + self.DownFrac * 3
+
 	self.Icon:SetAlignment(5)
 
 	local iclr = self.Icon:GetColor()
@@ -213,7 +215,7 @@ function NavbarChoice:Draw(w, h)
 		surface.SetDrawColor(tempCol)
 	end
 
-	self.Icon:Paint(ix, iy, limW, limH)
+	self.Icon:Paint(ix, iy, math.ceil(limW), limH and math.ceil(limH))
 	--surface.DrawOutlinedRect(ix, h / 2 - ih / 2, iw, ih)
 
 	local frac = self:GetExpFrac(nav.ExpandFrac, 1.8, 1.5) 	--different frac; more eased so text goes to the right faster than the icon
