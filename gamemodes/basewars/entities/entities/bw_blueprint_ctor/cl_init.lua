@@ -27,8 +27,8 @@ function ENT:OpenMenu()
 
 	menu.Inventory:CenterVertical()
 
-	menu:Bond(menu.Inventory)
-	menu.Inventory:Bond(menu)
+	menu:Bind(menu.Inventory)
+	menu.Inventory:Bind(menu)
 
 	local inv = menu.Inventory
 	inv:SetTall(menu:GetTall())

@@ -11,6 +11,7 @@ ENT.PresetMaxHealth = 100
 ENT.IsBaseWars = true
 
 ENT.Level = 1
+ENT.WantBlink = true
 
 function ENT:Init()
 
@@ -86,7 +87,9 @@ if SERVER then
 			self:SetMoveType(MOVETYPE_VPHYSICS)
 
 			self:SetUseType(SIMPLE_USE)
-			self:AddEffects(EF_ITEM_BLINK)
+			if self.WantBlink then
+				self:AddEffects(EF_ITEM_BLINK)
+			end
 
 			self:PhysWake()
 			self:Activate()
@@ -230,6 +233,7 @@ else
 
 	function ENT:Initialize()
 		self:CLInit()
+		self:Init()
 		self:SHInit()
 	end
 end
