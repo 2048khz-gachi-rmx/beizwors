@@ -474,13 +474,14 @@ end
 function LCC(col, r, g, b, a, vel)
 	local v = vel or 10
 
+	local ft = FrameTime()
 
-	col.r = Lerp(FrameTime()*v, col.r, r)
-	col.g = Lerp(FrameTime()*v, col.g, g)
-	col.b = Lerp(FrameTime()*v, col.b, b)
+	col.r = Lerp(ft * v, col.r, r)
+	col.g = Lerp(ft * v, col.g, g)
+	col.b = Lerp(ft * v, col.b, b)
 
 	if a and a ~= col.a then
-		col.a = Lerp(FrameTime()*v, col.a, a)
+		col.a = Lerp(ft * v, col.a, a)
 	end
 
 	return col
@@ -489,9 +490,9 @@ end
 function L(s,d,v,pnl)
 	if not v then v = 5 end
 	if not s then s = 0 end
-	local res = Lerp(FrameTime()*v, s, d)
+	local res = Lerp(FrameTime() * v, s, d)
 	if pnl then
-		local choose = (res>s and "ceil") or "floor"
+		local choose = (res > s and "ceil") or "floor"
 		res = math[choose](res)
 	end
 	return res
@@ -505,7 +506,7 @@ function MIDIRequire()
 		require("midi")
 		MIDISuccess = true
 	else
-		print("did not find MIDI module; halting")
+		print("No MIDI module; not including")
 		return
 	end
 
@@ -581,6 +582,7 @@ function MIDIRequire()
 				[95] = { Sound = "a35" },
 				[96] = { Sound = "a36" },
 			}
+
 			concommand.Add("MIDIPorts", function()
 				if midi and midi.GetPorts then
 					PrintTable(midi.GetPorts())
@@ -588,6 +590,7 @@ function MIDIRequire()
 					print("MIDI module did not load!")
 				end
 			end)
+
 			hook.Add("MIDI", "playablePiano", function(time, command, note, velocity)
 				local instrument = LocalPlayer().Instrument
 				if not IsValid( instrument ) then return end
@@ -595,7 +598,7 @@ function MIDIRequire()
 				-- Zero velocity NOTE_ON substitutes NOTE_OFF
 				if not midi or midi.GetCommandName( command ) ~= "NOTE_ON" or velocity == 0 or not MIDIKeys or not MIDIKeys[note] then return end
 
-				 instrument:OnRegisteredKeyPlayed(MIDIKeys[note].Sound)
+				instrument:OnRegisteredKeyPlayed(MIDIKeys[note].Sound)
 
 				net.Start("InstrumentNetwork")
 					net.WriteEntity(instrument)

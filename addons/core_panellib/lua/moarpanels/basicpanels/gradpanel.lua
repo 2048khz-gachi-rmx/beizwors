@@ -27,6 +27,10 @@ function PANEL:Draw(w, h)
 
 	surface.SetDrawColor(self.Color:Unpack())
 	surface.DrawRect(0, 0, w, h)
+end
+
+function PANEL:PaintOver(w, h)
+	if self.NoDraw or self.NoDrawBG then return end
 
 	surface.SetDrawColor(self.GradColor:Unpack())
 	self:DrawGradientBorder(w, h, self.GradSize, self.GradSize)

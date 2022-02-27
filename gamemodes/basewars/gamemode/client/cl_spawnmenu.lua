@@ -193,12 +193,12 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 	function ics:Paint(w, h)
 		draw.RoundedBox(8, 0, 0, w, h, icscol)
 	end
-
+	ics.PaintOver = nil
 	local boksCol = Colors.LightGray:Copy()
 	boksCol.a = 200
 
 	function pnl:Paint(w, h)
-		DisableClipping(true)
+		--DisableClipping(true)
 		draw.BeginMask()
 
 		--draw.DeMask()
@@ -214,14 +214,13 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 			end
 
 			--surface.DrawOutlinedRect(w / 2 - tw / 2, 0, tw, th)
-			
 			draw.SetMaskDraw(false)
 			--surface.DrawRect(w / 2 - tw / 2 - 8, 0, tw + 16, hdHgt)
 		draw.DrawOp(1)
 			draw.RoundedBox(8, 0, halfHgt, w, h - halfHgt, pnlcol)
 		draw.FinishMask()
 
-		DisableClipping(false)
+		--DisableClipping(false)
 
 		draw.EnableFilters()
 	end
@@ -714,6 +713,7 @@ local function MakeSpawnList()
 	its:Dock(FILL)
 	its:SetColor(Color(110, 110, 110, 150))
 
+	local base = vgui.GetControlTable("GradPanel")
 
 	function its:PostPaint(w, h)
 		spawnmenu.BaseWarsOpened = true -- kinda ugly but aight
@@ -721,8 +721,9 @@ local function MakeSpawnList()
 		BSHADOWS.SetScissor(x, y, w, h)
 	end
 
-	function its:PaintOver()
+	function its:PaintOver(w, h)
 		BSHADOWS.SetScissor()
+		base.PaintOver(self, w, h)
 	end
 
 	function its:PerformLayout(w, h)

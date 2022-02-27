@@ -2,8 +2,6 @@ local bw = BaseWars.Bases
 bw.HUD = bw.HUD or Emitter()
 local hud = bw.HUD
 
-print("!! bz_hud included !!")
-
 include("hud/base_painter_ext.lua")
 
 hook.Add("HUDPaint", "basePainter", function()
