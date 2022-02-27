@@ -66,6 +66,11 @@ end
 ChainAccessor(Icon, "Color", "Color", true)
 
 function Icon:SetColor(col, g, b, a)
+	if not col then
+		self.Color = nil
+		return
+	end
+
 	if IsColor(col) then
 		self.Color:Set(col)
 		return
@@ -171,6 +176,7 @@ end
 function Icon:_WHPreseveRatio(w, h)
 	local mat = self:GetMaterial()
 	local info = draw.GetMaterialInfo(mat)
+
 	if info then
 		local mw, mh = info.w, info.h
 		local sc = 1
@@ -180,7 +186,6 @@ function Icon:_WHPreseveRatio(w, h)
 		elseif h and not w then
 			sc = h / mh
 		else
-
 			if mw >= mh then
 				if w > h then
 					return h * (mw / mh), h
@@ -218,6 +223,10 @@ for i=0, 8 do
 	yAligns[i + 1] = math.floor(i / 3) * 0.5
 end
 
+function Icon:__tostring()
+	return ("Icon	[%s]	[%gx%g]"):format(self.Name or self.Material or "!?", self:GetWide() or -1, self:GetTall() or -1)
+end
+
 function Icon:Paint(x, y, w, h, rot)
 	self:AnimationThink()
 
@@ -252,7 +261,9 @@ function Icon:Paint(x, y, w, h, rot)
 	end
 
 	local col = self.Color
-	surface.SetDrawColor(col.r, col.g, col.b, col.a)
+	if col then
+		surface.SetDrawColor(col.r, col.g, col.b, col.a)
+	end
 
 	if self.Filter then
 		draw.EnableFilters()

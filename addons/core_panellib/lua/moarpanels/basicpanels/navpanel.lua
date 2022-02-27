@@ -91,6 +91,8 @@ end
 function NavbarChoice:PostPaint()
 end
 
+local def_clr = Color(255, 255, 255)
+
 function NavbarChoice:SetIcon(url, name, h)
 	local ic = Icon(url, name)
 	self.Icon = ic
@@ -99,6 +101,7 @@ function NavbarChoice:SetIcon(url, name, h)
 
 	local sz = self:GetTall() * self.DefaultIconSize
 	self.Icon:SetSize(sz, sz)
+	self.Icon:SetColor(nil)
 	return ic
 end
 
@@ -157,6 +160,7 @@ function NavbarChoice:Think()
 end
 
 local colHov = Colors.Sky:Copy()
+local tempCol = Color(0, 0, 0)
 
 function NavbarChoice:Draw(w, h)
 	local nav = self.Navbar
@@ -179,22 +183,36 @@ function NavbarChoice:Draw(w, h)
 	local frac = self:GetExpFrac(nav.ExpandFrac, 1.3, 1.2)
 
 	local iw, ih = self.Icon:GetSize()
+
+	local scale = 1 - self.DownFrac * 0.05
+
 	iw = iw or self:GetTall() * self.DefaultIconSize
 	ih = ih or self:GetTall() * self.DefaultIconSize
+
 	local size = iw
 
 	--  when expanded becomes 8 + icsz,						when expanded, becomes 8 (padding from left edge)
 	--  otherwise centers									otherwise, becomes the left edge of visible area (area that's not clipped by parent)
 	ix = Lerp(frac, nav.RetractedSize / 2, 8 + iw / 2) + Lerp(frac, nav:GetWide() - nav.RetractedSize, 0)
 
-	local limW = iw < ih and iw
-	local limH = ih <= iw and ih
+	local limW = iw * scale
+	local limH = ih <= iw and ih * scale
 	local iy = h / 2
 
-	ix = ix + self.HovFrac * 3
+	ix = ix + self.HovFrac * 2
 	iy = iy + self.DownFrac * 3
-
 	self.Icon:SetAlignment(5)
+
+	local iclr = self.Icon:GetColor()
+
+	if not iclr then
+		local fr = math.max(self.HovFrac * 0.4, self.DownFrac, self.ActiveFrac)
+		tempCol:Set(def_clr)
+		tempCol:MulHSV(1, 1, 0.6 + fr * 0.4)
+
+		surface.SetDrawColor(tempCol)
+	end
+
 	self.Icon:Paint(ix, iy, limW, limH)
 	--surface.DrawOutlinedRect(ix, h / 2 - ih / 2, iw, ih)
 
