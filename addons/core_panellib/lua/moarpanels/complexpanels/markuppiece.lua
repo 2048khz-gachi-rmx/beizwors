@@ -33,7 +33,7 @@ function PANEL:Init()
 	self.curY = 0
 	self._halign = 0
 
-	self.Selectable = true
+	self.Selectable = false
 	self.Color = color_white:Copy()
 	self.IgnoreVisibility = true
 
@@ -383,10 +383,11 @@ function PANEL:OnMouseReleased()
 end
 
 function PANEL:Think()
-
 	if self.MouseHeld then
-
-		if not input.IsMouseDown(MOUSE_LEFT) then self:OnMouseReleased_butlikeactual() return end --retarded garry
+		if not input.IsMouseDown(MOUSE_LEFT) then
+			self:OnMouseReleased_butlikeactual()
+			goto emit -- retarded garry
+		end
 
 		local mx, my = self:ScreenToLocal(gui.MousePos())
 		local sx, sy = self.Mouse.x, self.Mouse.y
@@ -459,9 +460,9 @@ function PANEL:Think()
 
 			end
 		end
-
 	end
 
+	::emit::
 	self:Emit("Think")
 end
 
