@@ -1,6 +1,6 @@
 --
 
-local disabled = false
+local disabled = true
 
 hook.Add("PlayerDeath", "DropItems", function(ply)
 	if disabled then return end
