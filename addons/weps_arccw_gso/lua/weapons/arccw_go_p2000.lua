@@ -86,7 +86,7 @@ SWEP.SightedSpeedMult = 0.75
 SWEP.SightTime = 0.200
 
 SWEP.IronSightStruct = {
-    Pos = Vector(-2.8, 11, 0.92),
+    Pos = Vector(-2.785, 11, 0.88),
     Ang = Angle(0.5, 0.025, 0),
     Magnification = 1.1,
     SwitchToSound = "", -- sound that plays when switching to this sight
