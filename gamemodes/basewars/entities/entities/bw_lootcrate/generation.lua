@@ -1,3 +1,5 @@
+local FORCE_TYPE = "weapon"
+
 local lootInfo = {
 	weapon = {
 		small = {
@@ -7,6 +9,10 @@ local lootInfo = {
 				weaponparts = {1, 2, 0.7},
 				laserdiode = {2, 4, 0.6},
 				lube = {1, 2, 0.4},
+				_weapon = {{
+					[1] = 7, -- t1: 7/8
+					[2] = 1, -- t2: 1/8
+				}, 0, 0.6},
 			},
 		},
 
@@ -18,6 +24,10 @@ local lootInfo = {
 				wepkit = {1, 1, 0.2},
 				laserdiode = {3, 6, 0.7},
 				lube = {2, 4, 0.6},
+				_weapon = {{
+					[1] = 3, -- t1: 3/4
+					[2] = 1, -- t2: 1/4
+				}, 0, 0.9}
 			},
 		}
 	},
@@ -77,6 +87,55 @@ function ENT:GetLootInfo()
 	return getLootInfo(self.CrateType, self.Size)
 end
 
+function ENT:GenerateWeapon(dat)
+	local bp = Inventory.Blueprints
+	local typ = bp.GetRandomType()
+	local tier = WeightedRand.Select(dat[1])
+	local class = bp.GetWeapon(typ, tier)
+
+	local qual = bp.PickQuality(tier, class)
+	local mods = bp.GenerateMods(tier, qual, bp.TierGetMods(tier))
+	local stats = bp.GenerateStats(qual)
+
+	local uses = math.floor( Lerp(math.random() ^ 0.8, 2, 5.5) )
+
+	local wep = Inventory.NewItem(class)
+	wep:SetQualityName(qual:GetName())
+	wep:SetModNames(mods)
+	wep:SetStatRolls(stats)
+	wep:SetUses(uses)
+
+	local pr = Promise()
+	pr.Item = wep
+
+	Inventory.MySQL.NewFloatingItem(wep):Then(pr:Resolver())
+
+	return pr
+end
+
+function ENT:GenerateItem(iid, dat)
+	if iid == "_weapon" then
+		print("generating weapon", self:EntIndex())
+		return self:GenerateWeapon(dat)
+	end
+
+	local it = Inventory.NewItem(iid)
+	if not it then
+		errorf("No such item: %s", iid)
+		return
+	end
+
+	if istable(dat) and isnumber(dat[1]) then
+		it:SetAmount(math.random(unpack(dat)))
+	end
+	local pr = Promise()
+	pr.Item = it
+
+	Inventory.MySQL.NewFloatingItem(it):Then(pr:Resolver())
+
+	return pr
+end
+
 function ENT:GenerateLoot()
 	local dat = self:GetLootInfo()
 	local toGen = 1
@@ -94,21 +153,7 @@ function ENT:GenerateLoot()
 
 		toGen = toGen - 1
 
-		local it = Inventory.NewItem(k)
-		if not it then
-			errorf("No such item: %s", k)
-			return
-		end
-
-		if istable(v) and isnumber(v[1]) then
-			it:SetAmount(math.random(unpack(v)))
-		end
-		local pr = Promise()
-		pr.Item = it
-
-		Inventory.MySQL.NewFloatingItem(it):Then(pr:Resolver())
-
-		prs[#prs + 1] = pr
+		prs[#prs + 1] = self:GenerateItem(k, v)
 	end
 
 	if #prs == 0 then
@@ -166,23 +211,28 @@ local function rollCratePos(num)
 		local data = posCopy[key]
 		if not data then break end
 
-		data.key = key
-		local lootInfo = getLootInfo(data[3], data[4])
-		if lootInfo.appearChance and math.random() > lootInfo.appearChance then
-			goto nextPos
-		end
+		if FORCE_TYPE and data[3] ~= FORCE_TYPE then goto nextPos end
 
 		do
-			local pos = data[1]
+			data.key = key
+			local lootInfo = getLootInfo(data[3], data[4])
 
-			for _, ent in ipairs(ActiveLootCrates) do
-				if ent:GetPos():DistToSqr(pos) < 64^2 then
-					goto nextPos
-				end
+			if lootInfo.appearChance and math.random() > lootInfo.appearChance then
+				goto nextPos
 			end
 
-			if pos then
-				ret[#ret + 1] = data
+			do
+				local pos = data[1]
+
+				for _, ent in ipairs(ActiveLootCrates) do
+					if ent:GetPos():DistToSqr(pos) < 64^2 then
+						goto nextPos
+					end
+				end
+
+				if pos then
+					ret[#ret + 1] = data
+				end
 			end
 		end
 
@@ -212,11 +262,18 @@ local function makeCrate(pos)
 	crate:ParseModel(dat[5])
 	crate:CreateInventory()
 
-	crate:GenerateLoot():Then(function()
-		crate:Spawn()
-		crate:Activate()
-		crate:GetPhysicsObject():EnableMotion(false)
-	end)
+	local pr = crate:GenerateLoot()
+
+	if pr then
+		pr:Then(function()
+			crate:Spawn()
+			crate:Activate()
+			crate:GetPhysicsObject():EnableMotion(false)
+		end)
+	elseif IsValid(crate) then
+		--mfw
+		crate:Remove()
+	end
 end
 
 function LootCratesSpawn(amt)

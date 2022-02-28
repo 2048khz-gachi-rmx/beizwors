@@ -14,7 +14,7 @@ mysqloo.OnConnect(function()
 end)
 
 function BW.Leaderboard.Fetch()
-	if not db then print("no db mfw") return end
+	if not db then return end
 
 	MySQLQuery(prepSel, true):Then(function(self, qry, dat)
 		BW.Leaderboard.Data = dat
