@@ -823,7 +823,12 @@ function META:Bond(to)
 			end
 
 			if not IsValid(to) then
-				if IsValid(self) then self:Remove() end
+				if IsValid(self) then
+					local ok = self:Emit("BondRemove", to)
+					if IsValid(self) and ok == nil then
+						self:Remove()
+					end
+				end
 				hook.Remove("Think", name)
 			end
 		end)
