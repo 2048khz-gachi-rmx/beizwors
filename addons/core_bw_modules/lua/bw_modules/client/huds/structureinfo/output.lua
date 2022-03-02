@@ -49,19 +49,24 @@ function sin:PaintPrinterOutput(ent, cury)
 	local tx = ("%s%s/s."):format(Language.Currency,
 		BaseWars.NumberFormat(amt or -1))
 
-	local fnt, sz = Fonts.PickFont("BS", tx, w * 0.5, DarkHUD.Scale * 32, nil, "16")
+	local fnt, sz = Fonts.PickFont("EXSB", tx, w * 0.5, DarkHUD.Scale * 32, nil, "20")
 
-	local icSz = math.Multiple(sz, 4)
+	local icSz = math.Multiple(sz, 4) * 0.875
 	ic:SetSize(icSz, icSz)
 
 	local total = ic:GetWide() + 6 * scale + surface.GetTextSizeQuick(tx, fnt)
 	local x = w / 2 - total / 2
-	ic:Paint(x, offy)
-	x = x + ic:GetWide() + 6 * scale
+	offy = offy - sz * 0.125 / 2
+	local iy = offy + sz / 2 - icSz / 2
+	ic:Paint(x, iy)
+
+	--surface.DrawOutlinedRect(x, offy, icSz, icSz)
+	x = x + ic:GetWide() + 4 * scale
 
 	local _, th = draw.SimpleText(tx, fnt, x,
-		offy, Colors.Money, 0, 5)
+		offy - math.ceil(sz * 0.125 / 2), Colors.Money, 0, 5)
 
+	--surface.DrawOutlinedRect(x, offy, _, th)
 	offy = offy + math.max(th * 0.875, icSz)
 
 	return offy - cury

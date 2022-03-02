@@ -337,7 +337,7 @@ function ENT:PaintStructureInfo(w, y)
 	local cap = Language("Price", Cp)
 
 	local txt = cur .. " / " .. cap
-	local font = Fonts.PickFont("OSB", txt, w - 16, sc * 48, 24)
+	local font = Fonts.PickFont("EX", txt, w - 16, sc * 48, 24)
 
 	if money >= Cp then
 		local fr = 1 - (CurTime() * 1) % 1
@@ -346,7 +346,7 @@ function ENT:PaintStructureInfo(w, y)
 		col:Set(color_white)
 	end
 
-	local tw, th = draw.SimpleText2(txt, font or "OSB24", w/2, y, col, 1, 5)
+	local tw, th = draw.SimpleText2(txt, font, w/2, y, col, 1, 5)
 
 	return th
 end
