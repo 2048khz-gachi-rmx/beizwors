@@ -112,9 +112,10 @@ end
 
 timer.Simple(0, function()
 	local fn = WSMount and WSMount.RealAddWorkshop or resource.AddWorkshop
-	for i=1, #BWAddons do
-		--resource.AddWorkshop(tostring(BWAddons[i]))
-		fn(BWAddons[i])
+
+	for k,v in ipairs(BWAddons) do
+		resource.AddWorkshop(tostring(v))
+		--fn(BWAddons[i])
 	end
 
 	-- DownloadFolder("materials/vgui/prestige")
