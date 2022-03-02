@@ -93,7 +93,7 @@ DarkHUD.SettingFrame = st
 
 
 		st = Settings.Create("darkhud_3d", "bool")
-			:SetDefaultValue(true)
+			:SetDefaultValue(false)
 			:SetCategory("HUD")
 			:SetName("Use 3D")
 
