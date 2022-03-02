@@ -36,7 +36,7 @@ function sin:PaintLevel(cury)
 	local lvW, lvH = draw.SimpleText(lvText, lvFont,
 		pad, offy - sz * 0.25, color_white, 0, 5)
 
-	if self.EntUpgCost then
+	if self.EntUpgCost and self.EntMaxLevel ~= self.EntLevel then
 		local str = Language("UpgCost", self.EntUpgCost)
 
 		-- whats upfont
