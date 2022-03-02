@@ -21,7 +21,6 @@ function ENT:OnUpgrade()
 end
 
 function ENT:OnFinalUpgrade()
-	self:EmitSound("replay/rendercomplete.wav")
 end
 
 function ENT:SetupDataTables()
@@ -29,11 +28,16 @@ function ENT:SetupDataTables()
 
 	self:NetworkVar("Int", 1, "Level")
 	self:SetLevel(1)
+
 	if CLIENT then
 		self:NetworkVarNotify("Level", function(self, key, old, new)
 			if old == new or new == 1 then return end
+
 			self:Timer("rubatfixWHEN", 0, 1, function()
 				if self:GetLevel() == 1 then return end
+				if new == self._LastUpgrade then return end
+
+				self._LastUpgrade = new
 				self:OnFinalUpgrade()
 			end)
 		end)
@@ -86,6 +90,7 @@ function ENT:DoUpgrade(final)
 	self:SetConsumptionMult_Add("LevelPower", self._PowerMult)
 
 	if final then
+		self:EmitSound("replay/rendercomplete.wav")
 		self:OnFinalUpgrade(lvl + 1)
 	end
 end

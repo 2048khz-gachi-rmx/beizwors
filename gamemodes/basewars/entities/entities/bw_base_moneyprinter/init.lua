@@ -50,8 +50,6 @@ function ENT:Overclock(lv, mult)
 end
 
 function ENT:OnFinalUpgrade()
-	self:EmitSound("replay/rendercomplete.wav")
-
 	self.Level = self:GetLevel()
 	local amt = BaseWars.Printers.GetPrintRate(self)
 	if amt then
