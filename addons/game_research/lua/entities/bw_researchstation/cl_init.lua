@@ -42,7 +42,7 @@ function ENT:DrawDisplay(aMult)
 
 	local fr = self.ResFr or 0
 
-	local fnt = Fonts.PickFont("EXSB", tx, w * 0.9 - (dots and dots:GetSize() or 0), h, 72)
+	local fnt = Fonts.PickFont("EXSB", tx:gsub("%.$", ""), w * 0.9 - (dots and dots:GetSize() or 0), h, 72)
 
 	draw.SimpleText2(tx, fnt, x + w / 2, y + h / 2,
 		tempCol, 1, 1)
