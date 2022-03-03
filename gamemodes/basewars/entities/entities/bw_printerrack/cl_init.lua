@@ -252,7 +252,6 @@ function ENT:CreateButton(f, ent, entKey)
 	--b:SetPaintedManually(true)
 
 	b.DoClick = function(s)
-		print("doclick called")
 		net.Start("PrinterRack")
 			net.WriteEntity(self)
 			net.WriteUInt(0, 2) -- = eject

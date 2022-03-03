@@ -47,6 +47,8 @@ function ENT:SetupDataTables()
 	if SERVER and self.BoughtCost then
 		self:SetBoughtPrice(self.BoughtCost)
 	end
+
+	self:DerivedDataTables()
 end
 
 function ENT:GetUpgradeCost(curLv)
