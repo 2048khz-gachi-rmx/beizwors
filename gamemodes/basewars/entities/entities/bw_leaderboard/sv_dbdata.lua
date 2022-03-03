@@ -54,6 +54,8 @@ hook.Add("BW_LeaderboardUpdated", "Network", function(dat)
 end)
 
 hook.Add("BW_DataSyncedmoney", "LeaderboardUpdate", function(pin, money)
+	if not BW.Leaderboard.Data or #BW.Leaderboard.Data < 10 then return end
+
 	local sid64 = pin:SteamID64()
 
 	local ind = BW.Leaderboard.SteamIDs[sid64]
