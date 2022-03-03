@@ -44,6 +44,9 @@ addons/game_inventory/**
 !addons/weps_cw2_base*
 !addons/weps_arccw_mp
 
+!data/wsmount_list.dat
+!data/inventory/**/*
+
 addons/*pac3*
 addons/fas*
 
