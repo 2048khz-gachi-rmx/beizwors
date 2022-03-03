@@ -71,6 +71,7 @@ errs.JoinInFac 			= 	makeErr("Can't join a faction while already in one!")
 errs.JoinWithBase		=	makeErr("Can't join a faction while owning a base!")
 errs.CreateInRaid		=	makeErr("Can't create a faction while in a raid!")
 errs.LeaveInRaid		=	makeErr("Can't leave a faction while in a raid!")
+errs.LimitReached		=	makeErr("This faction is already full! (" .. Factions.MaxMembers .. " members)")
 
 function LibItUp.PlayerInfo:GetFaction()
 	local fac = self._Faction
@@ -224,6 +225,10 @@ function Factions.CanJoin(ply, fac)
 
 	if ply:GetBase() then
 		return false, Factions.Errors.JoinWithBase
+	end
+
+	if #fac:GetMembersInfo() >= Factions.MaxMembers then
+		return false, Factions.Errors.LimitReached
 	end
 
 	return true
