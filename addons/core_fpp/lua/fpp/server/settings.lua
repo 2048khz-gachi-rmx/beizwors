@@ -249,6 +249,9 @@ local allowedShares = {
     ShareToolgun1 = true
 }
 local function ShareProp(ply, cmd, args)
+	do FPP.Notify(ply, "FPP_ShareProp: Disabled", false) return end
+
+
     if not args[1]                  then FPP.Notify(ply, "FPP_ShareProp: Entity not given", false) return end
     if not IsValid(Entity(args[1])) then FPP.Notify(ply, "FPP_ShareProp: Entity not valid", false) return end
     if not args[2]                  then FPP.Notify(ply, "FPP_ShareProp: Player to share with not given", false) return end
