@@ -121,6 +121,8 @@ hook.Add("Vault_CanMoveTo", "Digitizer", function(vt, itm, from, slot)
 end)
 
 hook.Add("Vault_CanMoveFrom", "Digitizer", function(inv, ply, itm, inv2, slot)
+	if not inv2.IsBackpack then return end
+
 	local subs = ply:GetSubscribedTo()
 	local found = false
 
