@@ -112,12 +112,11 @@ function math.Exclude(num, min, max)
 	end
 end
 
-function FPSLerp(vel, from, to, ft)
-	-- this makes zero fucking sense but it works; i can't explain it
-	ft = ft or FrameTime()
-	local fr = ft * vel
+function FPSLerp(vel, from, to)
+	local ft = FrameTime()
+	vel = vel and vel or -1
 
-	return Lerp(fr, from, to)
+	return Lerp(1 - 2 ^ (-vel * ft), from, to)
 end
 
 function UnboundedLerp(fr, from, to)
