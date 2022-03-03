@@ -273,16 +273,12 @@ function GM:PlayerNoClip(ply)
 	local Admin = ply:IsAdmin() or ply:IsSuperAdmin()
 
 	if SERVER then
-
 		-- Second argument doesn't work??
 		local State = ply:GetMoveType() == MOVETYPE_NOCLIP
 
 		if aowl and not Admin and State and not ply.__is_being_physgunned then
-
 			return true
-
 		end
-
 	end
 
 	return BaseWars.IsDev(ply) -- and Admin and not ply:InRaid()

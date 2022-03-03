@@ -29,14 +29,19 @@ ENT.SubModels = {
 ENT.Levels = {
 	{
 		Cost = 0,
+		Rate = 200,
 	}, {
-		Cost = 75e6,
+		Cost = 5e6,
+		Rate = 500,
 	}, {
-		Cost = 600e6,
+		Cost = 50e6,
+		Rate = 850,
 	}, {
-		Cost = 2.5e9,
+		Cost = 300e6,
+		Rate = 1200,
 	}, {
-		Cost = 50e9,
+		Cost = 1.5e9,
+		Rate = 1750,
 	}
 }
 
@@ -45,7 +50,7 @@ function ENT:DerivedDataTables()
 end
 
 function ENT:GetTransferRate()
-	return 1.5 ^ (self:GetLevel() - 1) * 750
+	return self:GetLevelData().Rate
 end
 
 function ENT:CanFromBuf(inv, ply, itm, toInv)
