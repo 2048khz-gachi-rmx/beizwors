@@ -4,7 +4,7 @@ AddCSLuaFile("shared.lua")
 include("generation.lua")
 AddCSLuaFile("cl_init.lua")
 
-CrateRespawnTime = 30
+CrateRespawnTime = 20
 
 function ENT:Init(me)
 	ActiveLootCrates[#ActiveLootCrates + 1] = self
