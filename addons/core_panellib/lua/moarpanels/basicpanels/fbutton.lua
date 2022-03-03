@@ -315,24 +315,24 @@ function button:DrawButton(x, y, w, h)
 			--dRB(rad, x2, y2 + raise * dfr, w2, h2 - bSz, main, rbinfo)
 			w2, h2 = w - bw*2, h - bh*2
 			x2, y2 = x + bw, y + bh
+			return
 		end
 
-	else
-
-		if bSz > 0 then
-			if raise > 0 or dfr > 0 then
-				self:PopMatrix()
-			end
-
-				dRB(rad, x2, y2 + bSz, w2, h2 - bSz, brd, rbinfo)
-
-			if raise > 0 or dfr > 0 then
-				self:ApplyMatrix()
-			end
-		end
-
-		dRB(rad, x2, y2, w2, h2 - bSz, main, rbinfo)
 	end
+
+	if bSz > 0 then
+		if raise > 0 or dfr > 0 then
+			self:PopMatrix()
+		end
+
+			dRB(rad, x2, y2 + bSz, w2, h2 - bSz, brd, rbinfo)
+
+		if raise > 0 or dfr > 0 then
+			self:ApplyMatrix()
+		end
+	end
+
+	dRB(rad, x2, y2, w2, h2 - bSz, main, rbinfo)
 end
 
 function button:GetDrawableHeight()
