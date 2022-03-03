@@ -1,4 +1,4 @@
-local FORCE_TYPE = "weapon"
+local FORCE_TYPE = nil -- "weapon"
 
 local lootInfo = {
 	weapon = {
@@ -115,7 +115,6 @@ end
 
 function ENT:GenerateItem(iid, dat)
 	if iid == "_weapon" then
-		print("generating weapon", self:EntIndex())
 		return self:GenerateWeapon(dat)
 	end
 
@@ -163,6 +162,8 @@ function ENT:GenerateLoot()
 	end
 
 	return Promise.OnAll(prs):Then(function()
+		if not self:IsValid() then return end -- !?
+
 		for k,v in ipairs(prs) do
 			local it = v.Item
 			it:SetSlot(k)
@@ -261,7 +262,7 @@ local function makeCrate(pos)
 	crate.Model = dat[5]
 	crate:ParseModel(dat[5])
 	crate:CreateInventory()
-
+	crate:SetSolid(SOLID_OBB) -- FPP workaround; it ignores solid = 0 when calculating perms
 	local pr = crate:GenerateLoot()
 
 	if pr then
@@ -282,7 +283,7 @@ function LootCratesSpawn(amt)
 		if not e:IsValid() then table.remove(ActiveLootCrates, i) end
 	end
 
-	local maxCrates = math.max(4, 2 + player.GetCount() / 2)
+	local maxCrates = math.max(6, 4 + player.GetCount() / 2)
 
 	amt = amt or maxCrates - #ActiveLootCrates - LootCratesAwaitingRespawn
 	if amt <= 0 then return end
