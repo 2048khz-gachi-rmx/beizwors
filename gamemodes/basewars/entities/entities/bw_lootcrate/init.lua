@@ -119,7 +119,10 @@ function ENT:Use(ply)
 
 	local a = self:GetAngles()
 	local dA = a:Forward() + a:Up() + a:Right()
-	local sPos = self:GetPos() + self:OBBCenter() * dA + zoffset
+	local min, max = self:GetRotatedAABB(self:OBBMins(), self:OBBMaxs())
+	local center = min:CAdd(max):CDiv(2)
+
+	local sPos = self:GetPos() + center * dA + zoffset
 
 	local del = 0
 

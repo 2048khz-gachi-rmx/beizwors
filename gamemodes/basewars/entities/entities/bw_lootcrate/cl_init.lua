@@ -20,13 +20,14 @@ function ENT:Draw()
 
 	local a = self:GetAngles()
 	local dA = a:Forward() + a:Up() + a:Right()
+	local min, max = self:GetRotatedAABB(self:OBBMins(), self:OBBMaxs())
+	local center = min:CAdd(max):CDiv(2)
 
-	local sPos = self:GetPos() + self:OBBCenter() * dA + zoffset
-	render.DrawWireframeBox(sPos, Angle(), -dropBounds, dropBounds, color_white)
+	local sPos = self:GetPos() + center * dA + zoffset
+	render.DrawWireframeBox(sPos, a, -dropBounds, dropBounds, color_white)
 
 	local ignoreTable = player.GetAll()
 	table.insert(ignoreTable, self)
-
 
 	local dropDist = 48
 	local dropHeight = 64
@@ -64,7 +65,7 @@ function ENT:Draw()
 				tr.Hit and Colors.Red or Colors.Sky)
 		end
 
-		render.DrawSphere(tr.HitPos, 4, 8, 8, tr.Hit and Colors.Red or Colors.Sky)
+		render.DrawSphere(tr.HitPos, 1, 8, 8, tr.Hit and Colors.Red or Colors.Sky)
 
 		if tr.Hit then hitPos = tr.HitPos break end
 		lastPos = newPos
