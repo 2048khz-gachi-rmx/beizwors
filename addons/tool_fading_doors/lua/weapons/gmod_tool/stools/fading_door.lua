@@ -307,9 +307,11 @@ local function fadeActivate(self)
 	end
 end
 
-local function fadeDeactivate(self)
+local function fadeDeactivate(self, nocd)
 	self.fadeActive = false
-	self.lastUnfade = CurTime()
+	if not nocd then
+		self.lastUnfade = CurTime()
+	end
 
 	if self:GetMaterial() == self.fadeDoorMaterial and self.fadeMaterial then self:SetMaterial(self.fadeMaterial) end
 	--self:SetRenderMode(self.fadeRenderMode)
@@ -539,7 +541,7 @@ end
 
 local function dooEet(pl, Ent, stuff)
 	if Ent.isFadingDoor then
-		if Ent.fadeDeactivate then Ent:fadeDeactivate() end
+		if Ent.fadeDeactivate then Ent:fadeDeactivate(true) end
 		RemoveKeys(Ent)
 	else
 		Ent.isFadingDoor = true
@@ -574,8 +576,17 @@ local function dooEet(pl, Ent, stuff)
 	Ent.fadeDoorOpenSound = stuff.DoorOpenSound
 	Ent.fadeDoorLoopSound = stuff.DoorLoopSound
 	Ent.fadeDoorCloseSound = stuff.DoorCloseSound
-	if stuff.reversed then Ent:fadeActivate() end
+
+	local rev = stuff.reversed
+	local key = pl:ButtonDown(stuff.key)
+
+	if rev ~= key then -- reversed & not key down OR key down & not reversed
+		print("activating fade")
+		Ent:fadeActivate()
+	end
+
 	duplicator.StoreEntityModifier(Ent, "Fading Door", stuff)
+
 	return true
 end
 

@@ -412,3 +412,18 @@ end)
 function player.GetConstAll()
 	return allPlayers
 end
+
+function PLAYER:ButtonDown(btn)
+	return (not not self._buttons[btn])
+end
+PLAYER.IsButtonDown = PLAYER.ButtonDown
+
+hook.Add("PlayerButtonDown", "TrackButtons", function(ply, btn)
+	ply._buttons = ply._buttons or {}
+	ply._buttons[btn] = true
+end)
+
+hook.Add("PlayerButtonUp", "TrackButtons", function(ply, btn)
+	ply._buttons = ply._buttons or {}
+	ply._buttons[btn] = false
+end)
