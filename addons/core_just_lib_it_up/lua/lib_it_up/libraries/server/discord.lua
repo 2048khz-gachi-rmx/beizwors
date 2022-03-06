@@ -315,8 +315,6 @@ function discord.SendEmbed(mode, name, t, cb, fail)
 	end
 
 	local function callback(urls)
-		print(util.TableToJSON(em))
-
 		http.Post("https://vaati.net/Gachi/shit.php", {
 			name = name or "lodestar/generic",
 			api = "disrelay",
