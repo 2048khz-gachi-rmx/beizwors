@@ -25,7 +25,7 @@ end
 local function prepareQueries()
 	MySQLEmitter(
 		tododb:query("CREATE TABLE IF NOT EXISTS todo (`uid` INT PRIMARY KEY AUTO_INCREMENT, `str` TEXT, `done` BOOL)"),
-		true):Catch()
+		true)
 
 	createProcedures()
 
@@ -57,7 +57,7 @@ function todo.Add(str)
 		em:SetText("```\n" .. str .. "```"):SetTitle("To-do added"):SetColor(200, 200, 50)
 
 		discord.SendEmbed("todo", "To-do Tracker", em)
-	end):Catch()
+	end)
 
 end
 
@@ -78,7 +78,7 @@ function todo.Solve(...)
 
 			discord.SendEmbed("todo", "To-do Tracker", em)
 			MsgC(Colors.Sky, "[Todo]: ", color_white, "'", dat[1].str, "':", Colors.Money, " Solved!\n")
-		end):Catch()
+		end)
 	end
 end
 
