@@ -108,8 +108,9 @@ local f = {
 
 local urlps = {
 	["q2f2laugh"] = "https://b.vaati.net/aruc.mp3",
-	["cani"] = "http://vaati.net/Gachi/shared/ballz.mp3",
-	["kys"] = "http://vaati.net/Gachi/shared/kys.mp3",
+	["cani"] = "https://vaati.net/Gachi/shared/ballz.mp3",
+	["kys"] = "https://vaati.net/Gachi/shared/kys.mp3",
+	["boom"] = "https://vaati.net/Gachi/shared/boom.mp3",
 	["kys_now"] = function(ply)
 		local thunders = 4
 		local ttbl = {}
