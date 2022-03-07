@@ -1,9 +1,9 @@
 hook.Add("BaseWars_PlayerEmptyPrinter", "XPRewards", function(ply, ent, money)
-	if ent:GetClass() == "bw_printer_manual" then
+	--[[if ent:GetClass() == "bw_printer_manual" then
 		ply:AwardEXPForMoney(money * 2, true)
 	else
 		ply:AwardEXPForMoney(money)
-	end
+	end]]
 end)
 
 
