@@ -272,7 +272,7 @@ function DarkHUD.CreateVitals()
 
 		local ct = CurTime()
 
-		DisableClipping(true)
+		local clip = DisableClipping(true)
 
 			for k = #popups.Money, 1, -1 do--k,v in ipairs(popups.Money) do
 				local v = popups.Money[k]
@@ -307,7 +307,7 @@ function DarkHUD.CreateVitals()
 				surface.DrawText(difftxt)
 
 			end
-		DisableClipping(false)
+		DisableClipping(clip)
 
 		if mf > 0 then
 
@@ -321,7 +321,7 @@ function DarkHUD.CreateVitals()
 			local am = surface.GetAlphaMultiplier()
 
 			surface.SetAlphaMultiplier(surface.GetAlphaMultiplier() * mf)
-			DisableClipping(true)
+			clip = DisableClipping(true)
 				draw.RoundedBox(8, 12, boxY, mw + 8 + 24 + 6 + 8, boxH, boxcol)
 
 				surface.SetDrawColor(255, 255, 255)
@@ -330,7 +330,7 @@ function DarkHUD.CreateVitals()
 				surface.SetTextColor(popups.MoneyColor:Unpack())
 				surface.SetTextPos(12 + 8 + 24 + 6, boxY + boxH / 2 - mh / 2)
 				surface.DrawText(mtxt)
-			DisableClipping(false)
+			DisableClipping(clip)
 
 			surface.SetAlphaMultiplier(am)
 			--draw.SimpleText(mtxt, "OSB28", 48, boxY + boxH / 2, col, 0, 1)

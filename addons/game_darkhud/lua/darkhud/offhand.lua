@@ -117,7 +117,7 @@ dh:On("AmmoPainted", "PaintOffhand", function(_, pnl, fw, h)
 		handle.rendered = true
 	end
 
-	DisableClipping(true)
+	local clip = DisableClipping(true)
 
 	-- counteract the shaking a bit
 	-- unshaken is used in painting icons and keys, not rects
@@ -208,5 +208,5 @@ dh:On("AmmoPainted", "PaintOffhand", function(_, pnl, fw, h)
 
 		x = x + (add or w) + pad
 	end
-	DisableClipping(false)
+	DisableClipping(clip)
 end)
