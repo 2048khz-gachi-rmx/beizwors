@@ -248,6 +248,8 @@ function render.Rescissor()
 end
 
 hook.Add("PostRender", "scissors", function()
+	if #yote == 0 then return end
+
 	cam.Start2D()
 	surface.SetDrawColor(255, 0, 0)
 	for k,v in ipairs(yote) do
