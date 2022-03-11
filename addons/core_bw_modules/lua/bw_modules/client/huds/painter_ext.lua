@@ -224,9 +224,9 @@ function ptr:PaintFrame(cury)
 
 	surface.SetDrawColor(255, 255, 255)
 
-	DisableClipping(true)
+	local c = DisableClipping(true)
 		frShad:Paint(0, cury, self:GetWide(), self:GetTall())
-	DisableClipping(false)
+	DisableClipping(c)
 
 	draw.RoundedBoxEx(8, 0, cury, self:GetWide(), hd, Colors.FrameHeader, true, true)
 	draw.RoundedBoxEx(8, 0, cury + hd, self:GetWide(), self:GetTall() - hd, Colors.FrameBody,
