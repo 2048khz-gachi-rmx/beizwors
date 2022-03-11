@@ -13,6 +13,9 @@ ENT.IsBaseWars = true
 ENT.Level = 1
 ENT.WantBlink = true
 
+ENT.UsesModules = false
+ENT.ModuleSlots = 3
+
 function ENT:Init()
 
 end
@@ -75,6 +78,28 @@ function ENT:SHInit()
 
 end
 
+function ENT:InitModuleInventory()
+	if not self.UsesModules then return end
+
+	self.Inventory = {Inventory.Inventories.Entity:new(self)}
+
+	self.Modules = self.Inventory[1]
+	self.Modules.MaxItems = self.ModuleSlots
+	self.Modules.UseOwnership = true
+
+	self.Modules:On("CanAddItem", "ModulesOnly", function(_, it)
+		if not Inventory.IsModule(it) then return false end
+	end)
+
+	self.Storage:On("CanMoveItem", "NoMoving", function(_, it, slot)
+		if not Inventory.IsModule(it) then return false end
+	end)
+
+	self.Storage.ActionCanCrossInventoryFrom = true
+	self.Storage.ActionCanCrossInventoryTo = true
+	self.Storage.SupportsSplit = false
+end
+
 if SERVER then
 
 	function ENT:Initialize()
@@ -95,17 +120,6 @@ if SERVER then
 			self:Activate()
 		end
 
-		self:SetHealth(self.PresetMaxHealth or self.MaxHealth)
-
-		self:Init(me)
-		self:SHInit()
-
-		self:SetMaxHealth(self:Health())
-
-		timer.Simple(0.5, function()
-			if IsValid(self) then self:RemoveEFlags(EFL_FORCE_CHECK_TRANSMIT) end
-		end)
-
 		if self.SubModels then
 			for k,v in ipairs(self.SubModels) do
 				local prop = ents.Create("prop_physics")
@@ -119,6 +133,14 @@ if SERVER then
 				end
 			end
 		end
+
+		self:SetHealth(self.PresetMaxHealth or self.MaxHealth)
+		self:SetMaxHealth(self:Health())
+
+		self:InitModuleInventory()
+
+		self:Init(me)
+		self:SHInit()
 	end
 
 	function FillSubModelData(ent)
@@ -141,15 +163,14 @@ if SERVER then
 	end
 
 	function ENT:Spark(a, ply)
-
 		local vPoint = self:GetPos()
 		local effectdata = EffectData()
+
 		effectdata:SetOrigin(vPoint)
 		util.Effect(a or "ManhackSparks", effectdata)
 		self:EmitSound("DoSpark")
 
 		if ply and ply:GetPos():Distance(self:GetPos()) < 80 and math.random(0, 10) == 0 then
-
 			local d = DamageInfo()
 
 			d:SetAttacker(ply)
@@ -157,15 +178,14 @@ if SERVER then
 			d:SetDamage(ply:Health() / 2)
 			d:SetDamageType(DMG_SHOCK)
 
-			local vPoint = ply:GetPos()
-			local effectdata = EffectData()
+			vPoint = ply:GetPos()
+			effectdata = EffectData()
+
 			effectdata:SetOrigin(vPoint)
 			util.Effect(a or "ManhackSparks", effectdata)
 
 			ply:TakeDamageInfo(d)
-
 		end
-
 	end
 
 	function ENT:OnTakeDamage(dmginfo)
@@ -199,15 +219,14 @@ if SERVER then
 	function ENT:Explode(e)
 
 		if e == false then
-
 			local vPoint = self:GetPos()
 			local effectdata = EffectData()
 			effectdata:SetOrigin(vPoint)
 			util.Effect("Explosion", effectdata)
 
 			self:Remove()
-
-		return end
+			return
+		end
 
 		local ex = ents.Create("env_explosion")
 			ex:SetPos(self:GetPos())
