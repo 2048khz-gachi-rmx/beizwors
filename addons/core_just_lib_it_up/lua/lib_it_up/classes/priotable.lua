@@ -47,8 +47,6 @@ function PriorityTable:Remove(val)
 				else
 					table.remove(t, k)
 				end
-				
-
 				break
 			end
 		end
@@ -83,37 +81,6 @@ function PriorityTable:Iter()
 	ctrl[4] = 0
 
 	return stateless, self, ctrl
-
-	--[=[
-	local prios, arr = self[1], self[2]
-	local k = 0
-	local curprioTable 
-	local subk = 0
-
-	return function()
-
-		local val
-
-		if curprioTable then
-			subk = subk + 1
-			local val = curprioTable[subk]
-			if val ~= nil then
-				return k, val
-			else
-				curprioTable = nil
-			end
-		end
-
-		if not curprioTable then
-			k = k + 1
-			curprioTable = arr[k] and prios[arr[k]]
-			subk = 1
-			if not curprioTable then return nil end -- we ran out of all values
-
-			return k, curprioTable[subk]
-		end
-
-	end]=]
 end
 
 PriorityTable.iter = PriorityTable.Iter
