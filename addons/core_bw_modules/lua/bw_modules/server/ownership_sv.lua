@@ -128,7 +128,7 @@ hook.NHAdd("EntityActuallyRemoved", "BWUntrackOwner", function(ent, entTable)
 	untrackEnt(ent, owID)
 
 	net.Start("BW_OwnershipChange")
-		net.WriteBoool(false)
+		net.WriteBool(false)
 		net.WriteUInt(ent:EntIndex(), 15)
 	net.Broadcast()
 end)
