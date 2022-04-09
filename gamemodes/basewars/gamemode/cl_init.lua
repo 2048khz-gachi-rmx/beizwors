@@ -140,6 +140,10 @@ function CreatePlayerFrame(sb, ply)
 			self.Label = "Mute"
 		end
 
+		function mute:DoClick()
+			ply:SetMuted(not ply:IsMuted())
+		end
+
 		local pm = vgui.Create("FButton", f.ExpandPanel)
 		pm.DrawShadow = false
 		pm:SetSize(64, 32)

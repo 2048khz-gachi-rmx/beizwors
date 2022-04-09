@@ -158,7 +158,12 @@ function HDN.GetEntityVisPos(ent, dat, dopix)
 		end
 	else
 		local matrix = ent:GetBoneMatrix(bone)
-		hnPos = matrix:GetTranslation()
+		if matrix then
+			hnPos = matrix:GetTranslation()
+		else
+			hnPos = dat[1] and dat[1].pos
+				or ent:OBBCenter()
+		end
 
 		if dopix then
 			dat.vis = util.PixelVisible(hnPos, 12, handle) -- pixvis the bone pos, not above it

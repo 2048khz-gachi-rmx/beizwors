@@ -209,6 +209,15 @@ function chathud.CreateFFZShortcuts(update)
 
 end
 
+function chathud.AddEmote(name)
+	chathud.Emotes[name] = Emote(name)
+		:AddShortcut()
+
+	return chathud.Emotes[name]
+end
+
+chathud.AddEmote("spunch")
+	:SetURL("https://i.imgur.com/zoDTz6p.png")
 
 --[[
 	Twitch emotes shortcuts scrapped because Twitch changed API versions and i CBA to rewrite it.
@@ -223,6 +232,7 @@ local function env(msg, spec)
 		sin = math.sin,
 		cos = math.cos,
 		tan = math.tan,
+		abs = math.abs,
 		sinh = math.sinh,
 		cosh = math.cosh,
 		tanh = math.tanh,

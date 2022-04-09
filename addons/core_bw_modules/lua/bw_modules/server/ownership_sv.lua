@@ -20,7 +20,8 @@ hook.Add("CPPIAssignOwnership", "BWTrackOwner", function(ply, ent)
 	bwe.EntsArr:addExclusive(ent)
 
 	net.Start("BW_OwnershipChange")
-		net.WriteUInt(ent:EntIndex(), 16)
+		net.WriteBoool(true)
+		net.WriteUInt(ent:EntIndex(), 15)
 		net.WriteSteamID(ply:SteamID())
 	net.Broadcast()
 
@@ -120,9 +121,14 @@ function BaseWars.Ents.GetOwnedBy(who)
 end
 
 
-hook.Add("EntityActuallyRemoved", "BWUntrackOwner", function(ent, entTable)
+hook.NHAdd("EntityActuallyRemoved", "BWUntrackOwner", function(ent, entTable)
 	local owID = ent.FPPOwnerID -- fpp exclusive
 	if not owID then return end -- dafuq
 
 	untrackEnt(ent, owID)
+
+	net.Start("BW_OwnershipChange")
+		net.WriteBoool(false)
+		net.WriteUInt(ent:EntIndex(), 15)
+	net.Broadcast()
 end)
