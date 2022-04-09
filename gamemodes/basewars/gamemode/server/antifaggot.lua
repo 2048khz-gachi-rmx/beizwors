@@ -25,6 +25,45 @@ hook.Add("CanWearParts", "PACStop", function(ply)
 	end
 end)
 
+local ropes = {
+	rope = true,
+	pulley = true,
+	muscle = true,
+	hydraulic = true,
+	elastic = true,
+	winch = true,
+	slider = true,
+}
+
+hook.Add("CanTool", "FuckRopes", function(ply, tr, tool, tTbl)
+	if not ropes[tool] then return end
+	if ply:IsAdmin() then return end
+
+	local ropes = cleanup.GetList()[ply:UniqueID()]
+	if not ropes then return end
+
+	ropes = ropes.ropeconstraints
+	if not ropes then return end
+
+	local num = tTbl:NumObjects()
+	if num == 1 then
+		local obj = tTbl:GetEnt(1)
+		local obj2 = tr.Entity
+
+		if obj:IsWorld() and obj2:IsWorld() then
+			print("both worlds")
+			return false
+		end
+
+		print(obj, obj2)
+	end
+
+	local amt = 0
+	for k,v in pairs(ropes) do
+		if IsValid(v) then amt = amt + 1 end
+		if amt >= 10 then return false end
+	end
+end)
 --[[
 	Adv. Dupe 2 Fix
 	Log trash when people use "inf" or beyond reasonable ModelScale on dupes.
