@@ -47,7 +47,7 @@ Class.Meta = {__index = Class}
 --]]
 
 local function getInitFunc(self)
-	return self.Initialize or self.initialize or (self.Meta and (self.Meta.Initialize or self.Meta.initialize))
+	return self.Initialize or self.initialize -- or (self.Meta and (self.Meta.Initialize or self.Meta.initialize))
 end
 
 local function rawgetInitFunc(self)
@@ -112,7 +112,7 @@ function Class:extend(...)
 										-- which points to that parent's meta, which points to that parent's parent, so on
 	Class.CopyMetamethods(new, old)
 
-	setmetatable(new.Meta, old)
+	-- setmetatable(new.Meta, old)
 	setmetatable(new, new.Meta)
 
 	new.__index = new

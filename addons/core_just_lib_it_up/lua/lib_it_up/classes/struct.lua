@@ -14,9 +14,9 @@ for k,v in pairs(_G) do
 end
 
 function Struct:Initialize()
-	for k,v in pairs(self.defaults) do
+	--[[for k,v in pairs(self.defaults) do
 		self[k] = v
-	end
+	end]]
 end
 
 Struct.__newindex = function(self, k, v)
@@ -35,6 +35,16 @@ Struct.__newindex = function(self, k, v)
 	rawset(self, k, v)
 end
 
+Struct.__cIndex = Struct.__index
+Struct.__index = function(self, k)
+	local par = getmetatable(self) -- get object class
+	local def = par.defaults[k] -- try to grab the class' immediate default
+	if def ~= nil then return def end
+
+	-- no default; since this is Struct's level of __index, pass the index back to its' baseclass
+	return par.__cIndex[k]
+end
+
 function Struct:OnExtend(new, ...)
 	local args = {...}
 	if #args == 0 then
@@ -46,6 +56,8 @@ function Struct:OnExtend(new, ...)
 	new.defaults = table.Copy(self.defaults)
 
 	new.__newindex = Struct.__newindex
+	new.__cIndex = new.__index
+	new.__index = Struct.__index
 
 	if istable(args[1]) then
 		--[[ table syntax:
