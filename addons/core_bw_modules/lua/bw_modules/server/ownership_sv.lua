@@ -7,7 +7,7 @@ local bwe = BaseWars.Ents
 	bwe.EntsArr = bwe.EntsArr or ValidSeqIterable() 	-- sequential table of all basewars entities
 	bwe.EntsOwners = bwe.EntsOwners or {}				-- table of [sid64] = {ValidSeqIter}
 
-hook.Add("CPPIAssignOwnership", "BWTrackOwner", function(ply, ent)
+hook.NHAdd("CPPIAssignOwnership", "BWTrackOwner", function(ply, ent)
 	if not ply:IsValid() then return end
 	if ent.CPPI_OwnerSID == ply:SteamID() then return end
 
@@ -20,7 +20,7 @@ hook.Add("CPPIAssignOwnership", "BWTrackOwner", function(ply, ent)
 	bwe.EntsArr:addExclusive(ent)
 
 	net.Start("BW_OwnershipChange")
-		net.WriteBoool(true)
+		net.WriteBool(true)
 		net.WriteUInt(ent:EntIndex(), 15)
 		net.WriteSteamID(ply:SteamID())
 	net.Broadcast()
@@ -60,7 +60,7 @@ function BaseWars.Ents.NetworkAll(ply)
 	net.Send(ply)
 end
 
-hook.Add("PlayerFullyLoaded", "BW_NetworkOwnership", function(ply)
+hook.NHAdd("PlayerFullyLoaded", "BW_NetworkOwnership", function(ply)
 	BaseWars.Ents.NetworkAll(ply)
 end)
 
