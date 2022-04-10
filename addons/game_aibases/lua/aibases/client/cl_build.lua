@@ -22,3 +22,16 @@ hook.Add("PostDrawTranslucentRenderables", "aibases", function()
 		render.DrawWireframeBox(ent:GetPos(), ent:GetAngles(), ent:OBBMins(), ent:OBBMaxs(), col, true)
 	end
 end)
+
+function AIBases.StartBuild()
+	AREAMARK_ACTION = "AIBuildArea"
+end
+
+
+hook.Add("AIBuildArea", "a", function(min, max)
+	print("added box:", min, max)
+	net.Start("AIBuild_Add")
+		net.WriteVector(min)
+		net.WriteVector(max)
+	net.SendToServer()
+end)

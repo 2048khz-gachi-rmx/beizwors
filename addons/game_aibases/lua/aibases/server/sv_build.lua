@@ -2,116 +2,69 @@ local ENTITY = FindMetaTable("Entity")
 
 AIBases.Builder = AIBases.Builder or {}
 local bld = AIBases.Builder
-bld.NW = Networkable("aibuild")
-
-bld.Tracker = bld.Tracker or muldim:new()
-bld.EntTracker = bld.EntTracker or muldim:new()
-
-StartTool("AIBaseBuild")
-
-TOOL.Name = "[sadmin] BaseBuild"
-
-local function allowed(ply)
-	if not IsValid(ply) or (not BaseWars.IsDev(ply) and not ply.CAN_USE_AIBASE) then return false end
-
-	return true
-end
-
-function TOOL:Allowed()
-	local p = self:GetOwner()
-	if not allowed(p) then return false end
-
-	return true
-end
-
-local function setEnum(ow, e, id)
-	bld.NW[ow:UserID()] = bld.NW[ow:UserID()] or {}
-	bld.NW[ow:UserID()][e] = id
-	bld.NW:SetTable(ow:UserID(), bld.NW[ow:UserID()])
-end
-
-function TOOL:LeftClick(tr)
-	if not IsFirstTimePredicted() then return end
-
-	local e = tr.Entity
-	if not IsValid(e) then return end
-
-	local ow = self:GetOwner()
-	if not self:Allowed() then return end
-
-	local elist = bld.Tracker:GetOrSet(ow)
-	elist[e] = AIBases.BRICK_PROP
-
-	local plylist = bld.EntTracker:GetOrSet(e)
-	plylist[ow] = true
-
-	setEnum(ow, e, AIBases.BRICK_PROP)
-end
-
-function TOOL:Reload(tr)
-	if not IsFirstTimePredicted() then return end
-
-	local e = tr.Entity
-	if not IsValid(e) then return end
-
-	local ow = self:GetOwner()
-	if not self:Allowed() then return end
-
-	local elist = bld.Tracker:GetOrSet(ow)
-	elist[e] = AIBases.BRICK_BOX
-
-	local plylist = bld.EntTracker:GetOrSet(e)
-	plylist[ow] = true
-
-	setEnum(ow, e, AIBases.BRICK_BOX)
-end
-
-function TOOL:RightClick(tr)
-	if not IsFirstTimePredicted() then return end
-
-	local e = tr.Entity
-	if not IsValid(e) then return end
-
-	local ow = self:GetOwner()
-
-	local elist = bld.Tracker:GetOrSet(ow)
-	elist[e] = nil
-
-	local plylist = bld.EntTracker:GetOrSet(e)
-	plylist[ow] = nil
-
-	bld.NW[ow:UserID()] = bld.NW[ow:UserID()] or {}
-	bld.NW[ow:UserID()][e] = nil
-	bld.NW:SetTable(ow:UserID(), bld.NW[ow:UserID()])
-end
-
-function TOOL:GetList()
-	return bld.Tracker:GetOrSet(self:GetOwner())
-end
-
-EndTool()
 
 function ENTITY:GetAIBuilders()
 	return bld.EntTracker:GetOrSet(self)
 end
 
+util.AddNetworkString("AIBuild_Add")
 
-concommand.Add("aibases_save", function(ply, _, arg)
-	if not allowed(ply) then return end
+net.Receive("AIBuild_Add", function(len, ply)
+	if not bld.Allowed(ply) then print("unallowed AIBuild", ply) return end
 
-	local basename = arg[1]
+	local min, max = net.ReadVector(), net.ReadVector()
+	local center = (min + max) / 2
+	min = min - center
+	max = max - center
+
+	local woll = ents.Create("aib_wall")
+	woll:SetPos(center)
+
+	woll:Spawn()
+	woll:InitPhys(min, max)
+	woll:Activate()
+
+	_brs = woll
+	AIBases.Builder.AddBrick(ply, woll, AIBases.BRICK_BOX)
+end)
+
+concommand.Add("aibases_savelayout", function(ply, _, arg)
+	if not bld.Allowed(ply) then return end
+
+	local name = arg[1]
 	if not arg[1] then print("give a name tard") return end
-	print("saving base `" .. basename .. "`...")
+
+	local overwrite = arg[2]
+	if file.Exists("aibases/" .. name .. ".dat", "DATA") and overwrite ~= "yes" then
+		ply:ChatPrint("layout already exists: make second arg 'yes' to confirm overwrite")
+		print("layout already exists: make second arg 'yes' to confirm overwrite")
+		return
+	end
+
+	print("saving layout `" .. name .. "`...")
+
+	local layout = AIBases.BaseLayout:new(name)
+
 
 	local tool = GetTool("AIBaseBuild", ply)
 	if not tool then print("no tool") return end
 
 	local bents = tool:GetList()
-	PrintTable(bents)
+	printf("%d bricks", table.Count(bents))
+
+	local brs = {}
 
 	for ent, id in pairs(bents) do
-		local base = AIBases.IDToLayout(id)
+		if not IsValid(ent) then AIBases.Builder.AddBrick(ply, ent, nil) continue end
+
+		local base = AIBases.IDToBrick(id)
 		local brick = base:Build(ent)
-		print("	base:", base, ent, brick)
+		layout:AddBrick(brick)
+		--brs[#brs + 1] = brick
 	end
+
+	local out = layout:Serialize() --
+
+	file.CreateDir("aibases/layouts")
+	file.Write("aibases/layouts/" .. name .. ".dat", out)
 end)

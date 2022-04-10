@@ -48,10 +48,14 @@ TOOL.CurrentZone = nil
 TOOL.IsBWAreaMark = true
 
 function TOOL:SetZone(z)
-	print("Tool - set zone", z)
 	self:ChangeState(STATE_FIRST)
 	self.CurrentZone = z
 
+	table.Empty(self.CurrentArea)
+end
+
+function TOOL:JustMark()
+	self:ChangeState(STATE_FIRST)
 	table.Empty(self.CurrentArea)
 end
 
@@ -70,8 +74,11 @@ function TOOL:SelectPoint(vec)
 	end
 end
 
+
 function TOOL:LeftClick(tr)
-	if not self.CurrentZone then return end
+	if self.State ~= STATE_FIRST and
+		self.State ~= STATE_SECOND and
+		self.State ~= STATE_CONFIRM then return end
 
 	local ucmd = LocalPlayer():GetCurrentCommand():CommandNumber()
 	if not IsFirstTimePredicted() then
@@ -338,11 +345,33 @@ function TOOL:ShowBaseSelection(cur)
 		new:DockMargin(0, 4, 0, 0)
 		new:Dock(BOTTOM)
 		new:SetTall(32)
-		new:SetIcon(Icons.Plus:Copy():SetSize(24, 24))
+		new:SetIcon(Icons.Plus:Copy():SetSize(20, 20))
 		new:SetColor(Colors.Greenish)
 
 		function new.DoClick()
 			self:OpenNewBaseGUI()
+		end
+
+
+		local box = vgui.Create("FButton", pnl)
+		box:DockMargin(0, 4, 0, 0)
+		box:Dock(BOTTOM)
+		box:SetTall(32)
+		box:SetIcon(Icons.Plus:Copy():SetSize(20, 20))
+		box:SetColor(Colors.Golden)
+		box.Label = "Box [AREAMARK_ACTION = " .. tostring(AREAMARK_ACTION) .. "]"
+
+		function box.DoClick()
+			if not isstring(AREAMARK_ACTION) then
+				sfx.Fail()
+				return
+			end
+
+			self:JustMark()
+
+			self:Once("ZoneConfirmed", "mark", function(_, _, a, b)
+				hook.Run(AREAMARK_ACTION, a, b)
+			end)
 		end
 	end
 

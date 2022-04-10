@@ -1,11 +1,23 @@
-AIBases.LayoutBrick = AIBases.LayoutBrick or Struct:extend({
-	type = TYPE_NUMBER,
+AIBases.LayoutBrick = AIBases.LayoutBrick or Object:callable()
+AIBases.LayoutBrick.DataClass = AIBases.LayoutBrick.DataClass or Struct:extend({
+
 })
 
 AIBases.LayoutBrick.IsBrick = true
 
+AIBases.BrickLookup = { }
+
+function AIBases.LayoutBrick:Initialize()
+	self.Data = self.DataClass:new()
+end
+
+function AIBases.LayoutBrick:Register(id)
+	id = id or self.type
+	AIBases.BrickLookup[id] = self
+end
+
 function AIBases.IsBrick(t)
-	return istable(t) and t.IsBrick and t:Require("type")
+	return istable(t) and t.IsBrick and t.type
 end
 
 function AIBases.LayoutBrick:GetType()
@@ -17,7 +29,21 @@ function AIBases.LayoutBrick:Spawn()
 end
 
 function AIBases.LayoutBrick:Serialize()
-	return util.TableToJSON(self)
+	local json = util.TableToJSON(self.Data)
+	json = json:gsub("^[%[%{]", ""):gsub("[%]%}]$", "")
+
+	return json
+end
+
+function AIBases.LayoutBrick:Deserialize(str)
+	local dat = util.JSONToTable("{" .. str .. "}")
+	local new = self:new()
+
+	for k,v in pairs(dat) do
+		new.Data[k] = v
+	end
+
+	return new
 end
 
 function AIBases.LayoutBrick:Build(ent)
@@ -31,10 +57,7 @@ FInc.FromHere("bricks/*.lua", FInc.SHARED, FInc.RealmResolver()
 	:SetDefault(true)
 )
 
-local lkup = {
-	[AIBases.BRICK_PROP] = AIBases.PropBrick,
-	[AIBases.BRICK_BOX] = AIBases.BoxBrick,
-}
-function AIBases.IDToLayout(id)
-	return lkup[id]
+
+function AIBases.IDToBrick(id)
+	return AIBases.BrickLookup[id]
 end

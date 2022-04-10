@@ -22,7 +22,12 @@ function base:Initialize(name)
 	self.Layout = AIBases.BaseLayout:new(self, name)
 end
 
+
+ChainAccessor(base, "Layout", "Layout")
+
+
 ChainAccessor(base, "Lock", "Lock")
+
 
 function base:CreateLock()
 	self.Lock = base.LockStruct:new()
