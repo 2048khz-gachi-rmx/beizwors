@@ -1,5 +1,3 @@
-do return end
-
 --[[
 
 
@@ -80,18 +78,18 @@ if CLIENT then
     end
 
     local function PointToScreen(vPoint)
-        if cache.vLookVector:DotProduct(vPoint - cache.vLookClipPos) > 0 then return ToScreen(vPoint) end
+        if cache.vLookVector:Dot(vPoint - cache.vLookClipPos) > 0 then return ToScreen(vPoint) end
     end
 
     local function LineToScreen(vStart, vEnd)
-        local dotStart = cache.vLookVector:DotProduct(vStart - cache.vLookClipPos)
-        local dotEnd = cache.vLookVector:DotProduct(vEnd - cache.vLookClipPos)
+        local dotStart = cache.vLookVector:Dot(vStart - cache.vLookClipPos)
+        local dotEnd = cache.vLookVector:Dot(vEnd - cache.vLookClipPos)
 
         if dotStart > 0 and dotEnd > 0 then
             return ToScreen(vStart), ToScreen(vEnd)
         elseif dotStart > 0 or dotEnd > 0 then
             local vLength = vEnd - vStart
-            local vIntersect = vStart + vLength * ((cache.vLookClipPos:DotProduct(cache.vLookVector) - vStart:DotProduct(cache.vLookVector)) / vLength:DotProduct(cache.vLookVector))
+            local vIntersect = vStart + vLength * ((cache.vLookClipPos:Dot(cache.vLookVector) - vStart:Dot(cache.vLookVector)) / vLength:DotProduct(cache.vLookVector))
 
             if dotStart <= 0 then
                 return ToScreen(vIntersect), ToScreen(vEnd)
@@ -423,15 +421,22 @@ if CLIENT then
         DrawGridLines(vOrigin, vSY, vSX, LY.grid, LY.offset, LX.offset, -1)
     end
 
+    local vPoint = Vector()
+
     local function DrawBoundaryLines(vOrigin, vOpposite)
-        local vPoint
+        
 
         if (vOrigin:Distance(vOpposite) > 5) then
             local x = vOpposite - vOrigin
             x:Normalize()
-            vPoint = vOrigin + x * 5
+            vPoint:Set(x)
+            vPoint:Mul(5)
+            vPoint:Add(vOrigin)
         else
-            vPoint = vOrigin + (vOpposite - vOrigin) / 2
+        	vPoint:Set(vOpposite)
+        	vPoint:Sub(vOrigin)
+        	vPoint:Div(2)
+        	vPoint:Add(vOrigin)
         end
 
         local vsA, vsB = LineToScreen(vPoint, vOrigin)
@@ -671,9 +676,17 @@ if CLIENT then
         local snaptargetvalid = snaptarget.active and snaptarget.locked and snaptarget.entity:IsValid()
 
         if (not snapcursor and targetvalid) then
-            user:SetViewAngles((target.entity:LocalToWorld(target.offset) - LocalPlayer():GetShootPos()):Angle())
+        	local norm = target.entity:LocalToWorld(target.offset) - LocalPlayer():GetShootPos()
+        	local ang = norm:Angle()
+        	ang:Normalize()
+
+            user:SetViewAngles(ang)
         elseif (snaplock and snaptargetvalid) then
-            user:SetViewAngles((snaptarget.entity:LocalToWorld(snaptarget.offset) - LocalPlayer():GetShootPos()):Angle())
+        	local norm = snaptarget.entity:LocalToWorld(snaptarget.offset) - LocalPlayer():GetShootPos()
+        	local ang = norm:Angle()
+        	ang:Normalize()
+
+            user:SetViewAngles(ang)
         end
     end
 
