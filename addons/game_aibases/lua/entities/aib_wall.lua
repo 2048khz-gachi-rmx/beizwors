@@ -58,11 +58,22 @@ function ENT:InitPhys(min, max)
 	end
 end
 
+local matCache = {}
+
 function ENT:Draw()
 	local min, max = self:GetCollisionBounds()
+	local mat = self:GetMaterial()
+
 	if not self.PhysCollide then
 		self:InitPhys(min, max)
 	end
 
-	render.DrawWireframeBox(self:GetPos(), self:GetAngles(), min, max, color_white, true)
+	if mat and mat ~= "" then
+		local imat = matCache[mat] or Material(mat, "vertexlitgeneric")
+		matCache[mat] = imat
+		render.SetMaterial(imat)
+		render.DrawBox(self:GetPos(), self:GetAngles(), min, max, color_white)
+	else
+		render.DrawWireframeBox(self:GetPos(), self:GetAngles(), min, max, Colors.Purpleish, true)
+	end
 end

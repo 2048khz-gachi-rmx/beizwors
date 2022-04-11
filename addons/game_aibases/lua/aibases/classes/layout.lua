@@ -10,6 +10,7 @@ function layout:Initialize(name)
 	self.Name = name
 	self.Bricks = {}
 	self.Enemies = {}
+	self.Navs = {}
 end
 
 function layout:AddBrick(brick)
@@ -25,6 +26,11 @@ function layout:Spawn()
 			brick:Spawn()
 		end
 	end
+
+	if self.LuaNavs then
+		print("spawning lua navs")
+		AIBases.ConstructNavs(self.LuaNavs)
+	end
 end
 
 function layout:Serialize()
@@ -36,7 +42,7 @@ function layout:Serialize()
 	return header .. bricks
 end
 
-function layout:Deserialize(str)
+function layout:Deserialize(str, nav)
 	local data = str:sub(9)
 	local brickSize = bit.ToInt(string.byte(str, 1, 4))
 	local enemySize = bit.ToInt(string.byte(str, 5, 8))
@@ -49,11 +55,18 @@ function layout:Deserialize(str)
 
 	self.Bricks = bricks
 	self.Enemies = enemies
+
+	if nav then
+		self.LuaNavs = AIBases.Storage.DeserializeNavs(nav)
+	end
 end
 
 function layout:ReadFrom(fn)
 	local dat = file.Read("aibases/layouts/" .. fn .. ".dat", "DATA")
-	if not dat then print("no data @ ", "aibases/layouts/" .. fn .. ".dat") return end
+	local lay = file.Read("aibases/layouts/" .. fn .. "_nav.dat", "DATA")
 
-	self:Deserialize(dat)
+	if not dat then print("no data @ ", "aibases/layouts/" .. fn .. ".dat") return end
+	if not lay then print("no nav data @ ", "aibases/layouts/" .. fn .. "_nav.dat") end
+
+	self:Deserialize(dat, lay)
 end

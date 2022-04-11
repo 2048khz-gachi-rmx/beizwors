@@ -53,3 +53,65 @@ function ST.DeserializeBricks(str)
 
 	return ret
 end
+
+function ST.DeserializeNavs(str)
+	local decomp = util.Decompress(str)
+	local navs = util.JSONToTable(decomp)
+
+	local ret = {}
+	local bld = AIBases.Builder
+
+	local navDatas = {}
+
+	for k, navJson in ipairs(navs) do
+		local data = util.JSONToTable(navJson)
+		navDatas[k] = data
+		local lnav = bld.NavClass:Load(data)
+
+		ret[k] = lnav
+	end
+
+	return ret
+end
+
+concommand.Add("aibases_savenav", function(ply, _, arg)
+	if not AIBases.Builder.Allowed(ply) then return end
+
+	local name = arg[1]
+	if not arg[1] then print("give a name tard") return end
+
+	local overwrite = arg[2]
+	if file.Exists("aibases/layouts/" .. name .. "_nav.dat", "DATA") and overwrite ~= "yes" then
+		ply:ChatPrint("nav already exists: make second arg 'yes' to confirm overwrite")
+		print("nav already exists: make second arg 'yes' to confirm overwrite")
+		return
+	end
+
+	if not file.Exists("aibases/layouts/" .. name .. ".dat", "DATA") then
+		ply:ChatPrint("layout for this nav doesn't exist; make a layout first")
+		print("layout for this nav doesn't exist; make a layout first")
+		return
+	end
+
+	print("saving nav `" .. name .. "`...")
+
+	local navs = AIBases.Builder.Navs[ply]
+	if not navs then
+		print("nvm no navs lol", ply)
+		return
+	end
+
+	local arr = {}
+	for k,v in pairs(navs) do
+		v:UpdateID()
+	end
+
+	for k,v in pairs(navs) do
+		arr[#arr + 1] = v:Serialize()
+	end
+
+	local out = util.Compress(util.TableToJSON(arr))
+
+	file.CreateDir("aibases/layouts")
+	file.Write("aibases/layouts/" .. name .. "_nav.dat", out)
+end)

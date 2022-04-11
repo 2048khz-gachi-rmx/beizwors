@@ -243,7 +243,6 @@ function TOOL:OpenBaseGUI(base)
 		edit:SetDisabled(true)
 
 	function edit:DoClick()
-		print("Setting zone on", tool)
 		tool:SetZone(selectedZone.Zone)
 
 		local pnl = bw.BaseGUI

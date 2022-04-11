@@ -3,6 +3,14 @@
 AIBases.Builder = AIBases.Builder or {}
 local bld = AIBases.Builder
 bld.NW = Networkable("aibuild")
+bld.NWNav = Networkable("aibuild_nav")
+
+bld.NWNav:On("NetworkedVarChanged", "fill", function(self, key, old, new)
+	if istable(new) then
+		new.center = (new.min + new.max) / 2
+		new.id = key
+	end
+end)
 
 local cols = {
 	[AIBases.BRICK_PROP] = Colors.Money,
@@ -20,6 +28,20 @@ hook.Add("PostDrawTranslucentRenderables", "aibases", function()
 		if not IsValid(ent) then props[ent] = nil continue end
 		local col = cols[typ] or Colors.Red
 		render.DrawWireframeBox(ent:GetPos(), ent:GetAngles(), ent:OBBMins(), ent:OBBMaxs(), col, true)
+	end
+end)
+
+hook.Add("PostDrawTranslucentRenderables", "ainavs", function()
+	local me = CachedLocalPlayer()
+
+	local navs = bld.NWNav:GetNetworked()
+	if not navs then return end
+
+	for id, dat in pairs(navs) do
+		local col = dat.onceCol or dat.col or (dat.ply == me and Colors.Green or Colors.Red)
+		render.DrawWireframeBox(vector_origin, angle_zero, dat.min, dat.max, col, true)
+
+		dat.onceCol = nil
 	end
 end)
 
