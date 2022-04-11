@@ -10,8 +10,12 @@ function EFFECT:Init(fx)
 	if not IsValid(ent.Owner) then
 		return
 	end
-	
-	if not ent.Owner:ShouldDrawLocalPlayer() and ent.Owner == LocalPlayer() then -- don't create the effect if we're in first person
+
+	local ow = self:GetOwner()
+	local npc = not ow:IsPlayer()
+	local human = not npc
+
+	if human and not ow:ShouldDrawLocalPlayer() and ow == LocalPlayer() then -- don't create the effect if we're in first person
 		return
 	end
 	
@@ -32,7 +36,7 @@ function EFFECT:Init(fx)
 		lightPos = attachment.Pos
 	else
 		local aimVec = ent.Owner:EyeAngles()
-		lightPos = ent.Owner:GetShootPos() + aimVec:Forward() * 30 - aimVec:Up() * 3 
+		lightPos = (human and ow:GetShootPos() or ow:EyePos()) + aimVec:Forward() * 30 - aimVec:Up() * 3
 	end
 	
 	if shell and ent.Shell then
