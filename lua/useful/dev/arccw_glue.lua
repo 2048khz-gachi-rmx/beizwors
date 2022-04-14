@@ -22,7 +22,7 @@ require("gaceio")
 
 file.CreateDir("glue/")
 
-local name = "glue/arccw_fas_atts_%d.lua"
+local outPath = "garrysmod/data/glue/arccw_tuna_atts_%d.lua"
 
 local toW = {beginning}
 local curLen = 0
@@ -32,6 +32,37 @@ local function awful(s)
 	return s--:gsub("%f[\r\n][\r\n]+%f[^\r\n]", "\r\n")
 end
 
+local function flush()
+	local str = table.concat(toW)
+	print(gaceio.Write(outPath:format(num), str))
+	num = num + 1
+	curLen = 0
+	toW = {beginning}
+
+	print("flushed", outPath:format(num), #str)
+end
+
+local folder = "weps_arccw_tuna"
+local path = "addons/" .. folder .. "/lua/arccw/shared/attachments/"
+
+for k,v in pairs(file.Find(path .. "*.lua", "GAME")) do
+	local dat = file.Read(path .. v, "GAME")
+	local subdat = {}
+	for s in eachNewline(dat) do
+		if s:match("[^%c]") then subdat[#subdat + 1] = "	" .. s end
+	end
+
+	dat = table.concat(subdat, "\n")
+
+	toW[#toW + 1] = fmt:format(v, v:gsub("%.lua", ""), dat)
+
+	if curLen + #dat > 64000 then
+		flush()
+	end
+
+	curLen = curLen + #dat
+end
+flush()
 
 --[=[
 local data = {
