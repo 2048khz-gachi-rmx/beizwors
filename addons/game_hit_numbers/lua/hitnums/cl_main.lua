@@ -40,7 +40,7 @@ function HDN.AddIndicator(victim, dmg, crit, death, pos)
 	dat.lastDmg = CurTime()
 	dat.firstDeal = dat.firstDeal or CurTime()
 	dat.death = death
-	dat.handle = util.GetPixelVisibleHandle()
+	dat.handle = dat.handle or util.GetPixelVisibleHandle()
 
 	local sameTime = 0
 	for k,v in ipairs(insIn[victim]) do
