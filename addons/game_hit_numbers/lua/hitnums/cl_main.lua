@@ -182,6 +182,24 @@ function HDN.GetEntityVisPos(ent, dat, dopix)
 	return hnPos
 end
 
+function HDN.DistScale(hnPos)
+	local diffVec = tVecs[1]
+	diffVec:Set(hnPos)
+	diffVec:Sub(ep)
+	diffVec:Normalize()
+
+	local dot = ev:Dot(diffVec)
+	local ang = math.deg(math.acos(dot))
+
+	local scale = Lerp(1 - (ang / 45) ^ 0.6, 0.75, 1)
+	local distScale = 1 - (math.max(0, ep:Distance(hnPos) - 192) / 768)
+	distScale = Lerp(distScale, 0.5, 1)
+
+	scale = Lerp(1 - (ep:Distance(hnPos) / 768), 0.3, 1) * scale * 0.6
+
+	return scale
+end
+
 function HDN.DrawEntityNumber(ent, dat, state, notfocus)
 	if not IsValid(ent) then return true end
 
@@ -251,6 +269,8 @@ function HDN.DrawEntityNumber(ent, dat, state, notfocus)
 		local vx, vy = vecToScreen(hnPos)
 		if not vx then return end
 
+		scale = HDN.DistScale(hnPos)
+
 		vx = vx - txW / 2 * scale
 
 		dat.lx, dat.ly = vx, vy
@@ -294,24 +314,6 @@ function HDN.DrawEntityNumber(ent, dat, state, notfocus)
 	end
 
 	dat.firstpixvis = false
-
-	local diffVec = tVecs[1]
-	diffVec:Set(hnPos)
-	diffVec:Sub(ep)
-	diffVec:Normalize()
-
-	if not do2d then
-		local dot = ev:Dot(diffVec)
-		local ang = math.deg(math.acos(dot))
-
-		scale = Lerp(1 - (ang / 45) ^ 0.6, 0.75, 1)
-		local distScale = 1 - (math.max(0, ep:Distance(hnPos) - 192) / 768)
-		distScale = Lerp(distScale, 0.5, 1)
-
-		scale = Lerp(1 - (ep:Distance(hnPos) / 768), 0.3, 1) * scale
-
-		scale = scale * 0.6
-	end
 
 	local shakeDur = is_last_crit and HDN.ShakeLength * 1.3 or HDN.ShakeLength
 
