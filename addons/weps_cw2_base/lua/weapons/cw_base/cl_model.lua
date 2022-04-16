@@ -1574,18 +1574,18 @@ local wm, pos, ang
 function SWEP:DrawWorldModel()
 	if self.dt.Safe then
 		if self.CHoldType != self.RunHoldType then
-			self:SetHoldType(self.RunHoldType)
+			self:ChangeHoldType(self.RunHoldType)
 			self.CHoldType = self.RunHoldType
 		end
 	else
 		if self.dt.State == CW_RUNNING or self.dt.State == CW_ACTION then
 			if self.CHoldType != self.RunHoldType then
-				self:SetHoldType(self.RunHoldType)
+				self:ChangeHoldType(self.RunHoldType)
 				self.CHoldType = self.RunHoldType
 			end
 		else
 			if self.CHoldType != self.NormalHoldType then
-				self:SetHoldType(self.NormalHoldType)
+				self:ChangeHoldType(self.NormalHoldType)
 				self.CHoldType = self.NormalHoldType
 			end
 		end

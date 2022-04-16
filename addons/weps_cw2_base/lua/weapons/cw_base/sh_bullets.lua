@@ -62,7 +62,7 @@ function SWEP:FireBullet(damage, cone, clumpSpread, bullets)
 			cone = cone * 0.85
 		end
 	else
-		sp = ow:EyePos()
+		sp = ow:GetShootPos()
 	end
 
 	Dir = hook.Run("CW_GetAimDirection", self, ow)

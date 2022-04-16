@@ -365,8 +365,13 @@ local invalidPlayerBusyProneFunction = function(self)
 	return false
 end
 
+function SWEP:ChangeHoldType(to)
+	self:SetHoldType(to)
+	self:SetWeaponHoldType(to)
+end
+
 function SWEP:Initialize()
-	self:SetHoldType(self.NormalHoldType)
+	self:ChangeHoldType(self.NormalHoldType)
 	self:setupBallisticsInformation()
 	self:CalculateEffectiveRange()
 	self.CHoldType = self.NormalHoldType
@@ -718,8 +723,6 @@ function SWEP:Reload()
 
 	CT = CurTime()
 
-	print("reloading", self.ReloadDelay, self.ReloadWait, self.dt.State == CW_ACTION)
-
 	if self.ReloadDelay or CT < self.ReloadWait or self.dt.State == CW_ACTION or self.ShotgunReloadState != 0 then
 		return
 	end
@@ -1061,6 +1064,7 @@ function SWEP:Think()
 	CustomizableWeaponry.actionSequence.process(self)
 
 	if self.dt.State == CW_HOLSTER_START then
+
 		return
 	end
 
@@ -1314,18 +1318,18 @@ function SWEP:Think()
 	if SERVER then
 		if self.dt.Safe then
 			if self.CHoldType != self.RunHoldType then
-				self:SetHoldType(self.RunHoldType)
+				self:ChangeHoldType(self.RunHoldType)
 				self.CHoldType = self.RunHoldType
 			end
 		else
 			if self.dt.State == CW_RUNNING or self.dt.State == CW_ACTION then
 				if self.CHoldType != self.RunHoldType then
-					self:SetHoldType(self.RunHoldType)
+					self:ChangeHoldType(self.RunHoldType)
 					self.CHoldType = self.RunHoldType
 				end
 			else
 				if self.CHoldType != self.NormalHoldType then
-					self:SetHoldType(self.NormalHoldType)
+					self:ChangeHoldType(self.NormalHoldType)
 					self.CHoldType = self.NormalHoldType
 				end
 			end
