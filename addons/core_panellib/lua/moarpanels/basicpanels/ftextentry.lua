@@ -121,7 +121,7 @@ end
 
 function TE:AllowInput(val)
 	local mx = self:GetMaxChars()
-	if mx and mx ~= 0 and #self:GetValue() > mx then print("suppressing") return true end
+	if mx and mx ~= 0 and #self:GetValue() > mx then return true end
 end
 
-vgui.Register("FTextEntry", TE, "DTextEntry") 
+vgui.Register("FTextEntry", TE, "DTextEntry")

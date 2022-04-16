@@ -1,9 +1,8 @@
 --
 
 function Scaler(desw, desh)
-	if not des then
-		print("current res", ScrH(), ScrW())
-	end
+	assert(isnumber(desw))
+	assert(isnumber(desh))
 
 	local function scale(v)
 		return v * (ScrH() / desh)
