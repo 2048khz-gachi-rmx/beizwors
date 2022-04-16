@@ -26,7 +26,7 @@ Struct.__newindex = function(self, k, v)
 		return
 	end
 
-	if typ ~= TypeID(v) then
+	if typ ~= TypeID(v) and not (typ == TYPE_NIL and self.defaults[k]) then
 		errorf("attempt to set struct member with wrong type (%s = %s, type %s, expected %s)",
 			k, v, typeConv[TypeID(v)], typeConv[typ])
 		return

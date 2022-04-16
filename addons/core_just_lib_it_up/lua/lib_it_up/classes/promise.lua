@@ -58,7 +58,7 @@ function Promise:Then(full, rej)
 
 	-- then'd an already resolved promise; instantly run it
 	if self._Resolved then
-		self:_run(unpack(self._Resolved))
+		self:_run(unpack(self._Resolved, 1, table.maxn(self._Resolved)))
 	elseif self._Rejected then
 		self:_run(self._Rejected)
 	end
