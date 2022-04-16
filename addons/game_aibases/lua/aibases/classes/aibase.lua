@@ -1,6 +1,4 @@
 --
-print("hi")
-
 local base = AIBases.AIBase or Emitter:extend()
 AIBases.AIBase = base
 

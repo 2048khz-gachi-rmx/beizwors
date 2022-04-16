@@ -238,7 +238,7 @@ if CLIENT then
 			local blank = self:GetText() == ""
 			local wep = not blank and weapons.GetStored(self:GetText())
 
-			if not blank and (not wep or wep.Base ~= "cw_base") and not AIBases.WeaponPools[self:GetText()] then
+			if not blank and not wep and not AIBases.WeaponPools[self:GetText()] then
 				local bad = Colors.DarkerRed
 				te:LerpColor(te.TextColor, bad, 0.1, 0, 0.2)
 
@@ -525,6 +525,11 @@ else
 
 			en:Spawn()
 			en:Activate()
+
+			undo.Create("ai bot")
+				undo.SetPlayer(ply)
+				undo.AddEntity(en)
+			undo.Finish("ai bot")
 		end
 	end)
 end

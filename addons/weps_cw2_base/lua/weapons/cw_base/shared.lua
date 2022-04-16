@@ -1461,6 +1461,11 @@ function SWEP:addFireSpread(CT)
 end
 
 function SWEP:playFireAnim()
+	if self:GetOwner().IsAIBaseBot then
+		self:GetOwner():QueueGesture(self:TranslateActivity(ACT_MP_ATTACK_STAND_PRIMARYFIRE))
+		return
+	end
+
 	if (self.dt.State == CW_AIMING and not self.ADSFireAnim) or (self.dt.BipodDeployed and not self.BipodFireAnim) then
 		return
 	end

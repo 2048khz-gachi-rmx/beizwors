@@ -49,16 +49,36 @@ function ENT:HasCoro(name)
 end
 
 ENT.AnimActivities = {
-	ar = {
+	ar2 = {
 		aggro = ACT_MP_WALK,
 		aggro_run = ACT_MP_RUN,
-
 		reload = ACT_HL2MP_WALK_CROUCH_AR2,
 		passive = ACT_HL2MP_WALK_PASSIVE,
-	}
+	},
+
+	shotgun = {
+		aggro = ACT_MP_WALK,
+		aggro_run = ACT_MP_RUN,
+		reload = ACT_HL2MP_WALK_CROUCH_SHOTGUN,
+		passive = ACT_HL2MP_WALK_PASSIVE,
+	},
+
+	pistol = {
+		aggro = ACT_MP_WALK,
+		aggro_run = ACT_MP_RUN,
+		reload = ACT_HL2MP_WALK_CROUCH_PISTOL,
+		passive = ACT_HL2MP_WALK_PASSIVE,
+	},
+
+	smg = {
+		aggro = ACT_MP_WALK,
+		aggro_run = ACT_MP_RUN,
+		reload = {ACT_MP_WALK, ACT_HL2MP_WALK_CROUCH_SMG1},
+		passive = {ACT_MP_WALK, ACT_HL2MP_WALK_PASSIVE},
+	},
 }
 
-ENT.EquippedType = "ar"
+ENT.EquippedType = "ar2"
 
 function ENT:_getAc(base, pfx, sfx)
 	local ac = self.AnimActivities[self.EquippedType]
@@ -71,9 +91,13 @@ function ENT:_getAc(base, pfx, sfx)
 end
 
 function ENT:GetDesiredActivity()
+	local wep = self:GetActiveWeapon()
+	if wep:IsValid() then
+		self.EquippedType = wep:GetHoldType() or self.EquippedType
+	end
 
 	local acts = self.AnimActivities[self.EquippedType]
-	if not acts then return ACT_HL2MP_WALK_PASSIVE end
+	if not acts then print("no acts tard", self.EquippedType) return ACT_HL2MP_WALK_PASSIVE end
 
 	local sfx = self.loco:GetVelocity():Length() > 100 and "_run" or ""
 	local pfx = ""
@@ -94,8 +118,13 @@ function ENT:MatchActivity()
 	local want = self:GetDesiredActivity()
 	--print("want:", want, wep:TranslateActivity(want))
 	if IsValid(wep) then
-		local tr = wep:TranslateActivity(want)
-		want = tr ~= -1 and tr or want
+		local toTr = istable(want) and want[1] or want
+		local tr = wep:TranslateActivity(toTr)
+		if tr == -1 then
+			if istable(want) then want = want[2] end
+		else
+			want = tr
+		end
 	end
 
 	--print("want:", want)
@@ -204,6 +233,7 @@ function ENT:BehaveUpdate(time)
 	end
 
 	self:MatchActivity()
+	self:DoGestures()
 
 	self.loco:SetMaxYawRate(99999)
 	if self:GetAimingAt() then
@@ -241,3 +271,4 @@ include("targeting.lua")
 include("movement.lua")
 include("aim.lua")
 include("tiers.lua")
+include("gestures.lua")

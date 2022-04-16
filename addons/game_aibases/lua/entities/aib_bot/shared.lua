@@ -36,3 +36,9 @@ function PLAYER:GetAimVector()
 
 	return self._aibAimVector(self)
 end
+
+function ENT:OnKilled( dmginfo )
+	hook.Run( "OnNPCKilled", self, dmginfo:GetAttacker(), dmginfo:GetInflictor() )
+	self:BecomeRagdoll( dmginfo )
+	--self:Remove()
+end

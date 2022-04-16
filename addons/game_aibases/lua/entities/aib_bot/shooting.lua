@@ -16,15 +16,17 @@ function ENT:SetupWeapon(wep)
 	wep:SetPos(self:GetPos())
 	wep:SetAngles(self:GetAngles())
 
-	wep:SetOwner(self)
-	wep:SetParent(self)
-	wep:SetTransmitWithParent(true)
+	local att = self:LookupAttachment("anim_attachment_RH")
 
 	wep:SetMoveType(MOVETYPE_NONE)
 	wep:AddEffects(EF_BONEMERGE)
 	wep:RemoveSolidFlags(FSOLID_TRIGGER)
 	wep:RemoveEffects(EF_ITEM_BLINK) -- tha fuck is this valve
 	wep:AddEFlags(EFL_USE_PARTITION_WHEN_NOT_SOLID)
+
+	wep:SetOwner(self)
+	wep:SetParent(self, att)
+	wep:SetTransmitWithParent(true)
 
 	wep:PhysicsDestroy() -- fuck you
 	wep.UsedByAI = self
@@ -102,18 +104,14 @@ function ENT:WaitForReload()
 	wep:Reload()
 	self:AddGesture(ACT_HL2MP_GESTURE_RELOAD_AR2)
 
-	print("starting reload")
-
 	while
 		(wep.CW20Weapon and wep.ReloadDelay and wep.ReloadDelay > CurTime()) or
 		(wep.ArcCW and wep:GetReloading()) do
 		coroutine.yield()
 	end
-
-	print("fnished reload")
 end
 
-ENT.LockedShootTime = 0.4
+ENT.LockedShootTime = 0.3
 ENT.LockedRequiredLostDelay = 2.2
 
 function ENT:DoShootThink()
@@ -161,7 +159,6 @@ function ENT:GetAmmoCount()
 end
 
 function ENT:SetAmmo() end
-
 function ENT:RemoveAmmo() end
 
 function ENT:KeyDown(key)
@@ -203,8 +200,12 @@ function ENT:DoShoot()
 	wep:PrimaryAttack()
 end
 
--- TODO: increased acc with cw
+-- TODO: increased acc
 function ENT:Crouching()
+	return false
+end
+
+function ENT:IsScoped()
 	return false
 end
 
