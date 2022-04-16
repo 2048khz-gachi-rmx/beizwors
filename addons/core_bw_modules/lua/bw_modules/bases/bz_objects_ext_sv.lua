@@ -39,6 +39,16 @@ function bw.Base:AttemptClaim(by)
 	return self:Claim(by)
 end
 
+function bw.Base:SaveData()
+	local json = util.TableToJSON(self:GetData())
+	local a, err = bw.SQL.SaveData(self:GetID(), json)
+
+	if err then
+		print("error:", err)
+		return
+	end
+end
+
 function bw.Base:Claim(by)
 	self:_CheckValidity()
 
