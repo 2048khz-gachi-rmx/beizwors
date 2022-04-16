@@ -5,14 +5,14 @@ _OreData = _OreData or {}
 file.CreateDir("inventory")
 file.CreateDir("inventory/ores")
 
-MARKER_WRITE = "ores"
+MARKER_WRITE = MARKER_WRITE or "ores"
 
 local map = game.GetMap()
 
 local function readOreData(force, where)
 	local path = "inventory/ores/" .. map .. ".dat"
 	if where then
-		path = "inventory/" .. where .. "/" .. map .. ".dat"
+		path = "mark/" .. where .. ".dat"
 		file.CreateDir("inventory/" .. where .. "/")
 	end
 
@@ -25,8 +25,12 @@ local function readOreData(force, where)
 		return {}
 	end
 
+
 	_OreData = util.JSONToTable(dat) or {}
-	Inventory.OresPositions = _OreData
+
+	if where == "ores" then
+		Inventory.OresPositions = _OreData
+	end
 
 	return _OreData
 end
@@ -37,14 +41,14 @@ local function writeOreData(where)
 	local path = "inventory/ores/" .. map .. ".dat"
 
 	if where then
-		path = "inventory/" .. where .. "/" .. map .. ".dat"
-		file.CreateDir("inventory/" .. where .. "/")
+		path = "mark/" .. where .. ".dat"
+		file.CreateDir("mark/")
 	end
 
 	file.Write(path, util.TableToJSON(_OreData))
 
 	if MARKER_WRITE == "ores" then
-		Inventory.OresPositions = _OreData
+		Inventory.OresPositions = table.Copy(_OreData)
 		OresRespawn()
 	end
 end
@@ -68,8 +72,11 @@ function SetMarkerName(nm)
 	MARKER_WRITE = nm
 
 	local poses = readOreData(true, nm)
+	PrintTable(poses)
 	nw:Set("Positions", poses)
 	nw:Network(true)
+
+	_OreData = {}
 end
 
 nw:On("WriteChangeValue", 1, function(self, k, v, plyList)
@@ -214,7 +221,7 @@ function TOOL:RightClick(tr)
 			nw:Set("Positions", _OreData)
 			nw:Network()
 
-			timer.Create("OreSave", 2, 1, writeOreData)
+			timer.Create("OreSave", 2, 1, function() writeOreData(MARKER_WRITE) end)
 		end
 	end
 
