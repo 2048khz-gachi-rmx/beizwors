@@ -57,6 +57,10 @@ end
 function TOOL:JustMark()
 	self:ChangeState(STATE_FIRST)
 	table.Empty(self.CurrentArea)
+
+	self._pr = Promise()
+
+	return self._pr
 end
 
 function TOOL:DrawHUD()
@@ -91,6 +95,12 @@ function TOOL:LeftClick(tr)
 		return true
 	else
 		self:Emit("ZoneConfirmed", self.CurrentZone, unpack(self.CurrentArea))
+		if self._pr then
+			local pr = self._pr
+			self._pr = nil
+			pr:Resolve(self.CurrentZone, unpack(self.CurrentArea))
+		end
+
 		self.CurrentArea = {}
 		self:ChangeState(STATE_BASESELECT)
 	end
@@ -116,11 +126,15 @@ function TOOL:RightClick(tr)
 		table.Empty(self.CurrentArea)
 		return true
 	elseif self.State >= 0 then
-		print("removed", self.State)
 		self.CurrentArea[self.State] = nil
 		self:ChangeState(self.State - 1)
 		if self.State == STATE_BASESELECT then
 			self:Emit("ZoneCancelled")
+			if self._pr then
+				local pr = self._pr
+				self._pr = nil
+				pr:Reject()
+			end
 		end
 	end
 end

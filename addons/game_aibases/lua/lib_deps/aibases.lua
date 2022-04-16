@@ -18,4 +18,5 @@ end
 
 --[[
 lay = AIBases.BaseLayout:new() lay:ReadFrom("test4") lay:Spawn()
+GetNav = navmesh.GetNavAreaByID
 ]]

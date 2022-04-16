@@ -39,6 +39,7 @@ function AIBases.BoxBrick:Spawn()
 	maxs = maxs - center
 
 	woll:SetPos(center)
+	woll.Brick = self
 
 	woll:Spawn()
 	woll:InitPhys(mins, maxs)

@@ -74,6 +74,29 @@ function ST.DeserializeNavs(str)
 	return ret
 end
 
+function ST.SerializeEnemies(tbl)
+	for k,v in pairs(tbl) do
+		if not IsValid(k) then tbl[k] = nil end
+	end
+
+	local enc = {}
+	for k,v in pairs(tbl) do
+		enc[#enc + 1] = {
+			k:GetPos(),
+			-- additional data?
+		}
+	end
+
+	return util.JSONToTable(enc)
+end
+
+function ST.DeserializeEnemies(str)
+	local decomp = util.Decompress(str)
+	local poses = util.JSONToTable(decomp)
+
+	return poses
+end
+
 concommand.Add("aibases_savenav", function(ply, _, arg)
 	if not AIBases.Builder.Allowed(ply) then return end
 

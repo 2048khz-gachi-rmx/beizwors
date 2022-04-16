@@ -50,11 +50,9 @@ function ENT:InitPhys(min, max)
 	self:EnableCustomCollisions(true)
 	self:DrawShadow(false)
 	local po = self:GetPhysicsObject()
+
 	if po:IsValid() then
 		po:EnableMotion(false)
-		print("disabling motion")
-	else
-		print("invalid physobj?")
 	end
 end
 

@@ -23,7 +23,7 @@ function ENT:GetAimSpeed(diff)
 	local base = 1 -- self.AimSpeed
 	local inacc = 1
 
-	if self.TrackingEnemy then
+	if self:GetTrackedEnemy() then
 		local en = self:GetEnemy()
 		local velLen = en:GetVelocity():Length()
 		local dist = diff:Length()
@@ -44,16 +44,40 @@ function ENT:GetAimSpeed(diff)
 	return base * self.AimSpeed, inacc
 end
 
+function ENT:GetAimAngles()
+	self._angs = self._angs or {0, 0, 0}
+	return unpack(self._angs)
+end
+
+function ENT:SetAimAngles(p, y, r)
+	local a = self._angs or {p, y, r}
+	self._angs = a
+
+	a[1] = p or a[1]
+	a[2] = y or a[2]
+	a[3] = r or a[3]
+end
+
+local aang = Angle()
+
+function ENT:GetAimAngle()
+	aang:SetUnpacked(self:GetAimAngles())
+	return aang
+end
+
+local tAng = Angle()
+
 function ENT:DoAimAdjustment(dlt)
 	if not self:GetAimingAt() then return end
-	local pos = self:EyePos()
+	local pos = self:GetShootPos()
+
 	tVec:Set(self:GetAimingAt())
 	tVec:Sub(pos)
 
 	local wantAngle = tVec:Angle()
 	wantAngle:Normalize()
 
-	local ang = self:GetAngles()
+	local cp, cy, cr = self:GetAimAngles()
 
 	local spdMult, inacc = self:GetAimSpeed(tVec)
 
@@ -62,9 +86,10 @@ function ENT:DoAimAdjustment(dlt)
 
 	-- if tracking enemy, slowdown on fast moving targets
 	-- otherwise, relaxed turning
-	local speedup = self.TrackingEnemy and 3 or 1
-	local slowdown = self.TrackingEnemy and 1 or 0.075
-	local degAt = self.TrackingEnemy and 140 or 30
+	local trk = self:GetTrackedEnemy()
+	local speedup = trk and 3 or 1
+	local slowdown = trk and 1 or 0.2
+	local degAt = trk and 140 or 30
 
 	local dp = math.AngleDifference(self._aimPitch, wantAngle[1])
 	local speedMult = math.RemapClamp(math.abs(dp), 0, degAt, slowdown, speedup)
@@ -72,30 +97,37 @@ function ENT:DoAimAdjustment(dlt)
 
 	local np = math.ApproachAngle(self._aimPitch, wantAngle[1], speed)
 	self._aimPitch = np
-	self:SetPoseParameter("aim_pitch", np)
 
-	local dy = math.AngleDifference(ang[2], wantAngle[2])
+	local dy = math.AngleDifference(cy, wantAngle[2])
 	speedMult = math.RemapClamp(math.abs(dy), 0, degAt, slowdown, speedup)
 
 	speed = speedMult * dlt * spdMult
 
-	local ny = math.NormalizeAngle(math.ApproachAngle(ang[2], wantAngle[2], speed))
+	local ny = math.NormalizeAngle(math.ApproachAngle(cy, wantAngle[2], speed))
 
-	ang[2] = ny
-	self:SetAngles(ang)
-	self:SetPoseParameter("aim_yaw", ny)
+	tAng:SetUnpacked(np, ny, 0)
+	self:SetAimAngles(np, ny)
 
 	local dist = tVec:Length()
-	debugoverlay.Line(pos, pos + wantAngle:Forward() * dist, 0.1, color_white)
+	debugoverlay.Line(pos, pos + wantAngle:Forward() * dist, 0.02, color_white)
+	debugoverlay.Line(pos, pos + tAng:Forward() * dist, 0.02, Colors.Sky)
 	-- why
 	self.TargetAligned = math.abs((np - wantAngle[1]) + (ny - wantAngle[2])) < EPS
 
-	if self.TargetAligned then
-		self.TrackingEnemy = true
+	if self.TargetAligned and self:CanSeeTarget() then
+		if not self.TrackingEnemy then
+			self.PrevTrackTime = self.TrackingTime
+			self.TrackingTime = CurTime()
+		end
+		self.TrackingEnemy = self:GetEnemy()
 	end
 end
 
-local cache -- ...really?
+function ENT:GetTrackedEnemy()
+	local ct = CurTime()
+	
+	return self.TrackingEnemy, ct - (self.TrackingTime or 0), ct - (self.PrevTrackTime or 0)
+end
 
 local priorityBones = {
 	--"ValveBiped.Bip01_Spine2",
@@ -118,27 +150,36 @@ end
 function ENT:DoAimTarget(dlt)
 	if not self:GetEnemy() then return end -- oh well
 
-	local pos = self:FindBonePos(self:GetEnemy())
+	local can, when, pos = self:CanSeeTarget()
+	if not can then return end
 
 	if not pos then
 		pos = self:GetEnemy():GetPos() + self:GetEnemy():OBBCenter()
 	end
 
-	debugoverlay.Sphere(pos, 4, 0.2, color_white, true)
 	self:SetAimingAt(pos)
 end
 
+local aimAng = Angle()
+
 function ENT:GetAimDir()
 	if self.AimOverride then
-		local dir = (self.AimOverride - self:EyePos())
+		local dir = (self.AimOverride - self:GetShootPos())
 		dir:Normalize()
 		return dir
 	end
 
-	local ang = self:EyeAngles()
-	ang.p = self._aimPitch
+	local p, y, r = self:GetAimAngles()
+	aimAng:SetUnpacked(p, y, r)
 
-	return ang:Forward()
+	return aimAng:Forward()
+end
+
+function ENT:GetShootPos()
+	local ind = self:BoneToIndex("ValveBiped.Bip01_Head1")
+	if not ind then return self:GetPos() + self:OBBCenter() end
+
+	return self:GetBonePosition(ind)
 end
 
 hook.Add("CW_GetAimDirection", "AIB_AimDir", function(wep, ow)

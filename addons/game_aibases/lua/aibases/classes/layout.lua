@@ -9,6 +9,7 @@ function layout:Initialize(name)
 
 	self.Name = name
 	self.Bricks = {}
+	self.EnemySpots = {}
 	self.Enemies = {}
 	self.Navs = {}
 end
@@ -21,25 +22,24 @@ function layout:AddBrick(brick)
 end
 
 function layout:Spawn()
+	if self.LuaNavs then
+		AIBases.ConstructNavs(self.LuaNavs)
+	end
+
 	for id, bs in pairs(self.Bricks) do
 		for _, brick in ipairs(bs) do
 			brick:Spawn()
 		end
 	end
-
-	if self.LuaNavs then
-		print("spawning lua navs")
-		AIBases.ConstructNavs(self.LuaNavs)
-	end
 end
 
 function layout:Serialize()
 	local bricks = AIBases.Storage.SerializeBricks(self.Bricks)
-	local enemies = ""
+	local enemies = ""--AIBases.Storage.SerializeEnemies(self.Enemies)
 
 	local header = string.char(bit.ToBytes(#bricks)) .. string.char(bit.ToBytes(#enemies))
 
-	return header .. bricks
+	return header .. bricks .. enemies
 end
 
 function layout:Deserialize(str, nav)
@@ -48,25 +48,25 @@ function layout:Deserialize(str, nav)
 	local enemySize = bit.ToInt(string.byte(str, 5, 8))
 
 	local brickData = data:sub(1, brickSize)
-	local enemyData = data:sub(brickSize, brickSize + enemySize)
+	local enemyData = data:sub(brickSize + 1, brickSize + enemySize)
 
 	local bricks = AIBases.Storage.DeserializeBricks(brickData)
-	local enemies = {}
+	local enemies = AIBases.Storage.DeserializeEnemies(enemyData)
 
 	self.Bricks = bricks
-	self.Enemies = enemies
+	self.EnemySpots = enemies
 
 	if nav then
 		self.LuaNavs = AIBases.Storage.DeserializeNavs(nav)
 	end
 end
 
-function layout:ReadFrom(fn)
+function layout:ReadFrom(fn, layFn)
 	local dat = file.Read("aibases/layouts/" .. fn .. ".dat", "DATA")
-	local lay = file.Read("aibases/layouts/" .. fn .. "_nav.dat", "DATA")
+	local lay = file.Read("aibases/layouts/" .. (layFn or fn) .. "_nav.dat", "DATA")
 
 	if not dat then print("no data @ ", "aibases/layouts/" .. fn .. ".dat") return end
-	if not lay then print("no nav data @ ", "aibases/layouts/" .. fn .. "_nav.dat") end
+	if not lay then print("no nav data @ ", "aibases/layouts/" .. (layFn or fn) .. "_nav.dat") end
 
 	self:Deserialize(dat, lay)
 end

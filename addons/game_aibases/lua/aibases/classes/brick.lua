@@ -52,6 +52,7 @@ end
 
 AIBases.BRICK_PROP = 0
 AIBases.BRICK_BOX = 1
+AIBases.BRICK_ENEMY = 2
 
 FInc.FromHere("bricks/*.lua", FInc.SHARED, FInc.RealmResolver()
 	:SetDefault(true)

@@ -35,8 +35,7 @@ function AIBases.PropBrick:Spawn()
 	ent:SetPos(data.pos)
 	ent:SetAngles(data.ang)
 	ent:SetModelScale(data.scale)
-
-	print("spawning propbrick...", ent)
+	ent.Brick = self
 
 	ent:Spawn()
 	ent:Activate()
@@ -56,11 +55,12 @@ function AIBases.PropBrick:Build(ent)
 	data.model = ent:GetModel()
 	data.pos = ent:GetPos()
 	data.ang = ent:GetAngles()
-	data.scale = ent:GetModelScale()
-	if data.scale == 1 then data.scale = nil end
 
-	data.class = ent:GetClass()
-	if data.class == "prop_physics" then data.class = nil end
+	local sc = ent:GetModelScale()
+	if sc ~= 1 then data.scale = sc end
+
+	local class = ent:GetClass()
+	if class ~= "prop_physics" then data.class = class end
 
 	return new
 end

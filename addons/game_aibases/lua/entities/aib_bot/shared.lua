@@ -3,13 +3,16 @@ AddCSLuaFile()
 ENT.Base = "base_nextbot"
 ENT.PrintName = "AI Base Bot"
 
-ENT.Model = "models/player/ct_gign.mdl"
+ENT.Model = "models/player/swat.mdl"
 ENT.Skin = 0
 ENT.Spawnable = true
 ENT.IsAIBaseBot = true
 
+ENT.MoveSpeed = 160
+
 function ENT:SetupDataTables()
 	self:NetworkVar("Entity", 0, "CurrentWeapon")
+	self:NetworkVar("Angle", 0, "NWAimAngle")
 end
 
 function ENT:GetActiveWeapon()

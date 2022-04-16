@@ -2,19 +2,12 @@
 
 AIBases.Builder = AIBases.Builder or {}
 local bld = AIBases.Builder
-bld.NW = Networkable("aibuild")
-bld.NWNav = Networkable("aibuild_nav")
 
-bld.NWNav:On("NetworkedVarChanged", "fill", function(self, key, old, new)
-	if istable(new) then
-		new.center = (new.min + new.max) / 2
-		new.id = key
-	end
-end)
 
 local cols = {
 	[AIBases.BRICK_PROP] = Colors.Money,
 	[AIBases.BRICK_BOX] = Colors.Golden,
+	[AIBases.BRICK_ENEMY] = Colors.Reddish,
 }
 
 hook.Add("PostDrawTranslucentRenderables", "aibases", function()
@@ -40,7 +33,7 @@ hook.Add("PostDrawTranslucentRenderables", "ainavs", function()
 	for id, dat in pairs(navs) do
 		local col = dat.onceCol or dat.col or (dat.ply == me and Colors.Green or Colors.Red)
 		render.DrawWireframeBox(vector_origin, angle_zero, dat.min, dat.max, col, true)
-
+		hook.Run("DrawLuaNav", dat)
 		dat.onceCol = nil
 	end
 end)

@@ -55,7 +55,10 @@ concommand.Add("aibases_savelayout", function(ply, _, arg)
 	local brs = {}
 
 	for ent, id in pairs(bents) do
-		if not IsValid(ent) then AIBases.Builder.AddBrick(ply, ent, nil) continue end
+		if not IsValid(ent) then
+			AIBases.Builder.AddBrick(ply, ent, nil)
+			continue
+		end
 
 		local base = AIBases.IDToBrick(id)
 		local brick = base:Build(ent)
@@ -75,11 +78,18 @@ net.Receive("aib_navrecv", function(len, ply)
 	if not bld.Allowed(ply) then return end
 
 	local mode = net.ReadUInt(4)
+	print('recv mode', mode)
+	if mode == 15 then
+		-- request fullupdate
+		ply:GetTool("AINavTool"):StartNetwork(ply)
+		return
+	end
 
 	if mode == 0 then
 		local min, max = net.ReadVector(), net.ReadVector()
-		local cnav = navmesh.CreateNavArea(min, max)
-		local lnav = bld.NavClass:new(cnav, ply)
+		--local cnav = navmesh.CreateNavArea(min, max)
+		local lnav = bld.NavClass:new(false, ply)
+		lnav:CreateNew(min, max)
 
 		bld.Navs[ply] = bld.Navs[ply] or {}
 		bld.Navs[ply][#bld.Navs[ply] + 1] = lnav
@@ -103,6 +113,7 @@ net.Receive("aib_navrecv", function(len, ply)
 			return
 		end
 
+		print("connecting", id, id2)
 		lkup[id]:ConnectTo(lkup[id2])
 		print("connected", id, id2)
 	elseif mode == 2 then
@@ -111,19 +122,17 @@ net.Receive("aib_navrecv", function(len, ply)
 		local nav = navmesh.GetNavAreaByID(id)
 		if not IsValid(nav) then print("didnt find nav with id", id) return end
 
-		if bld.Navs[ply] then
-			for k,v in pairs(bld.Navs[ply]) do
-				if v.handle == nav then
-					print("already claimed in lua")
-					return
-				end
-			end
+		if bld.Navs[id] and bld.Navs[id]:IsValid() then
+			print("already claimed in lua")
+			bld.Navs[id]:NW()
+			return
 		end
 
 		print("claiming nav for lua", nav)
 		local lnav = bld.NavClass:new(nav, ply)
 		bld.Navs[ply] = bld.Navs[ply] or {}
 		bld.Navs[ply][#bld.Navs[ply] + 1] = lnav
+		bld.Navs[id] = lnav
 
 		lnav:NW()
 	elseif mode == 3 then
@@ -133,15 +142,14 @@ net.Receive("aib_navrecv", function(len, ply)
 		local nav = navmesh.GetNavAreaByID(id)
 		if IsValid(nav) then
 			nav:Remove()
-			print("deleted v nav")
+			print("deleted cnav")
 		end
-
-		
 
 		if bld.Navs[ply] then
 			for k,v in pairs(bld.Navs[ply]) do
 				if v.id == id then
 					v:Remove()
+					bld.Navs[v.id] = nil
 					bld.Navs[ply][k] = nil
 					print("deleted lua nav")
 				end
@@ -149,8 +157,59 @@ net.Receive("aib_navrecv", function(len, ply)
 		end
 
 		print("delete done; check above")
+	elseif mode == 4 then
+		-- add a hiding spot
+		local id = net.ReadUInt(32)
+		local bits = net.ReadUInt(8)
+		local where = net.ReadVector()
+
+		local nav = navmesh.GetNavAreaByID(id)
+		if not IsValid(nav) then printf("no nav with id %s", id) return end
+		printf("adding hiding spot %d to %s", bits, where)
+		nav:AddHidingSpot(where, bits)
+		if bld.Navs[id] then
+			bld.Navs[id]:NW()
+		end
 	end
 end)
+
+concommand.Add("aib_claim", function(ply, _, arg)
+	if not bld.Allowed(ply) then return end
+
+	local name = arg[1]
+	if not arg[1] then print("give a name tard") return end
+
+	local lay = _G[name]
+	if not lay or not istable(lay) or not lay.LuaNavs then print("not nav") return end
+
+	for k,v in pairs(lay.LuaNavs) do
+		bld.Navs[ply] = bld.Navs[ply] or {}
+		bld.Navs[ply][#bld.Navs[ply] + 1] = v
+		bld.Navs[v.id] = v
+		v.ply = ply
+
+		v:NW()
+	end
+end)
+
+concommand.Add("aib_mark", function(ply, _, arg)
+	if not bld.Allowed(ply) then return end
+
+	local name = arg[1]
+	if not arg[1] then print("give a name tard") return end
+
+	local lay = _G[name]
+	if not lay or not istable(lay) or not lay.Bricks then print("no bricks") return end
+
+	for id, bs in pairs(lay.Bricks) do
+		for _, brick in pairs(bs) do
+			if not brick.Ent then continue end
+			AIBases.Builder.AddBrick(ply, brick.Ent, id)
+		end
+	end
+end)
+
+GetNav = navmesh.GetNavAreaByID
 
 concommand.Add("aib_removeall", function(ply)
 	if not bld.Allowed(ply) then return end
@@ -158,7 +217,11 @@ concommand.Add("aib_removeall", function(ply)
 	if bld.Navs[ply] then
 		for k,v in pairs(bld.Navs[ply]) do
 			v:Remove()
+			bld.Navs[v.id] = nil
+			bld.Navs[ply][k] = nil
 			print("deleted lua nav")
 		end
+
+		bld.Navs[ply] = {}
 	end
 end)
