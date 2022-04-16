@@ -50,6 +50,7 @@ addons/game_inventory/**
 
 addons/*pac3*
 addons/fas*
+addons/*arc-9*
 
 cfg/mount.cfg
 _CRIDENT_FILL/**
