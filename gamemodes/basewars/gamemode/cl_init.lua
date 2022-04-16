@@ -221,6 +221,7 @@ function CreatePlayerFrame(sb, ply)
 	local lv = ply:GetLevel()
 	local mon = ply:GetMoney()
 	local time = ply:GetPlayTime()
+	local ping = ply:Ping()
 	local col = f.TeamColor
 
 	local cloud = vgui.Create("Cloud")
@@ -263,6 +264,7 @@ function CreatePlayerFrame(sb, ply)
 			mon = BaseWars.NumberFormat(mon or 0)
 			time = ply:GetPlayTime()
 			col = col or team.GetColor(ply:Team())
+			ping = ply:Ping()
 		end
 
 		local newSz = Lerp(av.HovFrac or 0, avSz, av.HovSize)
@@ -270,9 +272,9 @@ function CreatePlayerFrame(sb, ply)
 
 		av:SetSize(newSz, newSz)
 		-- centervertical wont work properly due to expand button
-		av.Y = h / 2 - av:GetTall() / 2 
+		av.Y = h / 2 - av:GetTall() / 2
 
-		draw.SimpleText(lastnick .. " ", "EXM32", 88, 2, color_white)
+		local _, nh = draw.SimpleText(lastnick .. " ", "EXM32", av.X + av:GetWide() + 8, 2, color_white)
 
 		local infoFont = "OS20"
 		local lines = 2
@@ -280,9 +282,7 @@ function CreatePlayerFrame(sb, ply)
 
 		local y = h / 2 - lHgt / 2
 
-		local _, th = draw.SimpleText(Language.Currency .. mon, "OS20",
-			w - 32, y, color_white, 2, 5)
-		y = y + th
+		local _, th = draw.SimpleText(Language.Money(mon), "OS20", 88, nh, color_white)
 
 		local time = string.FormattedTime(time)
 		local str = "%s%s%s"
