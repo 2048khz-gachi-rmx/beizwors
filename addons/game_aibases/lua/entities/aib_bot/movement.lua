@@ -35,6 +35,15 @@ function ENT:TryMovePos(pos)
 	end
 end
 
+function ENT:AbortMove()
+	if self._movePr then
+		self._movePr:Reject()
+		self._movePr = nil
+	end
+
+	self._continueMove = nil
+end
+
 function ENT:C_MoveNow(pos)
 	-- yield and return whether we moved successfully or were interrupted
 	self.WantMoveWhere = pos
@@ -67,7 +76,6 @@ function ENT:MoveWhenCan(pos)
 	-- non-coroutine request to move somewhere
 	self.WantMoveWhere = pos
 
-	print("movewhencan", pos)
 	if self._movePr then
 		self._movePr:Reject()
 	end
@@ -114,7 +122,10 @@ function ENT:TakeCover()
 	return pr
 end
 
--- try to get to a place where sightOf is visible
+ENT.ChaseChainDelay = 0.7
+ENT.InitialChaseDelay = 4
+ENT._curChaseDelay = ENT.InitialChaseDelay
+
 function ENT:TryChase(sightOf)
 	--[[local t = {
 		pos = self:GetPos(),
@@ -127,25 +138,59 @@ function ENT:TryChase(sightOf)
 	local will_have = self:FindSpot("random", t)
 
 	if will_have or not have_cover then]]
+
+		self._curChaseDelay = self.ChaseChainDelay
+
+		local chasing = true
+
+		self:Once("EnemyFound", function()
+			self.ChasedAndLost = nil
+
+			-- found target while chasing; abort chase and fire
+			if chasing then
+				self:AbortMove()
+				chasing = false
+			end
+		end)
+
+		local aws = self:GetTargetAwareness()
+
+		print("chasing")
+	
+		if aws then
+			self:AimAt(aws.pos + (aws.vel or vector_origin) * 0.3)
+			print("reading ahead")
+			debugoverlay.Sphere(aws.pos, 3, 2, Colors.Sky, true)
+			debugoverlay.Line(aws.pos, aws.pos + (aws.vel or vector_origin) * 0.3, 2, Colors.Green, true)
+		else
+			print("somehow chasing with no target awareness")
+		end
+
 		self:C_MoveNow(sightOf)
+
+		chasing = false
 		self:HaveEnemy()
 		self:UpdateTargetLOS()
 
 		if self:GetEnemy() and not self:CanSeeTarget() then
-			self:LoseEnemy()
+			self.ChasedAndLost = true
+			self._curChaseDelay = self.InitialChaseDelay
+			print("lost after chase")
+			--[[self:LoseEnemy()
 
 			local cnav = navmesh.GetNavArea(self:GetPos(), 4)
 			if not IsValid(cnav) then return end
-			self:SetAimingAt(cnav:GetCenter())
+			self:SetAimingAt(cnav:GetCenter())]]
 		end
 	--end
 end
 
 function ENT:ShouldChase(time, sightOf)
-	if time < 4 then return false end
-	if self:HasActivity("Reload") then return false end
-	if self:GetPos():Distance(sightOf) < 8 then return false end
-	if not self:GetEnemy() then return false end
+	if time < self._curChaseDelay then return false, "time" end
+	if self.ChasedAndLost then return false, "lost" end
+	if self:HasActivity("Reload") then return false, "reloading" end
+	if self:GetPos():Distance(sightOf) < 8 then return false, "far" end
+	if not self:GetEnemy() then return false, "wtf" end
 
 	-- todo: camping?
 
@@ -167,8 +212,14 @@ function ENT:DecideMovement()
 	local en = self:GetEnemy()
 	local can, time, lastPos = self:CanSeeTarget()
 
-	if en and not can and self:ShouldChase(time, lastPos) then
-		self:TryChase(lastPos)
+	if en and not can then
+		local chase, why = self:ShouldChase(time, lastPos)
+
+		if chase then
+			self:TryChase(lastPos)
+		else
+			--print(why)
+		end
 	end
 
 end
@@ -183,7 +234,9 @@ function ENT:MoveToPos( pos, options )
 
 	if ( !path:IsValid() ) then return "failed" end
 
-	while ( path:IsValid() ) do
+	self._continueMove = true
+
+	while ( path:IsValid() and self._continueMove ) do
 
 		path:Update( self )
 

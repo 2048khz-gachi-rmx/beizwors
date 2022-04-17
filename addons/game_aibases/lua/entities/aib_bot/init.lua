@@ -13,14 +13,43 @@ function ENT:GetEnemy()
 	return self.Enemy and self.Enemy:IsValid() and self.Enemy
 end
 
+ENT.Mood = "passive"
+
+ENT.Moods = {
+	"passive",
+	"alert",
+	"engaging", -- shooting at the target
+	"covering",
+	"chasing",
+}
+
+ENT.HostileMoods = {
+	engaging = true,
+	chasing = true,
+	covering = true,
+	alert = true,
+}
+
+function ENT:SetMood(m)
+	if not self.Moods[m] then errorNHf("not a mood: %s", m) return end
+	self.Mood = m
+end
+
+function ENT:GetMood()
+	return self.Mood
+end
+
 function ENT:Initialize()
 	self:SetModel(self.Model)
+
+	self.Moods = table.KeysToValues(self.Moods)
 
 	self.LoseTargetDist = 1000
 	self.Tier = self.Tier or 1
 
 	self:InitializeTier(self.Tier)
 
+	self.EnemyAwareness = {}
 	self._curActs = {}
 	self.DynCoros = {}
 
@@ -76,6 +105,13 @@ ENT.AnimActivities = {
 		reload = {ACT_MP_WALK, ACT_HL2MP_WALK_CROUCH_SMG1},
 		passive = {ACT_MP_WALK, ACT_HL2MP_WALK_PASSIVE},
 	},
+
+	revolver = {
+		aggro = ACT_MP_WALK,
+		aggro_run = ACT_MP_RUN,
+		reload = ACT_HL2MP_WALK_CROUCH_REVOLVER,
+		passive = ACT_HL2MP_WALK_PASSIVE,
+	}
 }
 
 ENT.EquippedType = "ar2"
@@ -106,7 +142,7 @@ function ENT:GetDesiredActivity()
 		return self:_getAc("reload", pfx, sfx)
 	end
 
-	if self:GetEnemy() then
+	if self.HostileMoods[self:GetMood()] then
 		return self:_getAc("aggro", pfx, sfx)
 	end
 
@@ -116,7 +152,7 @@ end
 function ENT:MatchActivity()
 	local wep = self:GetCurrentWeapon()
 	local want = self:GetDesiredActivity()
-	--print("want:", want, wep:TranslateActivity(want))
+
 	if IsValid(wep) then
 		local toTr = istable(want) and want[1] or want
 		local tr = wep:TranslateActivity(toTr)
@@ -127,10 +163,10 @@ function ENT:MatchActivity()
 		end
 	end
 
-	--print("want:", want)
-
 	if want ~= self:GetActivity() then
 		self:StartActivity(want)
+		--printf("server: activity set to %s (seq: %s = %s)", want, self:GetSequence(), self:GetSequenceName(self:GetSequence()))
+		--printf("	translated %s -> %s", want, self:SelectWeightedSequence(want))
 	end
 end
 
@@ -236,8 +272,9 @@ function ENT:BehaveUpdate(time)
 	self:DoGestures()
 
 	self.loco:SetMaxYawRate(99999)
+	local aang = self:GetAimAngle():Forward()
 	if self:GetAimingAt() then
-		self.loco:FaceTowards(self:GetAimingAt())
+		self.loco:FaceTowards(self:GetShootPos() + self:GetAimAngle():Forward() * 32)
 	end
 
 	self:SlowThink()

@@ -48,6 +48,10 @@ function AIBases.PropBrick:Spawn()
 	end
 end
 
+function AIBases.PropBrick:Remove()
+	if IsValid(self.Ent) then self.Ent:Remove() end
+end
+
 function AIBases.PropBrick:Build(ent)
 	local new = AIBases.PropBrick:new()
 	local data = new.Data

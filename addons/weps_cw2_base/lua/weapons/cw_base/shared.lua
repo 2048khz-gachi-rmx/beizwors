@@ -1640,7 +1640,13 @@ function SWEP:PrimaryAttack()
 		self:TakePrimaryAmmo(self.AmmoPerShot)
 	end
 
-	self:SetNextPrimaryFire(CT + self.FireDelay)
+	local delay = self.FireDelay
+
+	if npc and not self.Primary.Automatic then
+		delay = delay * (1.7 + math.random() * 0.6)
+	end
+
+	self:SetNextPrimaryFire(CT + delay)
 
 	-- either force the weapon back to hip after firing, or don't
 	if self.ForceBackToHipAfterAimedShot then

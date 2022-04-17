@@ -6,30 +6,36 @@ function ENT:Give(class)
 	local wep = ents.Create(class)
 	if IsValid(wep) then
 		self:SetupWeapon(wep)
-		wep:Spawn()
+		
 	end
 
 	return wep
 end
 
 function ENT:SetupWeapon(wep)
-	wep:SetPos(self:GetPos())
-	wep:SetAngles(self:GetAngles())
 
 	local att = self:LookupAttachment("anim_attachment_RH")
 
-	wep:SetMoveType(MOVETYPE_NONE)
-	wep:AddEffects(EF_BONEMERGE)
+	--wep:SetMoveType(MOVETYPE_NONE)
+
 	wep:RemoveSolidFlags(FSOLID_TRIGGER)
 	wep:RemoveEffects(EF_ITEM_BLINK) -- tha fuck is this valve
 	wep:AddEFlags(EFL_USE_PARTITION_WHEN_NOT_SOLID)
-
 	wep:SetOwner(self)
-	wep:SetParent(self, att)
-	wep:SetTransmitWithParent(true)
 
 	wep:PhysicsDestroy() -- fuck you
+
+	wep:SetParent(self, att)
+	wep:SetMoveType(MOVETYPE_NONE)
+
+	--wep:AddEffects(EF_BONEMERGE)
+	wep:SetTransmitWithParent(true)
+
 	wep.UsedByAI = self
+
+	wep:Spawn()
+	wep:SetLocalPos(-wep:OBBCenter())
+	wep:SetLocalAngles(angle_zero)
 
 	self:SetCurrentWeapon(wep)
 end
@@ -107,6 +113,8 @@ function ENT:WaitForReload()
 	while
 		(wep.CW20Weapon and wep.ReloadDelay and wep.ReloadDelay > CurTime()) or
 		(wep.ArcCW and wep:GetReloading()) do
+
+		print("reloading", wep.ReloadDelay, CurTime())
 		coroutine.yield()
 	end
 end

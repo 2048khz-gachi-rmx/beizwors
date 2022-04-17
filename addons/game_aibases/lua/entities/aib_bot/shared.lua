@@ -40,5 +40,9 @@ end
 function ENT:OnKilled( dmginfo )
 	hook.Run( "OnNPCKilled", self, dmginfo:GetAttacker(), dmginfo:GetInflictor() )
 	self:BecomeRagdoll( dmginfo )
+	if IsValid(self:GetActiveWeapon()) then
+		self:GetActiveWeapon():Remove()
+	end
+
 	--self:Remove()
 end

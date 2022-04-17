@@ -42,9 +42,28 @@ function ENT:UpdateLastAwarePos(pos)
 	self.TargetVisPos = pos
 end
 
+-- pos is optional
+-- vis means updating via sight (more info such as velocity can be gathered)
+function ENT:UpdateLastAware(ent, pos, vis)
+	local aws = self.EnemyAwareness
+	local aw = aws[ent] or {}
+	aws[ent] = aw
+
+	aw.pos = isvector(pos) and pos or ent:EyePos()
+	aw.vel = vis and ent:GetVelocity()
+	self:UpdateLastAwarePos(aw.pos)
+end
+
+-- return the awareness of an ent (or current enemy)
+function ENT:GetTargetAwareness(e)
+	return self.EnemyAwareness[e or self:GetEnemy() or false]
+end
+
 function ENT:CanSeeTarget()
 	local ct = CurTime()
-	return self.HaveTargetLOS, ct - (self.LOSLastChange or ct), self.TargetVisPos
+
+	return self.HaveTargetLOS, ct - (self.LOSLastChange or ct),
+		self.TargetVisPos
 end
 
 local b = bench("targetlos", 600)
@@ -76,12 +95,12 @@ function ENT:UpdateTargetLOS()
 	end
 
 	self:_changeLOS(true)
-	self:MakeAwareOf(en)
+	self:MakeAwareOf(en, visPos)
 	--b:Close():print()
 end
 
-function ENT:MakeAwareOf(ent)
-	self:UpdateLastAwarePos(ent:OBBCenter() + ent:GetPos())
+function ENT:MakeAwareOf(ent, vis)
+	self:UpdateLastAware(ent, vis or ent:OBBCenter() + ent:GetPos(), not not vis)
 end
 
 local tracePoses = {
@@ -126,19 +145,19 @@ function ENT:InView(ply, reuse)
 			local ent = trOut.Entity
 
 			-- didnt hit when aiming straight for the eyes; means no obstacles means ur so fucked homie
-			
+
 			if not trOut.Hit then
-				self:UpdateLastAwarePos(ep)
+				self:UpdateLastAware(ply, ep, true)
 				return ply, ep
 			end
 
 			if ent:IsPlayer() then
 				if ent == ply then
-					self:UpdateLastAwarePos(ep)
+					self:UpdateLastAware(ent, ep, true)
 					return ent, ep
 				end
 				if self:CanTarget(ent) then -- eh this'll do
-					self:UpdateLastAwarePos(ep)
+					self:UpdateLastAware(ent, ep, true)
 					return ent, ep
 				end
 			end
@@ -178,6 +197,9 @@ function ENT:FindEnemy(noWriteLoss)
 		end
 
 		self:SetEnemy(tgt)
+		self:SetMood("engaging")
+		self:Emit("EnemyFound", tgt)
+		self:_changeLOS(true)
 		--b:Close():print()
 		return true
 	end
@@ -193,11 +215,21 @@ function ENT:FindEnemy(noWriteLoss)
 	return false
 end
 
+function ENT:ValidateEnemy()
+	if not self.Enemy or not self.Enemy:IsValid() then
+		self:LoseEnemy()
+	end
+
+	return self.Enemy
+end
+
 function ENT:OnEnemyLost()
+	self:Emit("EnemyLost", self:GetEnemy())
 	self.TrackingEnemy = false
+	self:SetMood("alert")
 end
 
 function ENT:LoseEnemy()
-	self:SetEnemy(nil)
 	self:OnEnemyLost()
+	self:SetEnemy(nil)
 end

@@ -31,6 +31,10 @@ function AIBases.EnemyBrick:Build(ent)
 	return new
 end
 
+function AIBases.EnemyBrick:Remove()
+	if IsValid(self.Ent) then self.Ent:Remove() end
+end
+
 function AIBases.EnemyBrick:Spawn()
 	if IsValid(self.Ent) then self.Ent:Remove() end
 

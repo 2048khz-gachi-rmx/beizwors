@@ -50,6 +50,10 @@ function AIBases.LayoutBrick:Build(ent)
 	errorNHf("AIBases.LayoutBrick:Build() : not implemented. Override this method.")
 end
 
+function AIBases.LayoutBrick:Remove()
+	errorNHf("AIBases.LayoutBrick:Remove() : not implemented. Override this method.")
+end
+
 AIBases.BRICK_PROP = 0
 AIBases.BRICK_BOX = 1
 AIBases.BRICK_ENEMY = 2

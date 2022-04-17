@@ -24,6 +24,10 @@ function AIBases.BoxBrick:Build(ent)
 	return new
 end
 
+function AIBases.BoxBrick:Remove()
+	if IsValid(self.Ent) then self.Ent:Remove() end
+end
+
 function AIBases.BoxBrick:Spawn()
 	if IsValid(self.Ent) then self.Ent:Remove() end
 

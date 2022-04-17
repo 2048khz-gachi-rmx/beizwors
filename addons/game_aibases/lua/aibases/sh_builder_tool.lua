@@ -258,6 +258,10 @@ if CLIENT then
 				te:LerpColor(te.HTextColor, regular, 0.1, 0, 0.2)
 				curWep = blank and "random" or self:GetText()
 			end
+
+			if not focused then
+				AIBases.Builder.LayoutBind:SetHeld(false)
+			end
 		end
 
 		AIBases.Builder.LayoutBind:On("ButtonChanged", te, function(self, to)
@@ -530,6 +534,9 @@ else
 				undo.SetPlayer(ply)
 				undo.AddEntity(en)
 			undo.Finish("ai bot")
+
+			en.debug = true
+			_G.bot = en
 		end
 	end)
 end

@@ -21,7 +21,7 @@ local EPS = 0.1
 
 function ENT:GetAimSpeed(diff)
 	local base = 1 -- self.AimSpeed
-	local inacc = 1
+	local inacc = 0
 
 	if self:GetTrackedEnemy() then
 		local en = self:GetEnemy()
@@ -38,14 +38,14 @@ function ENT:GetAimSpeed(diff)
 		local velInacc = math.RemapClamp(velLen / distMult, 350, 900, 0, 1)
 		local distInacc = math.RemapClamp(dist, 400, 720, 0, 0.2 + velInacc)
 
-		inacc = velInacc + distInacc
+		--inacc = velInacc + distInacc
 	end
 
 	return base * self.AimSpeed, inacc
 end
 
 function ENT:GetAimAngles()
-	self._angs = self._angs or {0, 0, 0}
+	self._angs = self._angs or {self:GetAngles():Unpack()}
 	return unpack(self._angs)
 end
 
@@ -74,6 +74,8 @@ function ENT:DoAimAdjustment(dlt)
 	tVec:Set(self:GetAimingAt())
 	tVec:Sub(pos)
 
+	debugoverlay.Cross(self:GetAimingAt(), 3, 0.1, Colors.Red)
+
 	local wantAngle = tVec:Angle()
 	wantAngle:Normalize()
 
@@ -88,8 +90,8 @@ function ENT:DoAimAdjustment(dlt)
 	-- otherwise, relaxed turning
 	local trk = self:GetTrackedEnemy()
 	local speedup = trk and 3 or 1
-	local slowdown = trk and 1 or 0.2
-	local degAt = trk and 140 or 30
+	local slowdown = trk and 1 or 0.4
+	local degAt = trk and 140 or 40
 
 	local dp = math.AngleDifference(self._aimPitch, wantAngle[1])
 	local speedMult = math.RemapClamp(math.abs(dp), 0, degAt, slowdown, speedup)
@@ -109,8 +111,10 @@ function ENT:DoAimAdjustment(dlt)
 	self:SetAimAngles(np, ny)
 
 	local dist = tVec:Length()
+
 	debugoverlay.Line(pos, pos + wantAngle:Forward() * dist, 0.02, color_white)
 	debugoverlay.Line(pos, pos + tAng:Forward() * dist, 0.02, Colors.Sky)
+
 	-- why
 	self.TargetAligned = math.abs((np - wantAngle[1]) + (ny - wantAngle[2])) < EPS
 
@@ -125,7 +129,7 @@ end
 
 function ENT:GetTrackedEnemy()
 	local ct = CurTime()
-	
+	self:ValidateEnemy()
 	return self.TrackingEnemy, ct - (self.TrackingTime or 0), ct - (self.PrevTrackTime or 0)
 end
 

@@ -515,8 +515,8 @@ hook.Remove("PlayerDeathThink", "RaidsDeath")
 --]==================================]
 
 function raid.CanDealDamage(ply, ent, infl, dmg)
-	-- if not ent.IsBaseWars then return end
-	if not IsPlayer(ply) then return end -- non-players can't deal damage to basewars ents
+	if not IsPlayer(ply) then return end -- non-players dealing damage is not our domain
+	if ent:IsNPC() or ent:IsNextBot() then return end
 
 	if IsPlayer(ent) then
 		return raid.CanDealDamagePlayer(ply, ent, infl, dmg)
