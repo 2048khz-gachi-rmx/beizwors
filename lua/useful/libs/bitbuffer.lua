@@ -22,6 +22,11 @@ function BitBuffer:ResetCursor()
 	self[2] = 0
 end
 
+function BitBuffer:Reset()
+	self:ResetCursor()
+	self[3] = {}
+end
+
 function BitBuffer:_readPastEdge(n, sz)
 	errorf("attempted to read %s past size (total size: %dbits, tried to read [%d - %d]",
 		n, -- name of the read
@@ -188,7 +193,7 @@ function BitBuffer:ReadInt16()
 	return b
 end
 
-function BitBuffer:ReadLong()
+function BitBuffer:ReadLong(i)
 	local b = self[2]
 
 	if b == 0 then
@@ -197,6 +202,9 @@ function BitBuffer:ReadLong()
 		IncrementBits(self, 32)
 		local mk = mask(b, b + 32)
 
+		if not n then
+			print("wtF", i)
+		end
 		local r = bit_rshift(bit_band(n, mk), b)
 		-- printf("%s, %x & %x : %x >> %s = %s", b, n, mk, bit_band(n, mk), b, r)
 		return r
@@ -262,6 +270,7 @@ function BitBuffer:WriteLong(t)
 		return
 	end
 
+	print("long: slkow path")
 	self:WriteBits(32, t)
 end
 
@@ -323,15 +332,20 @@ function BitBuffer:WriteString(s, lim)
 		self:WriteByte(0)
 	end
 
-	self:_spew()
-
+	--self:_spew()
 end
 
 local FRAC_LEN = 23
 local FRAC_MASK = 0x007FFFFF
+local FRAC_POS = bit.lshift(1, FRAC_LEN)
 
-function BitBuffer:ReadFloat()
-	local num = self:ReadLong()
+local math_floor = math.floor
+local math_frexp = math.frexp
+
+-- i think 2^len is faster than bit.lshift(1, len), wtf?
+
+function BitBuffer:ReadFloat(i)
+	local num = self:ReadLong(i)
 	local sign = 1
 
 	if num >= 0x80000000 then
@@ -339,15 +353,15 @@ function BitBuffer:ReadFloat()
 		sign = -1
 	end
 
-	local exp = bit_rshift(bit_band(n, 0x7F800000), FRAC_LEN)
-	local frac = bit_band(n, FRAC_MASK) / bit_lshift(1, FRAC_LEN)
+	local exp = bit_rshift(bit_band(num, 0x7F800000), FRAC_LEN)
+	local frac = bit_band(num, FRAC_MASK) / (FRAC_MASK + 1)
 
 	-- thx wiki u da best
 
 	if exp == 0xFF then -- float repr. of infinity or nan (depending on fraction)
 		return (frac == 0 and math.huge * sign) or 0 / 0
 	elseif exp == 0 then
-		return math.ldexp(1 + frac, -0x7F) * sign
+		return math.ldexp(frac, -0x7E) * sign
 	else
 		-- oh hey lua even has a function for it
 		return math.ldexp(1 + frac, exp - 127) * sign
@@ -356,39 +370,31 @@ end
 
 function BitBuffer:WriteFloat(n)
 	local sign = n < 0 and 0x80000000 or 0
-	local frac, exp = 0, 0
 
 	if n == 0 then
 		self:WriteLong(0)
-		return
+		return -- 0
 	elseif n ~= n then
 		self:WriteLong(0xFFFFFFFF)
-		return
+		return -- 0xFFFFFFFF
 	end
 
-	frac, exp = math.frexp(n)
-	exp = exp + 0x7F
+	local frac, exp = math_frexp(n)
+	exp = exp + 0x7E
+
 	if exp <= 0 then
-		frac = math.ldexp(man, frac - 1)
+		frac = math_floor(frac * 2 ^ (FRAC_LEN + exp) + 0.5)
 		exp = 0
 	else
-		if exp >= 0xFF then
-			-- wat
-			self:WriteLong(0x7F800000 + sign)
-		elseif exp == 1 then
-			exp = 0
-		else
-			frac = frac * 2 - 1
-			exp = exp - 1
-		end
+		frac = math_floor((frac * 2 - 1) * FRAC_POS + 0.5)
 	end
 
-	frac = math.floor(math.ldexp(frac, FRAC_LEN) + 0.5)
+	-- frac = math.floor(math.ldexp(frac, FRAC_LEN) + 0.5)
 
-	n = n + bit_lshift(bit_band(exp, 0xFF), FRAC_LEN)
-	n = n + bit_band(frac, FRAC_MASK)
+	local ret = sign + bit_band(exp, 0xFF) * FRAC_POS
+		+ bit_band(frac, FRAC_MASK)
 
-	return n
+	self:WriteLong(ret)
 end
 
 function BitBuffer:_spew()
@@ -403,10 +409,11 @@ function BitBuffer:ReadString(lim)
 	local s = ""
 
 	if lim then
-		self:_spew()
-		len = isnumber(lim) and lim or self:ReadLong()
+		-- self:_spew()
+		len = isnumber(lim) and lim or self:ReadLong(-1)
 	end
 
+	local cur = 1
 	-- try to defragment first
 	if self[2] % 8 == 0 and self[2] ~= 0 then
 		local to = (32 - self[2]) / 8 -- amt of chars to write to align
@@ -423,8 +430,9 @@ function BitBuffer:ReadString(lim)
 	end
 
 	-- read in packs of 4 bytes (as longs)
+	print("reading", cur, len and math.floor(len / 4) * 4 or math.huge)
 	for i=cur, len and math.floor(len / 4) * 4 or math.huge, 4 do
-		local long = self:ReadLong()
+		local long = self:ReadLong(i)
 
 		local b1, b2, b3, b4 =
 			bit_rshift(	bit_band(long, 0xFF000000), 24),
@@ -480,27 +488,55 @@ end
 
 local nums = {}
 
-local iMax = 100000
+local iMax = 20000
 local iTimes = 10
 
-function profileOp(k, v)
-	local b = BitBuffer()
-
+local genInt = function(k)
 	local maxRand = 2 ^ (8 * (2 ^ (k - 1))) - 1
-	local rand = math.random(1, maxRand) - (k > 1 and math.floor(maxRand / 2) or 0)
+	return math.random(1, maxRand) - (k > 1 and math.floor(maxRand / 2) or 0)
+end
+
+local rand = function()
+	return math.random() * 99999
+end
+
+local gens = {
+	genInt, genInt, genInt,
+	rand
+}
+local b = BitBuffer()
+
+function profileOp(k, v)
+	b:Reset()
+	local rand = gens[k](k)
 
 	local write, read = b["Write" .. v], b["Read" .. v]
 
 	local bn1, bn2 = bench(), bench()
+	local cum = {}
+
+	local gU = GLib.BitConverter.FloatToUInt32(rand)
+	local gF = GLib.BitConverter.UInt32ToFloat(gU)
 
 	bn1:Open()
-		for i=1, iMax do write(b, rand) end
+		for i=1, iMax do
+			local o = write(b, rand)
+
+			--[[if o ~= gU then
+				errorf("fuck 1 %s %s", bit.tohex(gU), bit.tohex(o))
+			end]]
+		end
 	bn1:Close()
 
 	b:ResetCursor()
 
 	bn2:Open()
-		for i=1, iMax do read(b) end
+		for i=1, iMax do
+			local n = read(b)
+			if n ~= gF then
+				errorf("fuck 2 %s %s %s", n, rand, gF)
+			end
+		end
 	bn2:Close()
 
 	return bn1:Read() * 1000, bn2:Read() * 1000
@@ -538,15 +574,23 @@ end
 
 jit.flush()
 
-local ops = { "Byte", "Short", "Long" }
+local ops = { false, false, false, --[["Byte", "Short", "Long",]] "Float" }
 local outs, fouts = {}, {}
 
+-- FProfiler.start()
+--[[local b = bench():Open()
 for k,v in ipairs(ops) do
-	profileOp(k, v)
-	proFileOp(k, v)
+	for i=1, 1 do
+		profileOp(4, ops[4])
+		--proFileOp(k, v)
+	end
 end
+b:Close():print()]]
+-- FProfiler.stop()
 
 for k,v in ipairs(ops) do
+	if not v then outs[k] = {0, 0} continue end
+
 	local t1, t2 = 0, 0
 	for i=1, iTimes do
 		local a1, a2 = profileOp(k, v)
@@ -557,7 +601,7 @@ for k,v in ipairs(ops) do
 	outs[k] = {t1, t2}
 end
 
-for k,v in ipairs(ops) do
+--[[for k,v in ipairs(ops) do
 	local t1, t2 = 0, 0
 	for i=1, iTimes do
 		local a1, a2 = proFileOp(k, v)
@@ -566,19 +610,19 @@ for k,v in ipairs(ops) do
 	end
 
 	fouts[k] = {t1, t2}
-end
+end]]
 
 
 
 printf("Ran x%d * %d times:", iMax, iTimes)
 
-for k,v in ipairs(ops) do
+--[[for k,v in ipairs(ops) do
 	local name = "File  :%6s%-6s"
 
 	printf("	%s: %.3fms.", name:format("Write", v), fouts[k][1])
 	printf("	%s: %.3fms.", name:format("Read", v), fouts[k][2])
 	print("")
-end
+end]]
 
 for k,v in ipairs(ops) do
 	local name = "bitbuf:%6s%-6s"
@@ -586,7 +630,7 @@ for k,v in ipairs(ops) do
 	printf("	%s: %.3fms.", name:format("Write", v), outs[k][1])
 	printf("	%s: %.3fms.", name:format("Read", v), outs[k][2])
 
-	local ratio = (fouts[k][1] + fouts[k][2]) / (outs[k][1] + outs[k][2])
+	local ratio = --[[(fouts[k][1] + fouts[k][2]) / ]] (outs[k][1] + outs[k][2])
 	printf("--> %.2fx %s over file", ratio, ratio > 1 and "speedup" or "slowdown")
 	print()
 end
@@ -595,7 +639,7 @@ do return end
 
 
 bn:Open()
-for i=1, 10000000 do
+for i=1, 100000 do
 	nums[i] = rand
 	b:WriteLong(rand)
 end
@@ -604,7 +648,7 @@ bn:Close():print():Reset()
 b:ResetCursor()
 
 bn:Open()
-for i=1, 10000000 do
+for i=1, 100000 do
 	if b:ReadLong() ~= nums[i] then
 		print("epic failure")
 		return
