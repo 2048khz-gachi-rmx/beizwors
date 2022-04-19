@@ -20,11 +20,11 @@ AddCSLuaFile()
 local is_dev = system.IsWindows() and file.Exists("bw.bat", "BASE_PATH")
 
 function game.IsDev()
-	return system.IsWindows()
+	return system.IsWindows() and is_dev
 end
 
 function game.GetServerID()
-	return is_dev and "dev" or "live - EU"
+	return game.IsDev() and "dev" or "live - EU"
 end
 
 __LibName = "libitup"

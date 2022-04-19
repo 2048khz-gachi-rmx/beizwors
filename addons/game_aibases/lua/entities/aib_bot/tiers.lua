@@ -67,7 +67,27 @@ ENT.TierData = {
 		},
 
 		health = 200,
-	}
+	},
+
+	[4] = {
+		models = {
+			"models/player/riot.mdl", "models/player/urban.mdl",
+			"models/player/gasmask.mdl", "models/player/swat.mdl",
+		},
+
+		vars = {
+			ChaseChainDelay = 0,
+			InitialChaseDelay = 0.3,
+
+			LockedShootTime = 0.175,
+			LockedRequiredLostDelay = 2.8,
+			AimSpeed = 400,
+
+			DamageMult = 0.75,
+		},
+
+		health = 300,
+	},
 }
 
 

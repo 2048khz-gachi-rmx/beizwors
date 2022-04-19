@@ -307,7 +307,7 @@ function GM:PlayerNoClip(ply)
 		end
 	end
 
-	return BaseWars.IsDev(ply) -- and Admin and not ply:InRaid()
+	return game.IsDev() or BaseWars.IsDev(ply) -- and Admin and not ply:InRaid()
 
 end
 
