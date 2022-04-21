@@ -14,11 +14,7 @@ ENT.Model = "models/grp/computers/supercomputer_01.mdl"
 ENT.Skin = 0
 ENT.ResearchComputer = true
 
-
-
 function ENT:DerivedDataTables()
-	self:NetworkVar("Int", 1, "Level")
-
 	self:NetworkVar("String", 0, "RSPerk")
 	self:NetworkVar("Int", 2, "RSLevel")
 
