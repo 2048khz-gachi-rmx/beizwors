@@ -1,3 +1,4 @@
+setfenv(1, _G)
 --[[
 	thank you based volvo
 
@@ -53,4 +54,5 @@ function BaseWars.ShouldUseHealth(ent)
 	return ent.IsMediaPlayerEntity
 		or ent:GetClass() == "prop_physics"
 		or ent.IsBaseWars -- more to be added
+		or ent:BW_GetOwner()
 end
