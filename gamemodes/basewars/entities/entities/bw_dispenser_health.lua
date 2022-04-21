@@ -298,18 +298,47 @@ function ENT:CLInit()
 end
 
 function ENT:CheckUsable()
-
 	if self.Time and self.Time + 0.5 > CurTime() then return false end
-
 end
 
-function ENT:PaintStructureInfo(w, y)
-	local add = self.BaseClass.PaintStructureInfo(self, w, y)
-	y = y + add
+local an
+local stimIc
 
-	local tw, th = draw.SimpleText(self:GetStims() .. " stims", "BSB20",
-		w / 2, y, color_white, 1, 5)
-	return add + th
+function ENT:PaintStructureInfo(w, y)
+	an = an or Animatable("hpdisp")
+
+	local txt, ch, max = self:GetChargeText()
+	local font, th1, tw1 = Fonts.PickFont("EXSB", txt, w * 0.7,
+		DarkHUD.Scale * 36, nil, 18)
+
+	local icSz = th1 * 0.875
+	local tx2 = ("%s"):format(self:GetStims())
+	local font2 = Fonts.PickFont("EXSB", txt, w, DarkHUD.Scale * 48, nil, 24)
+	local tw2, th2 = surface.GetTextSizeQuick(tx2, font2)
+	local icPad = 16
+	tw2 = tw2 + icPad + icSz + 4
+
+	local x = math.ceil(w / 2 - (tw1 + tw2) / 2)
+	local add = self:DrawStructureCharge(font, x, y, w)
+	x = x + tw1 + icPad
+
+	self.infoCol = self.infoCol or Colors.LighterGray:Copy()
+
+	if self:GetStims() == 0 then
+		an:LerpColor(self.infoCol, Colors.LighterGray, 0.3, 0, 0.3)
+	else
+		an:LerpColor(self.infoCol, color_white, 0.3, 0, 0.3)
+	end
+
+	local stimIc = stimIc or Icon("https://i.imgur.com/0SwgoHs.png", "adrenaline_shot.png")
+	stimIc:SetColor(self.infoCol)
+	stimIc:Paint(x, y, icSz, icSz)
+
+	x = x + icSz + 4
+
+	draw.SimpleText(tx2, font2, x, y + icSz / 2 - th2 / 2 * 1.125, self.infoCol)
+
+	return add
 end
 
 if SERVER then

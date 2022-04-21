@@ -116,11 +116,14 @@ function Fonts.PickFont(fam, txt, wid, hgt, start_size)
 		local tw = surface.GetTextSize(txt)
 
 		if tw <= wid and sz < hgt then
-			return fam .. sz, sz
+			return fam .. sz, sz, tw
 		end
 	end
 
-	return picked, sz
+	surface.SetFont(picked)
+	local tw = surface.GetTextSize(txt)
+
+	return picked, sz, tw
 end
 
 function Fonts.ClosestSize(h)

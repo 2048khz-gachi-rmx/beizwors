@@ -132,33 +132,57 @@ function ENT:UseFunc(ply)
 	end
 end
 
-function ENT:PaintStructureInfo(w, y)
+function ENT:GetChargeText()
 	local ch, max = self:GetCharge(), self:GetLevelData().MaxCharge or "?"
-	local txt = ("Charge: %d/%s"):format(ch, max)
-	local font, th1 = Fonts.PickFont("EXSB", txt, w * 0.8,
-		DarkHUD.Scale * 36, nil, 16)
+	local txt = ("%d/%s"):format(ch, max)
 
-	local totalH = 0
+	return txt, ch, max
+end
+
+function ENT:DrawStructureCharge(font, tx, y, w)
+	local txt, ch, max = self:GetChargeText()
 	local tw, th = surface.GetTextSizeQuick(txt, font)
 
-	local tx = w / 2 - tw / 2
+	local totalH = 0
+
+	local ic = Icons.Electricity
+	local icSz = math.floor(th * .875)
 
 	if self.UseFractionCharge and (not isnumber(ch) or ch ~= max) then
 		local txt2 = (" (%d%%)"):format( (ch % 1) * 100 )
-		local font2, sz2 = Fonts.PickFont("EXM", txt2, w * 0.7,
+		local font2, sz2 = Fonts.PickFont("EXM", txt2, (w or 64 / 0.7) * 0.7,
 			DarkHUD.Scale * 26, nil, 16)
 
-		tx = tx - surface.GetTextSizeQuick(txt2, font2) / 2
-		local tw, th = draw.SimpleText(txt, font, tx, y - th * 0.25, color_white, 0, 5)
+		tx = math.ceil(tx - surface.GetTextSizeQuick(txt2, font2) / 2 - icSz / 2 - 4)
+
+		ic:Paint(tx, y, icSz, icSz)
+		tx = tx + icSz + 2
+
+		local tw, th = draw.SimpleText(txt, font, tx, y - th * 0.125, color_white, 0, 5)
 		tx = tx + tw
 
-		local _, th2 = draw.SimpleText(txt2, font2, tx, y + th * 0.65 - sz2,
+		local _, th2 = draw.SimpleText(txt2, font2, tx, y + th * 0.75 - sz2,
 			Colors.LighterGray, 0, 5)
-		totalH = totalH + th * 0.75
+		totalH = totalH + th
 	else
-		local tw, th = draw.SimpleText(txt, font, tx, y - th * 0.25, color_white, 0, 5)
-		totalH = totalH + th * 0.75
+		tx = math.ceil(tx - icSz / 2 - 4)
+		ic:Paint(tx, y, icSz, icSz)
+		tx = tx + icSz + 2
+
+		local tw, th = draw.SimpleText(txt, font, tx, y - th * 0.125, color_white, 0, 5)
+		totalH = totalH + th
 	end
 
+	return totalH
+end
+
+function ENT:PaintStructureInfo(w, y)
+	local txt = self:GetChargeText()
+	local font, th1, tw = Fonts.PickFont("EXSB", txt, w * 0.8,
+		DarkHUD.Scale * 36, nil, 16)
+
+	local tx = w / 2 - tw / 2
+
+	local totalH = self:DrawStructureCharge(font, tx, y, w)
 	return totalH
 end
