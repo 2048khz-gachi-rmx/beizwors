@@ -5,7 +5,9 @@ ArcCW.UD.ADSReload = function(wep)
     local fr = wep.VM_SightsCurrent or 0
 
     vm:SetPoseParameter("sights", fr) -- thanks fesiug
-    vm:InvalidateBoneCache()
+    if CLIENT then
+    	vm:InvalidateBoneCache()
+    end
 end
 
 -- right forward up
