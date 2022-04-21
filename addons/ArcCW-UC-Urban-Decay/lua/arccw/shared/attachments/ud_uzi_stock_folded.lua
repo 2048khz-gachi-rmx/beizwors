@@ -8,9 +8,11 @@ att.Desc_Cons = {
 att.Desc_Neutrals = {
 }
 att.Slot = "ud_uzi_stock"
+att.AttachSound = "arccw_uc/common/stockslide.ogg"
 
 att.AutoStats = true
 att.Free = true
+att.IgnorePickX = true
 att.SortOrder = 2
 
 att.Mult_Recoil = 1.15

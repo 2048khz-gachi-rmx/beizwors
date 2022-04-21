@@ -58,7 +58,7 @@ end
 
 SWEP.ViewModel = "models/weapons/arccw/c_ud_m16.mdl"
 SWEP.WorldModel = "models/weapons/arccw/c_ud_m16.mdl"
-SWEP.ViewModelFOV = 70
+SWEP.ViewModelFOV = 80
 SWEP.AnimShoot = ACT_HL2MP_GESTURE_RANGE_ATTACK_AR2
 
 -- Damage --
@@ -66,9 +66,9 @@ SWEP.AnimShoot = ACT_HL2MP_GESTURE_RANGE_ATTACK_AR2
 SWEP.Damage = 34 -- 3 shot kill
 SWEP.DamageMin = 20 -- 5 shot kill
 SWEP.RangeMin = 50
-SWEP.Range = 400 -- 4 shot until ~250m
+SWEP.Range = 350 -- 4 shot until ~250m
 
-SWEP.Penetration = 12
+SWEP.Penetration = 14
 SWEP.DamageType = DMG_BULLET
 SWEP.ShootEntity = nil
 SWEP.MuzzleVelocity = 960
@@ -144,6 +144,7 @@ SWEP.HeatDissipation = 10
 SWEP.HeatDelayTime = 3
 
 SWEP.MalfunctionMean = 200
+SWEP.MalfunctionTakeRound = false
 
 -- Speed multipliers --
 
@@ -167,7 +168,7 @@ SWEP.HoldtypeActive = "ar2"
 SWEP.HoldtypeSights = "rpg"
 
 SWEP.IronSightStruct = {
-     Pos = Vector(-2.81, -3, 0.85),
+     Pos = Vector(-2.81, 6, 0.85),
      Ang = Angle(0, 0, 0),
      Magnification = 1.1,
      SwitchToSound = "",
@@ -207,11 +208,19 @@ SWEP.WorldModelOffset = {
 local path = ")^weapons/arccw_ud/m16/"
 local common = ")^/arccw_uc/common/"
 SWEP.FirstShootSound = path .. "first.ogg"
+--SWEP.ShootSound = {path .. "fire-01.ogg", path .. "fire-02.ogg", path .. "fire-03.ogg", path .. "fire-04.ogg", path .. "fire-05.ogg", path .. "fire-06.ogg"} -- Maybe Not Placeholder
+--SWEP.DistantShootSound = {path .. "fire-dist-01.ogg", path .. "fire-dist-02.ogg", path .. "fire-dist-03.ogg", path .. "fire-dist-04.ogg", path .. "fire-dist-05.ogg", path .. "fire-dist-06.ogg"} -- Maybe Not Placeholder
 SWEP.ShootSound = {path .. "auto1.ogg", path .. "auto2.ogg", path .. "auto3.ogg", path .. "auto4.ogg"}
 SWEP.DistantShootSound = path .. "dist.ogg"
 SWEP.ShootSoundSilenced = path .. "fire_sup.ogg"
 SWEP.DistantShootSoundSilenced = common .. "sup_tail.ogg"
 SWEP.ShootDrySound = path .. "dryfire.ogg"
+
+SWEP.DistantShootSoundOutdoors = nil
+SWEP.DistantShootSoundIndoors = nil
+SWEP.DistantShootSoundOutdoorsVolume = 0.2
+SWEP.DistantShootSoundIndoorsVolume = 1
+SWEP.Hook_AddShootSound = ArcCW.UD.InnyOuty
 
 -- Bodygroups --
 
@@ -267,7 +276,6 @@ local CAL_556 = 0
 local CAL_9MM = 1
 local CAL_BLK = 2
 local CAL_BEO = 3
-local CAL_12G = 4
 
 local receiver_lookup = {
     ["default"]     = {FCG_3BST, CAL_556},
@@ -278,7 +286,6 @@ local receiver_lookup = {
     ["300blk"]      = {FCG_AUTO, CAL_BLK},
     ["9mm"]         = {FCG_AUTO, CAL_9MM},
 
-    ["usas"]        = {FCG_SEMI, CAL_12G},
     ["50beo"]       = {FCG_SEMI, CAL_BEO},
     ["semi"]        = {FCG_SEMI, CAL_556},
 
@@ -347,9 +354,6 @@ SWEP.Hook_NameChange = function(wep, name)
             alt = "-15"
             post = " .300 BLK"
             wep.Trivia_Desc = "Aftermarket automatic variant of the M16 rifle. The .300 Blackout cartridge has a ballistic performance more akin to the 7.62x39mm Soviet cartridge, with a similarly sized projectile but shorter effective range."
-        elseif r_cal == CAL_12G then
-            model = "USAS"
-            alt = "-12"
         -------------------------------
         -- Bolt/Semi Variants
         -------------------------------
@@ -494,13 +498,10 @@ SWEP.AttachmentElements = {
         VMBodygroups = {{ind = 2, bg = 5}},
     },
     ["ud_m16_9mm_mag_32"] = {
-        VMBodygroups = {{ind = 2, bg = 8}},
-    },
-    ["ud_m16_usas_mag_20"] = {
-        VMBodygroups = {{ind = 2, bg = 7}},
+        VMBodygroups = {{ind = 2, bg = 6}},
     },
     ["ud_m16_mag_50beo"] = {
-        VMBodygroups = {{ind = 2, bg = 10}},
+        VMBodygroups = {{ind = 2, bg = 8}},
     },
 
     ["upper_flat"] = {
@@ -514,45 +515,45 @@ SWEP.AttachmentElements = {
     },
     ["upper_classic"] = {
         VMBodygroups = {
-            {ind = 1, bg = 5},
+            {ind = 1, bg = 3},
         },
     },
 
     ["stock_231_ex"] = {
-        VMBodygroups = {{ind = 7, bg = 2}},
+        VMBodygroups = {{ind = 7, bg = 1}},
     },
     ["stock_231_in"] = {
-        VMBodygroups = {{ind = 7, bg = 3}},
+        VMBodygroups = {{ind = 7, bg = 2}},
     },
     ["stock_231_tube"] = {
-        VMBodygroups = {{ind = 7, bg = 4}},
+        VMBodygroups = {{ind = 7, bg = 3}},
     },
     ["stock_607_ex"] = {
-        VMBodygroups = {{ind = 7, bg = 5}},
+        VMBodygroups = {{ind = 7, bg = 4}},
     },
     ["stock_607_in"] = {
-        VMBodygroups = {{ind = 7, bg = 6}},
+        VMBodygroups = {{ind = 7, bg = 5}},
     },
     ["stock_608"] = {
-        VMBodygroups = {{ind = 7, bg = 7}},
+        VMBodygroups = {{ind = 7, bg = 6}},
     },
     ["stock_carbine_ex"] = {
-        VMBodygroups = {{ind = 7, bg = 8}},
+        VMBodygroups = {{ind = 7, bg = 7}},
     },
     ["stock_carbine_in"] = {
-        VMBodygroups = {{ind = 7, bg = 9}},
+        VMBodygroups = {{ind = 7, bg = 8}},
     },
     ["stock_wood"] = {
-        VMBodygroups = {{ind = 7, bg = 10}},
+        VMBodygroups = {{ind = 7, bg = 9}},
     },
     ["stock_adar"] = {
         VMBodygroups = {
-            {ind = 7, bg = 11},
+            {ind = 7, bg = 10},
             {ind = 8, bg = 4}
         },
     },
     ["stock_ru556"] = {
-        VMBodygroups = {{ind = 7, bg = 12}},
+        VMBodygroups = {{ind = 7, bg = 11}},
     },
     ["grip_ergo"] = {
         VMBodygroups = {{ind = 8, bg = 1}},
@@ -582,7 +583,7 @@ SWEP.AttachmentElements = {
     ["mount_11"] = {
         AttPosMods = {
             [6] = {
-                vpos = Vector(1, 0, 17.9),
+                vpos = Vector(1, -0.1, 17.9),
                 vang = Angle(90, 0, 0),
             },
         },
@@ -595,7 +596,7 @@ SWEP.AttachmentElements = {
         },
         AttPosMods = {
             [3] = {
-                vpos = Vector(0, -0.05, 24.5),
+                vpos = Vector(0, -0.07, 25.4),
                 vang = Angle(90, 0, -90),
             },
         }
@@ -607,7 +608,7 @@ SWEP.AttachmentElements = {
         },
         AttPosMods = {
             [3] = {
-                vpos = Vector(0, -0.05, 21.5),
+                vpos = Vector(0, -0.07, 21.3),
                 vang = Angle(90, 0, -90),
             },
         }
@@ -619,11 +620,11 @@ SWEP.AttachmentElements = {
         },
         AttPosMods = {
             [3] = {
-                vpos = Vector(0, 0, 19.75),
+                vpos = Vector(0, -0.07, 21.3),
                 vang = Angle(90, 0, -90),
             },
             [6] = {
-                vpos = Vector(1, 0, 17.9),
+                vpos = Vector(1.15, 0, 17.9),
                 vang = Angle(90, 0, 0),
             },
         }
@@ -639,7 +640,7 @@ SWEP.AttachmentElements = {
                 vang = Angle(90, 0, -90),
             },
             [6] = {
-                vpos = Vector(1.1, 0, 20),
+                vpos = Vector(1.41, -.1, 20),
                 vang = Angle(90, 0, 0),
             },
         }
@@ -654,7 +655,7 @@ SWEP.AttachmentElements = {
                 vang = Angle(90, 0, -90),
             },
             [6] = {
-                vpos = Vector(-1.154, -.2, 14),
+                vpos = Vector(-1.41, -.2, 14),
                 vang = Angle(90, 0, 180),
             },
         },
@@ -713,11 +714,11 @@ SWEP.AttachmentElements = {
         },
         AttPosMods = {
             [3] = {
-                vpos = Vector(0, 0, 25),
+                vpos = Vector(0, -0.05, 25.58),
                 vang = Angle(90, 0, -90),
             },
             [6] = { -- also has no rail
-                vpos = Vector(0, 0.8, 22),
+                vpos = Vector(0, 0.9, 22.2),
                 vang = Angle(90, 0, -90),
             },
         }
@@ -752,7 +753,7 @@ SWEP.AttachmentElements = {
         },
         AttPosMods = { -- no rail, just pretend it's mounted to something
             [6] = {
-                vpos = Vector(0, 0.5, 17.5),
+                vpos = Vector(0, 0.7, 17.5),
                 vang = Angle(90, 0, -90),
             },
         }
@@ -823,27 +824,6 @@ SWEP.AttachmentElements = {
             {ind = 5, bg = 0},
         }
     },
-    ["hg_usas"] = {
-        VMBodygroups = {
-            {ind = 0, bg = 1},
-            {ind = 1, bg = 2},
-            {ind = 4, bg = 7},
-            {ind = 5, bg = 1},
-            {ind = 2, bg = 6},
-        },
-        AttPosMods = {
-            --[[
-            [1] = {
-                vpos = Vector(0, -4, 3),
-                vang = Angle(90, 0, -90),
-            },
-            ]]
-            [6] = {
-                vpos = Vector(0, 0.8, 20),
-                vang = Angle(90, 0, -90),
-            },
-        }
-    },
 }
 
 -- Animations --
@@ -854,6 +834,23 @@ local rottle = {common .. "cloth_1.ogg", common .. "cloth_2.ogg", common .. "clo
 local ratel = {common .. "rattle1.ogg", common .. "rattle2.ogg", common .. "rattle3.ogg"}
 
 SWEP.Animations = {
+    ["ready"] = {
+        Source = "fix",
+        Time = 45 / 30,
+        LHIK = true,
+        LHIKIn = 0.3,
+        LHIKEaseIn = 0.4,
+        LHIKEaseOut = 0.15,
+        LHIKOut = 0.4,
+        SoundTable = {
+            {s = common .. "raise.ogg", t = 0},
+            {s = common .. "rattle.ogg", t = 0.2},
+            {s = path .. "chback.ogg",   t = 0.15},
+            {s = common .. "cloth_4.ogg",  t = 0.5},
+            {s = path .. "chamber.ogg",  t = 0.5},
+        },
+        ProcDraw = true,
+    },
     ["idle"] = {
         Source = "idle",
     },
@@ -896,26 +893,11 @@ SWEP.Animations = {
         Source = "fire",
         Time = 13 / 30,
         ShellEjectAt = 0.01,
-        SoundTable = {
-            {s = path .. "mech.ogg", t = 0}, -- Temporary
-        },
+        SoundTable = {{ s = {path .. "mech-01.ogg", path .. "mech-02.ogg", path .. "mech-03.ogg", path .. "mech-04.ogg", path .. "mech-05.ogg", path .. "mech-06.ogg"}, t = 0 }},
     },
     ["fire_empty"] = {
         Source = "fire_empty",
         Time = 13 / 30,
-        ShellEjectAt = 0.01,
-        SoundTable = {
-            {s = path .. "mech_last.ogg", t = 0}, -- Temporary
-        },
-    },
-    ["fire_usas"] = {
-        Source = "fire_usas",
-        Time = 20 / 30,
-        ShellEjectAt = 0.01,
-    },
-    ["fire_empty_usas"] = {
-        Source = "fire_empty_usas",
-        Time = 20 / 30,
         ShellEjectAt = 0.01,
         SoundTable = {
             {s = path .. "mech_last.ogg", t = 0}, -- Temporary
@@ -1022,6 +1004,7 @@ SWEP.Animations = {
             {s = ratel, t = 0.25},
             {s = path .. "magout.ogg", 	 t = 0.335},
             {s = ratel, t = 0.5},
+            {s = common .. "magpouch.ogg", t = 0.7},
             {s = path .. "magin.ogg",    t = 1.05},
             {s = ratel, t = 1.1},
             {s = rottle,  t = 1.15},
@@ -1045,6 +1028,7 @@ SWEP.Animations = {
             {s = ratel, t = 0.25},
             {s = path .. "magout.ogg", 	 t = 0.335},
             {s = ratel, t = 0.5},
+            {s = common .. "magpouch.ogg", t = 0.6},
             {s = common .. "rifle_magdrop.ogg",  t = 0.8},
             {s = path .. "magin.ogg",    t = 1.05},
             {s = ratel, t = 1.1},
@@ -1072,6 +1056,7 @@ SWEP.Animations = {
         SoundTable = {
             {s = rottle,  t = 0.0},
             {s = path .. "magout.ogg", 	 t = 0.35},
+            {s = common .. "magpouch.ogg", t = 0.7},
             {s = rottle,  t = 0.75},
             {s = path .. "magin.ogg",    t = 0.95},
             {s = rottle,  t = 1.1},
@@ -1092,6 +1077,7 @@ SWEP.Animations = {
         SoundTable = {
             {s = rottle, t = 0.0},
             {s = path .. "magout.ogg", 	 t = 0.2},
+            {s = common .. "magpouch.ogg", t = 0.6},
             {s = rottle, t = 0.75},
             {s = common .. "rifle_magdrop.ogg",  t = 0.8},
             {s = path .. "magin.ogg",    t = 0.95},
@@ -1117,6 +1103,7 @@ SWEP.Animations = {
         SoundTable = {
             {s = rottle, t = 0.0},
             {s = path .. "magout.ogg", 	 t = 0.35},
+            {s = common .. "magpouch.ogg", t = 0.7},
             {s = rottle, t = 0.75},
             {s = path .. "magin.ogg",    t = 1.05},
             {s = rottle, t = 1.1},
@@ -1137,6 +1124,7 @@ SWEP.Animations = {
         SoundTable = {
             {s = rottle,  t = 0.0},
             {s = path .. "magout.ogg", 	 t = 0.35},
+            {s = common .. "magpouch.ogg", t = 0.6},
             {s = rottle,  t = 0.75},
             {s = common .. "rifle_magdrop.ogg",  t = 0.8},
             {s = path .. "magin.ogg",    t = 1.05},
@@ -1162,6 +1150,7 @@ SWEP.Animations = {
         SoundTable = {
             {s = rottle, t = 0.0},
             {s = path .. "magout.ogg", 	 t = 0.35},
+            {s = common .. "magpouch.ogg", t = 0.7},
             {s = rottle, t = 0.75},
             {s = path .. "magin.ogg",    t = 1.1},
             {s = rottle, t = 1.1},
@@ -1182,6 +1171,7 @@ SWEP.Animations = {
         SoundTable = {
             {s = rottle, t = 0.0},
             {s = path .. "magout.ogg", 	 t = 0.35},
+            {s = common .. "magpouch.ogg", t = 0.6},
             {s = rottle, t = 0.75},
             {s = common .. "rifle_magdrop.ogg",  t = 0.8},
             {s = path .. "magin.ogg",    t = 1.1},
@@ -1256,10 +1246,12 @@ SWEP.Animations = {
         LHIKOut = 0.5,
         SoundTable = {
             {s = rottle, t = 0.0},
+            {s = common .. "magpouch.ogg", t = 0.15},
             {s = "weapons/arccw_ud/uzi/" .. "magout.ogg", 	 t = 16 / 30},
             {s = rottle, t = 0.75},
             {s = "weapons/arccw_ud/uzi/" .. "magin.ogg",    t = 27 / 30},
             {s = rottle, t = 1.1},
+            {s = common .. "magpouchin.ogg", t = 1.55},
             {s = common .. "shoulder.ogg", t = 1.93},
         },
     },
@@ -1277,6 +1269,7 @@ SWEP.Animations = {
         SoundTable = {
             {s = rottle, t = 0.0},
             {s = "weapons/arccw_ud/uzi/" .. "magout.ogg", 	 t = 0.2},
+            {s = common .. "magpouch.ogg", t = 0.65},
             {s = rottle, t = 0.75},
             {s = "weapons/arccw_ud/uzi/" .. "magin.ogg",    t = 0.98},
             {s = rottle, t = 1.39},
@@ -1284,68 +1277,20 @@ SWEP.Animations = {
             {s = common .. "shoulder.ogg", t = 2.15},
         },
     },
-
-    -- 20 USAS Reloads --
-
-    ["reload_usas_20"] = {
-        Source = "reload_empty_usas_20",
-        TPAnim = ACT_HL2MP_GESTURE_RELOAD_AR2,
-        Time = 71 / 30,
-        MinProgress = 2.5,
-        LastClip1OutTime = 0.7,
-        LHIK = true,
-        LHIKIn = 0.4,
-        LHIKEaseIn = 0.4,
-        LHIKEaseOut = 0.15,
-        LHIKOut = 0.4,
-        SoundTable = {
-            {s = rottle, t = 0.0},
-            {s = path .. "magout.ogg", 	 t = 0.2},
-            {s = rottle, t = 0.75},
-            {s = path .. "magin.ogg",    t = 1.05},
-            {s = rottle, t = 1.75},
-            {s = path .. "usas_chback.ogg",   t = 1.9},
-            {s = common .. "cloth_4.ogg",  t = 2.0},
-            {s = path .. "usas_chamber.ogg",  t = 2.2},
-            {s = common .. "shoulder.ogg", t = 2.6},
-        },
-    },
-    ["reload_empty_usas_20"] = {
-        Source = "reload_empty_usas_20",
-        TPAnim = ACT_HL2MP_GESTURE_RELOAD_AR2,
-        Time = 86 / 30,
-        MinProgress = 2.5,
-        LastClip1OutTime = 0.7,
-        LHIK = true,
-        LHIKIn = 0.4,
-        LHIKEaseIn = 0.4,
-        LHIKEaseOut = 0.15,
-        LHIKOut = 0.4,
-        SoundTable = {
-            {s = rottle, t = 0.0},
-            {s = path .. "magout.ogg", 	 t = 0.2},
-            {s = rottle, t = 0.75},
-            {s = path .. "magin.ogg",    t = 1.05},
-            {s = rottle, t = 1.75},
-            {s = path .. "usas_chback.ogg",   t = 1.9},
-            {s = common .. "cloth_4.ogg",  t = 2.0},
-            {s = path .. "usas_chamber.ogg",  t = 2.14},
-            {s = common .. "shoulder.ogg", t = 2.55},
-        },
-    },
 }
 
 SWEP.Hook_ModifyBodygroups = function(wep, data)
     local vm = data.vm
     if !IsValid(vm) then return end
-    local flip = wep:GetBuff_Override("M16Sights") or 0
     local retro = wep:GetBuff_Override("TopMount")
     local taclaser = wep:GetBuff_Override("TacLaserPos")
+    local rs = wep:GetBuff_Override("IronSight")
 
     local fs = wep.Attachments[14].Installed == "ud_m16_charm_fs"
 
     local hg = string.Replace(wep.Attachments[2].Installed or "default", "ud_m16_barrel_", "")
     local blen = (barrel_lookup[hg] or barrel_lookup["default"])[1]
+    local muzz = wep.Attachments[3].Installed or hg == "sd"
 
     -- Receiver top and front sight
     if wep.Attachments[1].Installed then
@@ -1355,7 +1300,7 @@ SWEP.Hook_ModifyBodygroups = function(wep, data)
         else
             -- Flat rail
             vm:SetBodygroup(1, 1)
-            vm:SetBodygroup(3, 3)
+            vm:SetBodygroup(3, 2)
         end
     else
         -- no rails
@@ -1364,13 +1309,13 @@ SWEP.Hook_ModifyBodygroups = function(wep, data)
 
     -- .50 Beowulf magazines
     if wep.Attachments[4].Installed == "ud_m16_receiver_50beo" and !wep.Attachments[9].Installed then
-        vm:SetBodygroup(2, 10)
+        vm:SetBodygroup(2, 8)
     end
 
     -- Gas block
     if has_tag(hg, BTAG_NOFS) then
         vm:SetBodygroup(6, 5)
-    elseif wep.Attachments[1].Installed and !retro and (!fs and flip == 0) then
+    elseif wep.Attachments[1].Installed and !retro and !fs and !rs then
         -- this is handled after elements sets bodygroup so we can do this
         vm:SetBodygroup(6, (vm:GetBodygroup(6) or 0) + 1)
     end
@@ -1379,13 +1324,26 @@ SWEP.Hook_ModifyBodygroups = function(wep, data)
     vm:SetBodygroup(9, (wep.Attachments[5].Installed and !has_tag(hg, BTAG_RIS)) and 1 or 0)
 
     -- Flip-up sights
-    vm:SetBodygroup(12, flip)
+    --vm:SetBodygroup(12, flip)
 
     -- Tactical clamp
     if wep.Attachments[6].Installed and !has_tag(hg, BTAG_RIS) and !has_tag(hg, BTAG_NOMNT) and !taclaser then
         vm:SetBodygroup(10, len_clamp_lookup[blen])
     else
         vm:SetBodygroup(10, 0)
+    end
+
+    -- Default flash hider
+    if muzz then
+        vm:SetBodygroup(11,0)
+    else
+        if blen == BLEN_10 then
+            vm:SetBodygroup(11,3)
+        elseif blen == BLEN_14 then
+            vm:SetBodygroup(11,2)
+        else
+            vm:SetBodygroup(11,1)
+        end
     end
 end
 
@@ -1394,14 +1352,15 @@ SWEP.Attachments = {
         PrintName = "Optic",
         DefaultAttName = "Iron Sights",
         InstalledEles = {"upper_flat"},
-        Slot = {"optic","sniper_optic","ud_m16_rs"},
+        Slot = {"optic","optic_sniper","ud_m16_rs"},
         Bone = "m16_parent",
         Offset = {
             vpos = Vector(0, -1.75, 3),
             vang = Angle(90, 0, -90),
         },
-        VMScale = Vector(1, 1, 1),
-        ExtraSightDist = 8,
+        VMScale = Vector(1.1, 1.1, 1.1),
+        WMScale = Vector(1.1, 1.1, 1.1),
+        ExtraSightDist = 4,
         SlideAmount = {
             vmin = Vector(0, -1.75, 3 - 2),
             vmax = Vector(0, -1.75, 3 + 2),
@@ -1417,7 +1376,6 @@ SWEP.Attachments = {
             vpos = Vector(2.8, -4.2, -11.5),
             vang = Angle(90, 0, -90),
         },
-        ExcludeFlags = {"m16_usas"},
     },
     {
         PrintName = "Muzzle",
@@ -1427,10 +1385,10 @@ SWEP.Attachments = {
         VMScale = Vector(1.25, 1.25, 1.25),
         WMScale = VMScale,
         Offset = {
-            vpos = Vector(0.025, -0.05, 30.75),
+            vpos = Vector(0.025, -0.05, 30.85),
             vang = Angle(90, 0, -90),
         },
-        ExcludeFlags = {"sd", "m16_usas", "m16_stub"},
+        ExcludeFlags = {"sd", "m16_stub"},
     },
     {
         PrintName = "Receiver",
@@ -1481,7 +1439,6 @@ SWEP.Attachments = {
         Slot = {"ud_m16_stock"},
         DefaultAttName = "Full Stock",
         DefaultAttIcon = Material("entities/att/acwatt_ud_m16_stock_default.png", "smooth mips"),
-        ExcludeFlags = {"m16_usas"},
     },
     {
         PrintName = "Magazine",
@@ -1492,6 +1449,7 @@ SWEP.Attachments = {
     {
         PrintName = "Ammo Type",
         DefaultAttName = "\"FMJ\" Full Metal Jacket",
+        DefaultAttIcon = Material("entities/att/arccw_uc_ammo_generic.png", "mips smooth"),
         Slot = "uc_ammo",
     },
     {

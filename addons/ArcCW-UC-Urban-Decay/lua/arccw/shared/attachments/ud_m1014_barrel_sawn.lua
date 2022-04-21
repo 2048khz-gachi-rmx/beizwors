@@ -24,6 +24,8 @@ att.Mult_SpeedMult = 1.05
 att.Mult_ShootSpeedMult = 1.2
 att.Mult_RPM = 240 / 220
 
+att.Mult_HipDispersion = 0.75
+
 att.Add_BarrelLength = -6
 
 att.ActivateElements = {"ud_autoshotgun_barrel_sawnoff"}
@@ -34,3 +36,5 @@ att.A_Hook_Add_SightsDispersion = function(wep, data)
         data.add = data.add + 50
     end
 end
+
+att.Ignore = true

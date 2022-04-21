@@ -63,11 +63,11 @@ SWEP.WorldModelOffset = {
 -- Damage parameters --
 
 SWEP.Damage = 20 -- 5 pellets to kill
-SWEP.DamageMin = 13 -- land all 8 pellets to kill
+SWEP.DamageMin = 13 -- 8 pellets to kill
 SWEP.Range = 50
 SWEP.RangeMin = 5
 SWEP.Num = 8
-SWEP.Penetration = 1
+SWEP.Penetration = 2
 SWEP.DamageType = DMG_BUCKSHOT
 SWEP.ShootEntity = nil
 SWEP.MuzzleVelocity = 200
@@ -153,8 +153,8 @@ SWEP.HoldtypeActive = "ar2"
 SWEP.HoldtypeSights = "rpg"
 
 SWEP.IronSightStruct = {
-     Pos = Vector(-2.99, -1, 2),
-     Ang = Angle(0, 0, 0),
+     Pos = Vector(-3.04, -1.5, 2),
+     Ang = Angle(0.1, 0, 0),
      Magnification = 1.1,
      SwitchToSound = "",
 }
@@ -184,6 +184,23 @@ SWEP.ShootDrySound = path .. "dryfire.ogg"
 SWEP.Hook_Think = ArcCW.UD.ADSReload
 
 SWEP.Animations = {
+    ["ready"] = {
+        Source = "sgreload_finish_empty",
+        Time = 37 / 30,
+        LHIK = true,
+        LHIKIn = 0,
+        LHIKEaseOut = 1.2,
+        LHIKOut = 1.4,
+        SoundTable = {
+            {s = common .. "raise.ogg", t = 0},
+            {s = common .. "rattle.ogg", t = 0.2},
+            {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.5},
+            {s = path .. "rack_1.ogg",  t = 0.4},
+            {s = path .. "rack_2.ogg",  t = 0.6},
+            {s = common .. "shoulder.ogg",  t = 0.9},
+        },
+        ProcDraw = true,
+    },
     ["idle"] = {
         Source = "idle",
     },
@@ -225,6 +242,22 @@ SWEP.Animations = {
             {s = path .. "eject.ogg",  t = 0.075},
             {s = path .. "rack_2.ogg",  t = 0.2},
         },
+    },
+    ["fix"] = {
+        Source = "fix",
+        Time = 77 / 30,
+        ShellEjectAt = 1.9, // zenit pls sound this :DDD
+        SoundTable = {
+            {s = path .. "eject.ogg", t = 0, v = 25},
+            {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.5},
+            {s = common .. "pistol_rattle_2.ogg",  t = .8},
+            {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 1},
+            {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 1.5},
+            {s = path .. "eject.ogg",  t = 1.7},
+            {s = path .. "rack_1.ogg",  t = 1.825},
+            {s = path .. "eject.ogg",  t = 1.9},
+            {s = path .. "rack_2.ogg",  t = 2.025},
+        }
     },
     ["sgreload_start"] = {
         Source = "sgreload_start",
@@ -308,6 +341,8 @@ SWEP.BulletBones = {
     [0] = "870_shell1",
 }
 
+SWEP.DefaultSkin = 1
+
 -- Bodygroups --
 
 SWEP.AttachmentElements = {
@@ -318,10 +353,10 @@ SWEP.AttachmentElements = {
         VMBodygroups = {{ind = 6, bg = 1}},
     },
     ["ud_870_slide_long"] = {
-        VMBodygroups = {{ind = 6, bg = 3}},
+        VMBodygroups = {{ind = 6, bg = 2}},
     },
     ["ud_870_slide_poly"] = {
-        VMBodygroups = {{ind = 6, bg = 2}},
+        VMBodygroups = {{ind = 6, bg = 3}},
     },
     ["ud_shotgun_rail_fg"] = {
         VMBodygroups = {{ind = 3, bg = 1}},
@@ -375,18 +410,23 @@ SWEP.AttachmentElements = {
     ["ud_870_stock_raptor"] = {
         VMBodygroups = {{ind = 4, bg = 3}},
     },
+
+    ["ud_870_skin_dirty"] = {
+        VMSkin = 0
+    },
 }
 
 SWEP.Attachments = {
     {
         PrintName = "Optic",
         DefaultAttName = "Iron Sights",
-        Slot = {"optic_lp","optic","sniper_optic"},
+        Slot = {"optic_lp","optic","optic_sniper"},
         Bone = "870_parent",
         Offset = {
             vpos = Vector(0, -1.8, 3),
             vang = Angle(90, 2, -90),
         },
+        VMScale = Vector(1.15,1.15,1.15),
     },
     {
         PrintName = "Barrel",
@@ -449,6 +489,7 @@ SWEP.Attachments = {
     {
         PrintName = "Ammo Type",
         DefaultAttName = "\"BUCK\" #00 Buckshot",
+        DefaultAttIcon = Material("entities/att/arccw_uc_ammo_shotgun_generic.png", "mips smooth"),
         Slot = "ud_ammo_shotgun",
     },
     {
@@ -471,6 +512,12 @@ SWEP.Attachments = {
             vang = Angle(90, 0, -90),
         },
     },
+    {
+        PrintName = "Skin",
+        Slot = "ud_870_skin",
+        DefaultAttName = "Polished Steel",
+        FreeSlot = true
+    }
 }
 
 local lookup_barrel = {

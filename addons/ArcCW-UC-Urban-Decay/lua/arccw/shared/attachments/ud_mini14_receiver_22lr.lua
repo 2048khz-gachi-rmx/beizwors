@@ -27,13 +27,14 @@ att.Mult_Range = 0.5
 att.Mult_Recoil = 0.25
 att.Mult_VisualRecoilMult = 0.25
 att.Mult_RPM = 1000 / 540
-att.Mult_Penetration = 0.1
+att.Mult_Penetration = 2 / 14
 att.Mult_ShootSpeedMult = 1.2
 
 att.Override_ClipSize = 15
 
 att.ActivateElements = {"ud_mini14_mag_15_22lr", "ud_mini14_receiver_22lr"}
-att.GivesFlags = {"mini14_22lr"}
+att.GivesFlags = {"mini14_22lr","cal_subsonic"}
+att.ExcludeFlags = {"powder_subsonic"}
 
 att.Override_Ammo = "plinking"
 att.Override_Trivia_Calibre = ".22 Long Rifle"

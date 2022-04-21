@@ -22,7 +22,7 @@ SWEP.TracerWidth = 2
 
 -- Fake name --
 
-SWEP.PrintName = "STAP-9"
+SWEP.PrintName = "IAL-9"
 
 -- True name --
 
@@ -31,7 +31,7 @@ SWEP.TrueName = "Uzi"
 -- Trivia --
 
 SWEP.Trivia_Class = "Submachine Gun"
-SWEP.Trivia_Desc = "Submachine gun developed after the second world war. Its ergonomic design, low cost, reliability, and great handling made it popular among militaries, police forces, and private security firms worldwide. Its low recoil and limited range makes the weapon good at hip firing in close quarters."
+SWEP.Trivia_Desc = "Revolutionary submachine gun developed to arm a young State of Israel following the Second World War. Its ergonomic design, low cost, reliability, and great handling made it popular among militaries, police forces, and private security firms worldwide.\n\nIts low recoil and limited range make the weapon good at hip firing in close quarters."
 SWEP.Trivia_Manufacturer = "IAL Metal Industries"
 SWEP.Trivia_Calibre = "9x19mm Parabellum"
 SWEP.Trivia_Mechanism = "Open Bolt"
@@ -53,7 +53,7 @@ end
 
 SWEP.ViewModel = "models/weapons/arccw/c_ud_uzi.mdl"
 SWEP.WorldModel = "models/weapons/arccw/c_ud_uzi.mdl"
-SWEP.ViewModelFOV = 60
+SWEP.ViewModelFOV = 70
 SWEP.AnimShoot = ACT_HL2MP_GESTURE_RANGE_ATTACK_AR2
 
 -- Damage --
@@ -63,7 +63,7 @@ SWEP.DamageMin = 17 -- 6 shot long range kill
 SWEP.RangeMin = 15
 SWEP.Range = 100 -- 4 shot until ~35m
 
-SWEP.Penetration = 3
+SWEP.Penetration = 6
 SWEP.DamageType = DMG_BULLET
 SWEP.ShootEntity = nil
 SWEP.MuzzleVelocity = 400
@@ -121,7 +121,7 @@ SWEP.ReloadInSights = true
 
 -- NPC --
 
-SWEP.NPCWeaponType = "weapon_smg"
+SWEP.NPCWeaponType = "weapon_smg1"
 SWEP.NPCWeight = 60
 
 -- Accuracy --
@@ -139,6 +139,7 @@ SWEP.HeatDissipation = 15
 SWEP.HeatDelayTime = 3
 
 SWEP.MalfunctionMean = 200
+SWEP.MalfunctionTakeRound = false
 
 -- Speed multipliers --
 
@@ -162,7 +163,7 @@ SWEP.HoldtypeActive = "ar2"
 SWEP.HoldtypeSights = "rpg"
 
 SWEP.IronSightStruct = {
-     Pos = Vector(-2.869, -4, 1.95),
+     Pos = Vector(-2.869, -1, 1.95),
      Ang = Angle(0, 0, 0),
      Magnification = 1,
      SwitchToSound = "",
@@ -215,6 +216,12 @@ SWEP.AttachmentElements = {
     ["ud_uzi_mag_100"] = {
         VMBodygroups = {{ind = 2, bg = 3}},
     },
+    ["ud_uzi_mag_45_10"] = {
+        VMBodygroups = {{ind = 2, bg = 1}},
+    },
+    ["ud_uzi_mag_45_22"] = {
+        VMBodygroups = {{ind = 2, bg = 2}},
+    },
 
     ["ud_uzi_rail_optic"] = {
         VMBodygroups = {{ind = 4, bg = 2}},
@@ -243,53 +250,53 @@ SWEP.AttachmentElements = {
 
     ["ud_uzi_body_carbine"] = {
         VMBodygroups = {{ind = 1, bg = 1}},
-        NameChange = "CarP-9",
+        NameChange = "IAL-C9",
         TrueNameChange = "Uzi Carbine",
         AttPosMods = {
-            [3] = {
+            [4] = {
                 vpos = Vector(-0.2, 0.5, 20.8),
             },
         },
     },
     ["ud_uzi_body_mini"] = {
         VMBodygroups = {{ind = 1, bg = 2}},
-        NameChange = "MeP-9",
+        NameChange = "IAL-S9",
         TrueNameChange = "Mini Uzi",
         AttPosMods = {
-            [3] = {
-                vpos = Vector(-0.2, 0.5, 12.8),
+            [4] = {
+                vpos = Vector(-0.2, 0.5, 11.8),
             },
         },
     },
     ["ud_uzi_body_micro"] = {
         VMBodygroups = {{ind = 1, bg = 3},{ind = 4, bg = 1},{ind = 3, bg = 4}},
-        NameChange = "MiP-9G",
+        NameChange = "IAL-M9",
         TrueNameChange = "Micro Uzi",
         Override_IronSightStruct = {
-            Pos = Vector(-2.869, 0, 2.3),
-            Ang = Angle(-0.95, 0.035, 0),
+            Pos = Vector(-2.869, 3, 1.95),
+            Ang = Angle(-0, 0.035, 0),
             Magnification = 1,
             CrosshairInSights = false
         },
         AttPosMods = {
             [1] = {
-                vpos = Vector(-0.2, -1.2, -2.5),
+                vpos = Vector(-0.2, -1.8, -1.5),
             },
-            [3] = {
+            [4] = {
                 vpos = Vector(-0.2, 0.3, 7.8),
             },
-            [5] = {
-                vpos = Vector(0, 0, 7),
-                vang = Angle(90, 0, 0),
+            [6] = {
+                vpos = Vector(-0.25, 1.4, 6),
+                vang = Angle(90, 0, -90),
             },
         },
     },
     ["ud_uzi_body_civvy"] = {
         VMBodygroups = {{ind = 1, bg = 4}},
-        NameChange = "CarP-9 Model GB",
+        NameChange = "IAL-C9 Model GB",
         TrueNameChange = "Uzi Action-B",
         AttPosMods = {
-            [3] = {
+            [4] = {
                 vpos = Vector(-0.2, 0.5, 23.8),
             },
         },
@@ -304,8 +311,9 @@ SWEP.Hook_ModifyBodygroups = function(wep, data)
         if wep.Attachments[1].Installed then
             vm:SetBodygroup(4, 3)
         end
-        if wep.Attachments[5].Installed then
-            vm:SetBodygroup(6, 3)
+        if wep.Attachments[6].Installed then
+            vm:SetBodygroup(6, 0)
+            vm:SetBodygroup(5, 2)
         end
     end
 end
@@ -315,6 +323,24 @@ end
 SWEP.Hook_Think = ArcCW.UD.ADSReload
 
 SWEP.Animations = {
+    ["ready"] = {
+        Source = "fix",
+        Time = 40 / 30,
+        ShellEjectAt = false,
+        LHIK = true,
+        LHIKIn = 0.4,
+        LHIKEaseIn = 0.4,
+        LHIKEaseOut = 0.15,
+        LHIKOut = 0.4,
+        SoundTable = {
+            {s = common .. "raise.ogg", t = 0},
+            {s = common .. "rattle.ogg", t = 0.2},
+            {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.15},
+            {s = path .. "chback.ogg",         t = 0.3, c = ci},
+            {s = path .. "chforward.ogg",         t = 0.65, c = ci},
+        },
+        ProcDraw = true,
+    },
     ["idle"] = {
         Source = "idle",
     },
@@ -435,9 +461,11 @@ SWEP.Animations = {
         LHIKOut = 0.6,
         SoundTable = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0},
+            {s = common .. "magpouch.ogg", t = 0.025},
             {s = path .. "magout.ogg",        t = 0.25, c = ci},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.25},
             {s = path .. "magin.ogg",         t = 0.55, c = ci},
+            {s = common .. "magpouchin.ogg", t = 1.35, v = .35},
             {s = common .. "shoulder.ogg",  t = 1.75},
         },
     },
@@ -456,6 +484,7 @@ SWEP.Animations = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0},
             {s = path .. "magout.ogg",        t = 0.4, c = ci},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.25},
+            {s = common .. "magpouch.ogg", t = 0.85},
             {s = common .. "magdrop_smg.ogg",  t = 1.0},
             {s = path .. "magin.ogg",         t = 1.1, c = ci},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 1.25},
@@ -480,9 +509,11 @@ SWEP.Animations = {
         LHIKOut = 0.6,
         SoundTable = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0},
+            {s = common .. "magpouch.ogg", t = 0.025},
             {s = path .. "magout.ogg",        t = 0.25, c = ci},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.25},
             {s = path .. "magin.ogg",         t = 0.55, c = ci},
+            {s = common .. "magpouchin.ogg", t = 1.35, v = .35},
             {s = common .. "shoulder.ogg",  t = 1.75},
         },
     },
@@ -501,8 +532,9 @@ SWEP.Animations = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0},
             {s = path .. "magout.ogg",        t = 0.4, c = ci},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.25},
+            {s = common .. "magpouch.ogg", t = 0.85},
             {s = common .. "magdrop_smg.ogg",  t = 1.0},
-            {s = path .. "magin.ogg",         t = 1.0, c = ci},
+            {s = path .. "magin.ogg",         t = 1.1, c = ci},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 1.25},
             {s = path .. "chback.ogg",         t = 1.947, c = ci},
             {s = path .. "chforward.ogg",         t = 2.15, c = ci},
@@ -524,10 +556,12 @@ SWEP.Animations = {
         LHIKEaseOut = 0.15,
         LHIKOut = 0.6,
         SoundTable = {
-            {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.1},
+            {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0},
+            {s = common .. "magpouch.ogg", t = 0.025},
             {s = path .. "magout.ogg",        t = 0.35, c = ci},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.25},
             {s = path .. "magin.ogg",         t = 0.65, c = ci},
+            {s = common .. "magpouchin.ogg", t = 1.35, v = .35},
             {s = common .. "shoulder.ogg",  t = 1.75},
         },
     },
@@ -546,11 +580,12 @@ SWEP.Animations = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0},
             {s = path .. "magout.ogg",        t = 0.4, c = ci},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.25},
+            {s = common .. "magpouch.ogg", t = 0.85},
             {s = common .. "magdrop_smg.ogg",  t = 1.0},
             {s = path .. "magin.ogg",         t = 1.1, c = ci},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 1.25},
-            {s = path .. "chback.ogg",         t = 1.95, c = ci},
-            {s = path .. "chforward.ogg",         t = 2.2, c = ci},
+            {s = path .. "chback.ogg",         t = 1.947, c = ci},
+            {s = path .. "chforward.ogg",         t = 2.15, c = ci},
             {s = common .. "shoulder.ogg",  t = 2.6},
         },
     },
@@ -610,10 +645,10 @@ SWEP.Attachments = {
     {
         PrintName = "Optic",
         DefaultAttName = "Iron Sights",
-        Slot = {"optic_lp"}, -- ,"optic"
+        Slot = {"optic_lp","optic"}, -- ,"optic"
         Bone = "uzi_parent",
         Offset = {
-            vpos = Vector(-0.2, -1.0, -2.5),
+            vpos = Vector(-0.2, -1.6, -1),
             vang = Angle(90, 0, -90),
         },
         VMScale = Vector(1, 1, 1),
@@ -631,6 +666,12 @@ SWEP.Attachments = {
         },
     },
     {
+        PrintName = "Caliber",
+        DefaultAttName = "9x19mm Parabellum",
+        DefaultAttIcon = Material("entities/att/acwatt_ud_glock_caliber.png", "smooth mips"),
+        Slot = "ud_uzi_caliber",
+    },
+    {
         PrintName = "Muzzle",
         DefaultAttName = "Standard Muzzle",
         Slot = {"muzzle"},
@@ -645,18 +686,19 @@ SWEP.Attachments = {
         Slot = {"foregrip"},
         Bone = "uzi_parent",
         Offset = {
-            vpos = Vector(-0.2, 2.4, 8),
+            vpos = Vector(-0.2, 1.85, 6.9), -- nice
             vang = Angle(90, 0, -90),
         },
-        InstalledEles = {"ud_uzi_rail_fg"}
+        InstalledEles = {"ud_uzi_rail_fg"},
+        ExcludeFlags = {"micro"}
     },
     {
         PrintName = "Tactical",
         Slot = {"tac_pistol"},
         Bone = "uzi_parent",
         Offset = {
-            vpos = Vector(0.3, 0.9, 12.5),
-            vang = Angle(90, 0, -45),
+            vpos = Vector(-1.35, 0.9,5.8),
+            vang = Angle(90, 0, 180),
         },
         InstalledEles = {"ud_uzi_clamp"}
     },
@@ -676,6 +718,7 @@ SWEP.Attachments = {
     {
         PrintName = "Ammo Type",
         DefaultAttName = "\"FMJ\" Full Metal Jacket",
+        DefaultAttIcon = Material("entities/att/arccw_uc_ammo_generic.png", "mips smooth"),
         Slot = "uc_ammo",
     },
     {

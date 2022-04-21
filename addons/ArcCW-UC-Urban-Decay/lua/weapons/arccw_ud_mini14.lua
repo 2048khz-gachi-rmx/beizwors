@@ -30,7 +30,9 @@ SWEP.TrueName = "Mini-14"
 -- Trivia --
 
 SWEP.Trivia_Class = "Semi-Automatic Rifle"
-SWEP.Trivia_Desc = "Autoloading rifle designed for better accuracy than competing models. Possesses a more classical operation compared to its contemporaries. Due to its appearance, it is sometimes exempted from gun control laws targeting \"Assault Weapons\" despite its identical ability to kill. This has helped it find success despite its higher cost and non-standard magazine well."
+SWEP.Trivia_Desc = [[Autoloading rifle designed for better accuracy than competing models. Due to its appearance, it is sometimes exempted from gun control laws targeting "Assault Weapons" despite its identical ability to kill. This has helped it find success despite its higher cost and non-standard magazine well.
+
+While it can perform well in close-quarters combat, its high accuracy excels in mid-range engagements.]]
 SWEP.Trivia_Manufacturer = "Rifles International"
 SWEP.Trivia_Calibre = "5.56x45mm NATO"
 SWEP.Trivia_Mechanism = "Gas-Operated Rotating Bolt"
@@ -55,15 +57,16 @@ SWEP.WorldModel = "models/weapons/arccw/c_ud_mini14.mdl"
 SWEP.ViewModelFOV = 70
 SWEP.AnimShoot = ACT_HL2MP_GESTURE_RANGE_ATTACK_AR2
 SWEP.DefaultSkin = 0
+SWEP.DefaultPoseParams = {["grip"] = 0}
 
 -- Damage --
 
 SWEP.Damage = 34 -- 3 shot kill
 SWEP.DamageMin = 20 -- 5 shot kill
 SWEP.RangeMin = 50
-SWEP.Range = 450 -- 4 shot until ~305m
+SWEP.Range = 400 -- 4 shot until ~275m
 
-SWEP.Penetration = 12
+SWEP.Penetration = 14
 SWEP.DamageType = DMG_BULLET
 SWEP.ShootEntity = nil
 SWEP.MuzzleVelocity = 990
@@ -157,7 +160,7 @@ SWEP.HoldtypeActive = "ar2"
 SWEP.HoldtypeSights = "rpg"
 
 SWEP.IronSightStruct = {
-    Pos = Vector(-4.305, -3, 2.55),
+    Pos = Vector(-4.305, 6, 2.55),
     Ang = Angle(0, 0, 0),
     Magnification = 1,
     SwitchToSound = "",
@@ -186,9 +189,9 @@ SWEP.WorldModelOffset = {
 
 local path = ")^weapons/arccw_ud/mini14/"
 local common = ")^/arccw_uc/common/"
-SWEP.ShootSound = path .. "fire.ogg"
+SWEP.ShootSound = {path .. "fire-01.ogg", path .. "fire-02.ogg", path .. "fire-03.ogg", path .. "fire-04.ogg", path .. "fire-05.ogg", path .. "fire-06.ogg"} -- Maybe Not Placeholder
 SWEP.ShootSoundSilenced = path .. "fire_supp.ogg"
-SWEP.DistantShootSound = path .. "fire_dist.ogg"
+SWEP.DistantShootSound = {path .. "fire-dist-01.ogg", path .. "fire-dist-02.ogg", path .. "fire-dist-03.ogg", path .. "fire-dist-04.ogg", path .. "fire-dist-05.ogg", path .. "fire-dist-06.ogg"} -- Maybe Not Placeholder
 SWEP.DistantShootSoundSilenced = common .. "sup_tail.ogg"
 
 -- Bodygroups --
@@ -228,7 +231,7 @@ SWEP.AttachmentElements = {
         VMBodygroups = {{ind = 3, bg = 1}},
         AttPosMods = {
             [3] = {
-                vpos = Vector(0, -2.1, 34),
+                vpos = Vector(0, -2.15, 36.45),
             },
         },
     },
@@ -236,7 +239,7 @@ SWEP.AttachmentElements = {
         VMBodygroups = {{ind = 3, bg = 2}},
         AttPosMods = {
             [3] = {
-                vpos = Vector(0, -2.1, 27),
+                vpos = Vector(0, -2.15, 29.3),
             },
         },
     },
@@ -264,16 +267,20 @@ SWEP.AttachmentElements = {
 
     ["ud_mini14_stock_polymer"] = {
         VMBodygroups = {{ind = 1, bg = 1}},
+        VMPoseParams = {["grip"] = 0}
     },
     ["ud_mini14_stock_sawnoff"] = {
         VMBodygroups = {{ind = 1, bg = 2}},
+        VMPoseParams = {["grip"] = 0}
     },
     ["ud_mini14_stock_tactical"] = {
         VMBodygroups = {{ind = 1, bg = 4}},
+        VMPoseParams = {["grip"] = 1}
     },
     ["ud_mini14_stock_tactical_polymer"] = {
         VMBodygroups = {{ind = 1, bg = 3}},
         VMSkin = 1,
+        VMPoseParams = {["grip"] = 1}
     },
 
     ["ud_mini14_clamp"] = {
@@ -286,6 +293,24 @@ SWEP.AttachmentElements = {
 SWEP.Hook_Think = ArcCW.UD.ADSReload
 
 SWEP.Animations = {
+    ["ready"] = {
+        Source = "unjam",
+        Time = 40 / 30,
+        SoundTable = {
+            {s = common .. "raise.ogg", t = 0},
+            {s = common .. "rattle.ogg", t = 0.2},
+            {s = path .. "chback.ogg",  t = 0.25},
+            {s = path .. "chamber.ogg", t = 0.35},
+            {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.8},
+            {s = common .. "shoulder.ogg",  t = 1},
+        },
+        LHIK = true,
+        LHIKIn = 0.5,
+        LHIKEaseIn = 0.5,
+        LHIKEaseOut = 0.15,
+        LHIKOut = 0.5,
+        ProcDraw = true,
+    },
     ["idle"] = {
         Source = "idle",
     },
@@ -294,10 +319,12 @@ SWEP.Animations = {
     },
     ["draw"] = {
         Source = "draw",
+        SoundTable = ArcCW.UD.DrawSounds,
     },
     ["draw_empty"] = {
         Source = "draw_empty",
         Time = 12 / 30,
+        SoundTable = ArcCW.UD.DrawSounds,
     },
     ["holster"] = {
         Source = "holster",
@@ -306,6 +333,7 @@ SWEP.Animations = {
         LHIKEaseIn = 0.4,
         LHIKEaseOut = 0,
         LHIKOut = 0,
+        SoundTable = ArcCW.UD.HolsterSounds,
     },
     ["holster_empty"] = {
         Source = "holster_empty",
@@ -315,15 +343,14 @@ SWEP.Animations = {
         LHIKEaseIn = 0.4,
         LHIKEaseOut = 0,
         LHIKOut = 0,
+        SoundTable = ArcCW.UD.HolsterSounds,
     },
     ["fire"] = {
         Source = "fire",
         Time = 20 / 30,
         ShellEjectAt = 0.01,
         LastClip1OutTime = 0,
-        SoundTable = {
-            {s = path .. "mech.ogg", t = 0}, -- Not Temporary
-        },
+        SoundTable = {{ s = {path .. "mech-01.ogg", path .. "mech-02.ogg", path .. "mech-03.ogg", path .. "mech-04.ogg", path .. "mech-05.ogg", path .. "mech-06.ogg"}, t = 0 }},
     },
     ["fire_empty"] = {
         Source = "fire_empty",
@@ -348,6 +375,7 @@ SWEP.Animations = {
         LHIKEaseIn = 0.5,
         LHIKEaseOut = 0.15,
         LHIKOut = 0.5,
+        ShellEjectAt = .35,
     },
     -- 20 Round Reloads --
 
@@ -366,6 +394,7 @@ SWEP.Animations = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.0},
             {s = path .. "magout.ogg", 	t = 0.25},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.4},
+            {s = common .. "magpouch.ogg", t = 0.6, c = ci},
             {s = path .. "magin.ogg",   t = 1.05},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 1.3},
             {s = common .. "shoulder.ogg",  t = 1.75},
@@ -386,6 +415,7 @@ SWEP.Animations = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.0},
             {s = path .. "magout.ogg", 	t = 0.15},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.4},
+            {s = common .. "magpouch.ogg", t = 0.6, c = ci},
             {s = common .. "rifle_magdrop.ogg",  t = 0.9},
             {s = path .. "magin.ogg",   t = 1.10},
             {s = path .. "chback.ogg",  t = 1.85},
@@ -412,6 +442,7 @@ SWEP.Animations = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.0},
             {s = path .. "magout.ogg", 	t = 0.15},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.3},
+            {s = common .. "magpouch.ogg", t = 0.6, c = ci},
             {s = path .. "magin.ogg",   t = 1.10},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 1.5},
         },
@@ -431,10 +462,11 @@ SWEP.Animations = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.0},
             {s = path .. "magout.ogg", 	t = 0.15},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.4},
+            {s = common .. "magpouch.ogg", t = 0.6, c = ci},
             {s = common .. "rifle_magdrop.ogg",  t = 0.9},
             {s = path .. "magin.ogg",   t = 1.10},
             {s = path .. "chback.ogg",  t = 1.90},
-            {s = path .. "chamber.ogg", t = 2.10},
+            {s = path .. "chamber.ogg", t = 2.00},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 2.4},
             {s = common .. "shoulder.ogg",  t = 2.5},
         },
@@ -455,8 +487,9 @@ SWEP.Animations = {
         LHIKOut = 0.4,
         SoundTable = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.0},
-            {s = path .. "magout.ogg", 	t = 0.15},
+            {s = path .. "magout.ogg", 	t = 0.3},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.3},
+            {s = common .. "magpouch.ogg", t = 0.7, c = ci},
             {s = path .. "magin.ogg",   t = 1.10},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 1.4},
             {s = common .. "shoulder.ogg",  t = 1.85},
@@ -475,8 +508,9 @@ SWEP.Animations = {
         LHIKOut = 0.4,
         SoundTable = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.0},
-            {s = path .. "magout.ogg", 	t = 0.15},
+            {s = path .. "magout.ogg", 	t = 0.2},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.3},
+            {s = common .. "magpouch.ogg", t = 0.65, c = ci},
             {s = common .. "rifle_magdrop.ogg",  t = 0.9},
             {s = path .. "magin.ogg",   t = 1.20},
             {s = path .. "chback.ogg",  t = 2},
@@ -501,8 +535,9 @@ SWEP.Animations = {
         LHIKOut = 0.4,
         SoundTable = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.0},
-            {s = path .. "magout.ogg", 	t = 0.15},
+            {s = path .. "magout.ogg", 	t = 0.3},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.3},
+            {s = common .. "magpouch.ogg", t = 0.7, c = ci},
             {s = path .. "magin.ogg",   t = 1.10},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 1.4},
             {s = common .. "shoulder.ogg",  t = 1.85},
@@ -521,8 +556,9 @@ SWEP.Animations = {
         LHIKOut = 0.4,
         SoundTable = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.0},
-            {s = path .. "magout.ogg", 	t = 0.15},
+            {s = path .. "magout.ogg", 	t = 0.2},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.3},
+            {s = common .. "magpouch.ogg", t = 0.65, c = ci},
             {s = common .. "rifle_magdrop.ogg",  t = 0.9},
             {s = path .. "magin.ogg",   t = 1.20},
             {s = path .. "chback.ogg",  t = 2},
@@ -547,8 +583,9 @@ SWEP.Animations = {
         LHIKOut = 0.4,
         SoundTable = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.0},
-            {s = path .. "magout.ogg", 	t = 0.15},
+            {s = path .. "magout.ogg", 	t = 0.3},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.3},
+            {s = common .. "magpouch.ogg", t = 0.7, c = ci},
             {s = path .. "magin.ogg",   t = 1.10},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 1.4},
             {s = common .. "shoulder.ogg",  t = 1.85},
@@ -567,8 +604,9 @@ SWEP.Animations = {
         LHIKOut = 0.4,
         SoundTable = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.0},
-            {s = path .. "magout.ogg", 	t = 0.15},
+            {s = path .. "magout.ogg", 	t = 0.2},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.3},
+            {s = common .. "magpouch.ogg", t = 0.65, c = ci},
             {s = common .. "rifle_magdrop.ogg",  t = 0.9},
             {s = path .. "magin.ogg",   t = 1.20},
             {s = path .. "chback.ogg",  t = 2},
@@ -595,6 +633,7 @@ SWEP.Animations = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.0},
             {s = path .. "magout.ogg", 	t = 0.35},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.3},
+            {s = common .. "magpouch.ogg", t = 0.7, c = ci},
             {s = path .. "magin.ogg",   t = 1.10},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 1.4},
             {s = common .. "shoulder.ogg",  t = 1.85},
@@ -615,10 +654,11 @@ SWEP.Animations = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.0},
             {s = path .. "magout.ogg", 	t = 0.35},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.3},
+            {s = common .. "magpouch.ogg", t = 0.7, c = ci},
             {s = common .. "rifle_magdrop.ogg",  t = 0.9},
             {s = path .. "magin.ogg",   t = 1.20},
-            {s = path .. "chback.ogg",  t = 2},
-            {s = path .. "chamber.ogg", t = 2.1},
+            {s = path .. "chback.ogg",  t = 1.9},
+            {s = path .. "chamber.ogg", t = 2},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 2.3},
             {s = common .. "shoulder.ogg",  t = 2.65},
         },
@@ -641,7 +681,8 @@ SWEP.Animations = {
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.0},
             {s = path .. "magout.ogg", 	t = 0.15},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.3},
-            {s = path .. "magin.ogg",   t = 1.10},
+            {s = common .. "magpouch.ogg", t = 0.65, c = ci},
+            {s = path .. "magin.ogg",   t = .9},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 1.4},
         },
     },
@@ -661,9 +702,10 @@ SWEP.Animations = {
             {s = path .. "magout.ogg", 	t = 0.15},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 0.5},
             {s = common .. "pistol_magdrop.ogg",  t = 0.9},
+            {s = common .. "magpouch.ogg", t = 0.7, c = ci},
             {s = path .. "magin.ogg",   t = 1.10},
-            {s = path .. "chback.ogg",  t = 2},
-            {s = path .. "chamber.ogg", t = 2.1},
+            {s = path .. "chback.ogg",  t = 1.9},
+            {s = path .. "chamber.ogg", t = 2.0},
             {s = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}, t = 2.3},
         },
     },
@@ -695,7 +737,7 @@ SWEP.Attachments = {
     {
         PrintName = "Optic",
         DefaultAttName = "Iron Sights",
-        Slot = {"optic_lp","optic"},
+        Slot = {"optic_lp","optic","optic_sniper"},
         Bone = "mini14_parent",
         Offset = {
             vpos = Vector(0, -3.6, 6),
@@ -717,7 +759,7 @@ SWEP.Attachments = {
         Slot = {"muzzle"},
         Bone = "mini14_parent",
         Offset = {
-            vpos = Vector(0, -2.1, 29),
+            vpos = Vector(0, -2.15, 31.1),
             vang = Angle(90, 0, -90),
             wpos = vpos,
         },
@@ -766,6 +808,7 @@ SWEP.Attachments = {
     {
         PrintName = "Ammo Type",
         DefaultAttName = "\"FMJ\" Full Metal Jacket",
+        DefaultAttIcon = Material("entities/att/arccw_uc_ammo_generic.png", "mips smooth"),
         Slot = "uc_ammo",
     },
     {

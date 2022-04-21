@@ -113,7 +113,7 @@ SWEP.ProceduralIronFire = false
 
 -- NPC --
 
-SWEP.NPCWeaponType = "weapon_shotgun"
+SWEP.NPCWeaponType = "weapon_rpg"
 SWEP.NPCWeight = 210
 
 -- Accuracy --
@@ -314,7 +314,7 @@ SWEP.Attachments = {
     {
         PrintName = "Optic",
         DefaultAttName = "Iron Sights",
-        Slot = {"optic_lp", "optic", "sniper_optic"},
+        Slot = {"optic_lp", "optic", "optic_sniper"},
         Bone = "m79_front",
         Offset = {
             vpos = Vector(0, -3.6, 1),
@@ -322,6 +322,7 @@ SWEP.Attachments = {
         },
         InstalledEles = {"m79_rail"},
         ExcludeFlags = {"m79_pirategun"},
+        ExtraSightDist = 5,
     },
     {
         PrintName = "Tube",

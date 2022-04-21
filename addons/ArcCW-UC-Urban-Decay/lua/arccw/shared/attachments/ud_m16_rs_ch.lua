@@ -1,6 +1,6 @@
-att.PrintName = "Flip-up Rear Sight"
+att.PrintName = "Carry Handle"
 att.Icon = Material("entities/att/acwatt_ud_m16_rs.png", "smooth mips")
-att.Description = "A rail-mounted rear sight for flat top receivers.\nLooks more modern, but that's it."
+att.Description = "Mountable carry handle that is independent from the receiver."
 att.Desc_Pros = {}
 att.Desc_Cons = {}
 att.Desc_Neutrals = {
@@ -19,6 +19,6 @@ att.IgnorePickX = true
 
 --att.M16Sights = 1
 att.IronSight = true
-att.Model = "models/weapons/arccw/atts/sig_rs.mdl"
+att.Model = "models/weapons/arccw/atts/colt_ch.mdl"
 att.ModelOffset = Vector(-2,0,0)
-att.ModelScale = Vector(.8,.8,.8)
+att.ModelScale = Vector(.86,.8,.8)

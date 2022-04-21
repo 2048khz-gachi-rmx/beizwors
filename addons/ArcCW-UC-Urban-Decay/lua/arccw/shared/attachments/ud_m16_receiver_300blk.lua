@@ -27,13 +27,14 @@ att.Mult_RPM = 850 / 900
 att.Mult_HipDispersion = 1.2
 att.Mult_ShootSpeedMult = 0.8
 
-att.Mult_Damage = 1.118
-att.Mult_DamageMin = 0.6
+att.Mult_Damage = 1.17
+att.Mult_DamageMin = 0.75
+att.Mult_Penetration = 10 / 14
 att.Mult_ShootVol = 105 / 120
 
 att.Mult_HeatDissipation = 1.5
 
-att.Override_PhysBulletMuzzleVelocity = 642
+att.Override_PhysBulletMuzzleVelocity = 310
 
 att.Override_ShellModel = "models/weapons/arccw/uc_shells/300blk.mdl"
 att.Override_ShellScale = 1
@@ -66,3 +67,6 @@ end
 att.Hook_GetDistantShootSound = function(wep, distancesound)
     if distancesound == wep.DistantShootSound then return path .. "fire_dist.ogg" end
 end
+
+att.GivesFlags = {"cal_subsonic"}
+att.ExcludeFlags = {"powder_subsonic"}

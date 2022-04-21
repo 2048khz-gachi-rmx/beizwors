@@ -21,8 +21,10 @@ att.AutoStats = true
 att.Override_Trivia_Calibre = ".40 S&W"
 
 att.Mult_DamageMin = 1.35
-att.Mult_RangeMin = 0.75
+att.Mult_RangeMin = 0.5
 att.Mult_Recoil = 1.15
+att.Mult_Penetration = 8 / 6
+att.Override_PhysBulletMuzzleVelocity = 300
 
 att.Mult_ClipSize = .9
 att.Override_ShellModel = "models/weapons/arccw/uc_shells/40sw.mdl"
@@ -40,3 +42,6 @@ att.Hook_GetDistantShootSound = function(wep, distancesound)
     if distancesound == wep.DistantShootSound then
         return "weapons/arccw_ud/glock/fire_dist_40.ogg" end
 end
+
+att.GivesFlags = {"cal_subsonic"}
+att.ExcludeFlags = {"powder_subsonic"}

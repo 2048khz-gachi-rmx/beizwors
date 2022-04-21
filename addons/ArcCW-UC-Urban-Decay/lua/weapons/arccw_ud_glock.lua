@@ -33,7 +33,7 @@ SWEP.TrueName = "Glock 17"
 SWEP.Trivia_Class = "Pistol"
 SWEP.Trivia_Desc = [[Handgun originally designed by a curtain rod manufacturer for the Austrian military. Its reliable and cost-effective polymer design has since made it one of the most popular and widely used pistols in the world, common in military, police and civilian use alike.
 
-No matter cop or crook, you're probably rocking the Glock.]]
+Great backup weapon due to its quick draw and sight times, but a relatively low damage output makes it a less than ideal primary.]]
 SWEP.Trivia_Manufacturer = "Next Generation Weapons Inc."
 SWEP.Trivia_Calibre = "9x19mm Parabellum"
 SWEP.Trivia_Mechanism = "Short Recoil"
@@ -55,7 +55,7 @@ end
 
 SWEP.ViewModel = "models/weapons/arccw/c_ud_glock.mdl"
 SWEP.WorldModel = "models/weapons/arccw/c_ud_glock.mdl"
-SWEP.ViewModelFOV = 60
+SWEP.ViewModelFOV = 70
 SWEP.AnimShoot = ACT_HL2MP_GESTURE_RANGE_ATTACK_AR2
 
 -- Damage --
@@ -64,7 +64,7 @@ SWEP.Damage = 30 -- 4 shot close range kill (3 on chest)
 SWEP.DamageMin = 17 -- 5 shot long range kill
 SWEP.RangeMin = 15
 SWEP.Range = 50 -- 4 shot until ~35m
-SWEP.Penetration = 2
+SWEP.Penetration = 6
 SWEP.DamageType = DMG_BULLET
 SWEP.ShootEntity = nil
 SWEP.MuzzleVelocity = 375
@@ -133,6 +133,7 @@ SWEP.HeatDissipation = 20
 SWEP.HeatDelayTime = 3
 
 SWEP.MalfunctionMean = 150
+SWEP.MalfunctionTakeRound = false
 
 -- Speed multipliers --
 
@@ -151,12 +152,15 @@ SWEP.ExtraSightDist = 7
 SWEP.HolsterPos = Vector(-0.5, -2, -1)
 SWEP.HolsterAng = Angle(3.5, 7, -20)
 
+SWEP.HolsterPos = Vector(-1, -2, 3)
+SWEP.HolsterAng = Angle(-15.5, 2, -7)
+
 SWEP.HoldtypeHolstered = "normal"
 SWEP.HoldtypeActive = "pistol"
 SWEP.HoldtypeSights = "revolver"
 
 SWEP.IronSightStruct = {
-     Pos = Vector(-2.3, 4.3, 2.52),
+     Pos = Vector(-2.3, 8.2, 2.52),
      Ang = Angle(0.3, 0, 0),
      Magnification = 1,
      ViewModelFOV = 55,
@@ -197,11 +201,31 @@ SWEP.WorldModelOffset = {
 local path = ")^weapons/arccw_ud/glock/"
 local path1 = ")^weapons/arccw_ud/uzi/"
 local common = ")^/arccw_uc/common/"
-SWEP.ShootSound = path .. "fire.ogg"
+SWEP.ShootSound = {path .. "fire-01.ogg", path .. "fire-02.ogg", path .. "fire-03.ogg", path .. "fire-04.ogg", path .. "fire-05.ogg", path .. "fire-06.ogg"} -- Maybe Not Placeholder
 SWEP.ShootSoundSilenced = path .. "fire_supp.ogg"
-SWEP.DistantShootSound = path .. "fire_dist.ogg"
+SWEP.DistantShootSound = nil
 SWEP.DistantShootSoundSilenced = common .. "sup_tail.ogg"
 SWEP.ShootDrySound = path .. "dryfire.ogg"
+
+SWEP.DistantShootSoundOutdoors = {
+    path .. "fire-dist-01.ogg",
+    path .. "fire-dist-02.ogg",
+    path .. "fire-dist-03.ogg",
+    path .. "fire-dist-04.ogg",
+    path .. "fire-dist-05.ogg",
+    path .. "fire-dist-06.ogg"
+}
+SWEP.DistantShootSoundIndoors = {
+    path .. "fire-dist-int-01.ogg",
+    path .. "fire-dist-int-02.ogg",
+    path .. "fire-dist-int-03.ogg",
+    path .. "fire-dist-int-04.ogg",
+    path .. "fire-dist-int-05.ogg",
+    path .. "fire-dist-int-06.ogg"
+}
+SWEP.DistantShootSoundOutdoorsVolume = 1
+SWEP.DistantShootSoundIndoorsVolume = 1
+SWEP.Hook_AddShootSound = ArcCW.UD.InnyOuty
 
 -- Bodygroups --
 
@@ -472,6 +496,25 @@ local ratel = {path .. "pistol_rattle_1.ogg", path .. "pistol_rattle_2.ogg", pat
 local rottle = {common .. "cloth_2.ogg", common .. "cloth_3.ogg", common .. "cloth_4.ogg", common .. "cloth_6.ogg", common .. "rattle.ogg"}
 
 SWEP.Animations = {
+    ["ready"] = {
+        Source = "fix_100",
+        Time = 40 / 30,
+        ShellEjectAt = false,
+        SoundTable = {
+            {s = path .. "draw.ogg", t = 0}, -- Not Temporary
+            {s = common .. "raise.ogg", t = 0.05},
+            {s = rattel, t = 0},
+            {s = path .. "slide_pull_new.ogg",  t = 0.4, c = ci},
+            {s = path .. "sliderel_deact.ogg",  t = 0.4, c = ci},
+            {s = path .. "slide_rel_new.ogg",        t = 0.6, c = ci},
+        },
+        LHIK = true,
+        LHIKIn = 0.2,
+        LHIKEaseIn = 0.1,
+        LHIKEaseOut = 0.1,
+        LHIKOut = 0.2,
+        ProcDraw = true,
+    },
     ["idle"] = {
         Source = "idle",
     },
@@ -522,9 +565,7 @@ SWEP.Animations = {
         Source = "fire",
         Time = 16 / 30,
         ShellEjectAt = 0.03,
-        SoundTable = {
-            {s = path .. "mech.ogg", t = 0}, -- Not Temporary
-        },
+        SoundTable = {{ s = {path .. "mech-01.ogg", path .. "mech-02.ogg", path .. "mech-03.ogg", path .. "mech-04.ogg", path .. "mech-05.ogg", path .. "mech-06.ogg"}, t = 0.03 }},
     },
     ["fire_empty"] = {
         Source = "fire_empty",
@@ -538,9 +579,7 @@ SWEP.Animations = {
         Source = "fire_stock",
         Time = 16 / 30,
         ShellEjectAt = 0.03,
-        SoundTable = {
-            {s = path .. "mech.ogg", t = 0}, -- Not Temporary
-        },
+        SoundTable = {{ s = {path .. "mech-01.ogg", path .. "mech-02.ogg", path .. "mech-03.ogg", path .. "mech-04.ogg", path .. "mech-05.ogg", path .. "mech-06.ogg"}, t = 0.03 }},
     },
     ["fire_empty_stock"] = {
         Source = "fire_empty_stock",
@@ -561,9 +600,9 @@ SWEP.Animations = {
         ShellEjectAt = false,
         SoundTable = {
             {s = path .. "magtap.ogg",    t = 0.18, c = ci},
-            {s = path .. "slide_pull.ogg",  t = 0.5, c = ci},
+            {s = path .. "slide_pull_new.ogg",  t = 0.5, c = ci},
             {s = path .. "sliderel_deact.ogg",  t = 0.5, c = ci},
-            {s = path .. "slide_rel.ogg",        t = 0.7, c = ci},
+            {s = path .. "slide_rel_new.ogg",        t = 0.7, c = ci},
         },
         LHIK = true,
         LHIKIn = 0.2,
@@ -577,7 +616,7 @@ SWEP.Animations = {
         ShellEjectAt = false,
         SoundTable = {
             {s = path .. "magtap.ogg",    t = 0.18, c = ci},
-            {s = path .. "slide_pull.ogg",  t = 0.5, c = ci},
+            {s = path .. "slide_pull_new.ogg",  t = 0.5, c = ci},
             {s = path .. "sliderel_deact.ogg",  t = 0.5, c = ci},
         },
         LHIK = true,
@@ -592,9 +631,9 @@ SWEP.Animations = {
         ShellEjectAt = false,
         SoundTable = {
             {s = path .. "magtap.ogg",    t = 0.18, c = ci},
-            {s = path .. "slide_pull.ogg",  t = 0.5, c = ci},
+            {s = path .. "slide_pull_new.ogg",  t = 0.5, c = ci},
             {s = path .. "sliderel_deact.ogg",  t = 0.5, c = ci},
-            {s = path .. "slide_rel.ogg",        t = 0.7, c = ci},
+            {s = path .. "slide_rel_new.ogg",        t = 0.7, c = ci},
         },
         LHIK = true,
         LHIKIn = 0.2,
@@ -608,7 +647,7 @@ SWEP.Animations = {
         ShellEjectAt = false,
         SoundTable = {
             {s = path .. "magtap.ogg",    t = 0.18, c = ci},
-            {s = path .. "slide_pull.ogg",  t = 0.5, c = ci},
+            {s = path .. "slide_pull_new.ogg",  t = 0.5, c = ci},
             {s = path .. "sliderel_deact.ogg",  t = 0.5, c = ci},
         },
         LHIK = true,
@@ -623,9 +662,9 @@ SWEP.Animations = {
         ShellEjectAt = false,
         SoundTable = {
             {s = path .. "magtap.ogg",    t = 0.18, c = ci},
-            {s = path .. "slide_pull.ogg",  t = 0.5, c = ci},
+            {s = path .. "slide_pull_new.ogg",  t = 0.5, c = ci},
             {s = path .. "sliderel_deact.ogg",  t = 0.5, c = ci},
-            {s = path .. "slide_rel.ogg",        t = 0.7, c = ci},
+            {s = path .. "slide_rel_new.ogg",        t = 0.7, c = ci},
         },
         LHIK = true,
         LHIKIn = 0.2,
@@ -639,7 +678,7 @@ SWEP.Animations = {
         ShellEjectAt = false,
         SoundTable = {
             {s = path .. "magtap.ogg",    t = 0.18, c = ci},
-            {s = path .. "slide_pull.ogg",  t = 0.5, c = ci},
+            {s = path .. "slide_pull_new.ogg",  t = 0.5, c = ci},
             {s = path .. "sliderel_deact.ogg",  t = 0.5, c = ci},
         },
         LHIK = true,
@@ -654,9 +693,9 @@ SWEP.Animations = {
         ShellEjectAt = false,
         SoundTable = {
             {s = rattel, t = 0},
-            {s = path .. "slide_pull.ogg",  t = 0.5, c = ci},
-            {s = path .. "sliderel_deact.ogg",  t = 0.5, c = ci},
-            {s = path .. "slide_rel.ogg",        t = 0.8, c = ci},
+            {s = path .. "slide_pull_new.ogg",  t = 0.4, c = ci},
+            {s = path .. "sliderel_deact.ogg",  t = 0.4, c = ci},
+            {s = path .. "slide_rel_new.ogg",        t = 0.6, c = ci},
         },
         LHIK = true,
         LHIKIn = 0.2,
@@ -671,7 +710,7 @@ SWEP.Animations = {
         SoundTable = {
             {s = rattel, t = 0},
             {s = path .. "sliderel_deact.ogg",  t = 0.5, c = ci},
-            {s = path .. "slide_pull.ogg",  t = 0.5, c = ci},
+            {s = path .. "slide_pull_new.ogg",  t = 0.5, c = ci},
         },
         LHIK = true,
         LHIKIn = 0.2,
@@ -686,9 +725,9 @@ SWEP.Animations = {
         ShellEjectAt = 0.4,
         SoundTable = {
             {s = rottle, t = 0, v = 50},
-            {s = path .. "slide_pull.ogg",  t = 0.3, c = ci, v = 50},
+            {s = path .. "slide_pull_new.ogg",  t = 0.3, c = ci, v = 50},
             {s = path .. "sliderel_deact.ogg",  t = 0.3, c = ci, v = 50},
-            {s = path .. "slide_rel.ogg",        t = 0.55, c = ci, v = 50},
+            {s = path .. "slide_rel_new.ogg",        t = 0.55, c = ci, v = 50},
         },
         LHIK = true,
         LHIKIn = 0.2,
@@ -702,7 +741,7 @@ SWEP.Animations = {
         ShellEjectAt = 0.4,
         SoundTable = {
             {s = rottle, t = 0, v = 50},
-            {s = path .. "slide_pull.ogg",  t = 0.3, c = ci, v = 50},
+            {s = path .. "slide_pull_new.ogg",  t = 0.3, c = ci, v = 50},
             {s = path .. "sliderel_deact.ogg",  t = 0.3, c = ci, v = 50},
         },
         LHIK = true,
@@ -727,11 +766,12 @@ SWEP.Animations = {
         LHIKOut = 0.3,
         SoundTable = {
             {s = rottle, t = 0},
+            {s = common .. "magpouch_pull_small.ogg", t = 0.075},
             {s = rattel, t = 0.3},
-            {s = path .. "magrelease.ogg",    t = 0.3, c = ci},
-            {s = path .. "magout.ogg",        t = 0.3, c = ci},
+            {s = path .. "magout_partial.ogg",        t = 0.3, c = ci},
             {s = rattel, t = 0.35},
-            {s = path .. "magin.ogg",         t = 0.4, c = ci},
+            {s = path .. "magin_new.ogg",         t = 0.49, c = ci},
+            {s = common .. "magpouch_replace_small.ogg", t = 1.25},
             {s = rottle, t = 0.5},
         },
     },
@@ -748,13 +788,13 @@ SWEP.Animations = {
         LHIKOut = 0.3,
         SoundTable = {
             {s = rattel, t = 0},
-            {s = path .. "magrelease.ogg",    t = 0.15, c = ci},
-            {s = path .. "magout.ogg",        t = 0.15, c = ci},
-            {s = path .. "magin.ogg",         t = 0.55, c = ci},
+            {s = path .. "magout_empty.ogg",        t = 0.13, c = ci},
+            {s = common .. "magpouch_pull_small.ogg", t = 0.35},
+            {s = path .. "magin_new.ogg",         t = 0.55, c = ci},
             {s = rattel, t = 0.5},
             {s = common .. "pistol_magdrop.ogg",  t = 0.65},
             {s = rottle, t = 1.15},
-            {s = path .. "chamber.ogg",      t = 1.45, c = ci},
+            {s = path .. "chamber.ogg",      t = 1.39, c = ci},
         },
     },
 
@@ -773,10 +813,12 @@ SWEP.Animations = {
         LHIKOut = 0.3,
         SoundTable = {
             {s = rattel, t = 0},
+            {s = common .. "magpouch_pull_small.ogg", t = 0.025, c = ci},
             {s = rattel, t = 0.3},
-            {s = path .. "magrelease.ogg",    t = 0.3, c = ci},
-            {s = path .. "magout.ogg",        t = 0.3, c = ci},
-            {s = path .. "magin.ogg",         t = 0.4, c = ci},
+            {s = path .. "magrelease.ogg",    t = 0.2, c = ci},
+            {s = path .. "magout_partial.ogg",        t = 0.2, c = ci},
+            {s = path .. "magin_new.ogg",         t = 0.35, c = ci},
+            {s = common .. "magpouch_replace_small.ogg", t = 1.2},
             {s = rottle, t = 0.65},
         },
     },
@@ -794,12 +836,13 @@ SWEP.Animations = {
         SoundTable = {
             {s = rattel, t = 0},
             {s = path .. "magrelease.ogg",    t = 0.15, c = ci},
-            {s = path .. "magout.ogg",        t = 0.15, c = ci},
-            {s = path .. "magin.ogg",         t = 0.45, c = ci},
+            {s = path .. "magout_empty.ogg",        t = 0.1, c = ci},
+            {s = common .. "magpouch_pull_small.ogg", t = 0.3, c = ci},
+            {s = path .. "magin_new.ogg",         t = 0.45, c = ci},
             {s = rattel, t = 0.5},
             {s = common .. "pistol_magdrop.ogg",  t = 0.65},
             {s = rottle, t = 0.9},
-            {s = path .. "chamber.ogg",      t = 1.45, c = ci},
+            {s = path .. "chamber.ogg",      t = 1.35, c = ci},
         },
     },
 
@@ -818,11 +861,13 @@ SWEP.Animations = {
         LHIKOut = 0.3,
         SoundTable = {
             {s = rattel, t = 0},
+            {s = common .. "magpouch.ogg", t = 0.05},
             {s = rattel, t = 0.3},
             {s = path .. "magrelease.ogg",    t = 0.4, c = ci},
-            {s = path .. "magout.ogg",        t = 0.4, c = ci},
-            {s = path .. "magin.ogg",         t = 0.52, c = ci},
+            {s = path .. "magout_partial.ogg",        t = 0.4, c = ci},
+            {s = path .. "magin_new.ogg",         t = 0.55, c = ci},
             {s = rottle, t = 0.75},
+            {s = common .. "magpouchin.ogg", t = 1.25, v = .35},
         },
     },
     ["reload_empty_33"] = {
@@ -839,12 +884,13 @@ SWEP.Animations = {
         SoundTable = {
             {s = rattel, t = 0},
             {s = path .. "magrelease.ogg",    t = 0.16, c = ci},
-            {s = path .. "magout.ogg",        t = 0.16, c = ci},
-            {s = path .. "magin.ogg",         t = 0.5, c = ci},
+            {s = path .. "magout_empty.ogg",        t = 0.16, c = ci},
+            {s = common .. "magpouch.ogg", t = 0.35, c = ci},
+            {s = path .. "magin_new.ogg",         t = 0.55, c = ci},
             {s = rattel, t = 0.5},
             {s = common .. "pistol_magdrop.ogg",  t = 0.65},
             {s = rottle, t = 1.3},
-            {s = path .. "chamber.ogg",      t = 1.46, c = ci},
+            {s = path .. "chamber.ogg",      t = 1.42, c = ci},
         },
     },
 
@@ -865,10 +911,8 @@ SWEP.Animations = {
             {s = rattel, t = 0},
             {s = path .. "magrelease.ogg",    t = 0.3, c = ci},
             {s = path .. "magout.ogg",        t = 0.3, c = ci},
-            {s = path1 .. "magout.ogg",        t = 0.3, c = ci},
             {s = rattel, t = 0.7},
             {s = path .. "magin.ogg",         t = 0.7, c = ci},
-            {s = path1 .. "magin.ogg",         t = 0.7, c = ci},
             {s = rottle, t = 1.1},
         },
     },
@@ -887,13 +931,11 @@ SWEP.Animations = {
             {s = rattel, t = 0},
             {s = path .. "magrelease.ogg",      t = 0.12, c = ci},
             {s = path .. "magout.ogg",        t = 0.12, c = ci},
-            {s = path1 .. "magout.ogg",          t = 0.12, c = ci},
             {s = path .. "magin.ogg",           t = 0.5, c = ci},
-            {s = path1 .. "magin.ogg",           t = 0.5, c = ci},
-            {s = common .. "magdrop.ogg",  t = 0.65},
+            {s = common .. "magdrop.ogg",  t = 0.55},
             {s = rattel, t = 0.7},
-            {s = path .. "sliderel_deact.ogg",  t = 1.35, c = ci},
-            {s = path .. "chamber.ogg",        t = 1.6, c = ci},
+            {s = path .. "sliderel_deact.ogg",  t = 1.33, c = ci},
+            {s = path .. "chamber.ogg",        t = 1.525, c = ci},
             {s = rottle, t = 1.6},
         },
     },
@@ -914,7 +956,7 @@ SWEP.Attachments = {
         Slot = {"optic_lp"},
         Bone = "glock_slide",
         Offset = {
-            vpos = Vector(0, -0.7, -0.15),
+            vpos = Vector(0, -0.55, -0.15),
             vang = Angle(90, 0, -90),
         },
         CorrectivePos = Vector(0, 0, 0.05),
@@ -943,7 +985,7 @@ SWEP.Attachments = {
     {
         PrintName = "Muzzle",
         DefaultAttName = "Standard Muzzle",
-        Slot = {"muzzle"},
+        Slot = {"muzzle", "ud_glock_muzzle"},
         Bone = "glock_flash",
         Offset = {
             vpos = Vector(0, 0, 0.0),
@@ -993,6 +1035,7 @@ SWEP.Attachments = {
     {
         PrintName = "Ammo Type",
         DefaultAttName = "\"FMJ\" Full Metal Jacket",
+        DefaultAttIcon = Material("entities/att/arccw_uc_ammo_generic.png", "mips smooth"),
         Slot = "uc_ammo",
     },
     {
@@ -1026,5 +1069,6 @@ SWEP.Attachments = {
         DefaultAttName = "Black Polymer",
         DefaultAttIcon = Material("entities/att/acwatt_ud_glock_material.png", "smooth mips"),
         Slot = "ud_glock_skin",
+        FreeSlot = true,
     },
 }
