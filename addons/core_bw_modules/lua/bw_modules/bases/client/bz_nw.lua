@@ -118,4 +118,6 @@ function bw.Base:ReadNetwork()
 
 	local baseTier = net.ReadUInt(4)
 	print("ai tier", baseTier)
+
+	self.Data.AIBaseTier = baseTier > 0 and baseTier
 end

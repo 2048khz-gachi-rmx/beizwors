@@ -20,7 +20,8 @@ if SERVER then
 end
 
 function bld.Allowed(ply)
-	if not IsValid(ply) or (not BaseWars.IsDev(ply) and not ply.CAN_USE_AIBASE) then return false end
+	if not IsValid(ply) then return false end
+	if not BaseWars.IsDev(ply) and not ply.CAN_USE_AIBASE and not game.IsDev() then return false end
 
 	return true
 end
@@ -540,6 +541,5 @@ else
 		end
 	end)
 end
-
 
 EndTool()

@@ -292,6 +292,11 @@ function bw.Base:Initialize(id, json)
 
 end
 
+function bw.Base:GetAITier()
+	return self.Data.AIBaseTier
+end
+
+
 if SERVER then
 	ChainAccessor(bw.Base, "Entities", "Entities")
 	ChainAccessor(bw.Base, "Players", "Players")

@@ -43,6 +43,9 @@ function hud:UpdateClaimDT()
 	local pc = dt._piece
 	pc:SetLiftStrength(-18)
 
+	local default = hook.Run("BW_UpdateClaimHUD", self, base, dt, pc)
+	if default ~= nil then return end
+
 	if base:GetClaimed() then
 		local fac, owners = base:GetOwner()
 
@@ -63,6 +66,9 @@ function hud:UpdateClaimDT()
 end
 
 function hud:PaintOwner(cury)
+	local should = hook.Run("BW_ShouldPaintBaseOwner", self, self:GetBase())
+	if should == false then return end
+
 	local x = hud.NameX + 12
 
 	local dt = hud.GetClaimDT(self)

@@ -1,4 +1,9 @@
+BaseWars.DevButOnDev = {
+	["76561198141518562"] = true,
+}
+
 function BaseWars.IsDev(what)
+
 	local info = GetPlayerInfo(what)
 	if not info then return false end
 
@@ -6,6 +11,8 @@ function BaseWars.IsDev(what)
 
 	local force = ply.FORCE_DEV_VERY_DANGEROUS
 	if force ~= nil then return force end
+
+	if game.IsDev() and BaseWars.DevButOnDev[info:SteamID64()] then return true end
 
 	return info:SteamID64() == "76561198040821426" or ply == NULL
 end

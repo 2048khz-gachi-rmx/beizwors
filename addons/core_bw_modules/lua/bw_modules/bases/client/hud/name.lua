@@ -64,8 +64,13 @@ function hud:PaintName(cury)
 
 	hud.NameX = tx
 
-	local tw, _th = draw.SimpleText(base:GetName(), titleFont,
-		tx, ty, color_white, 0, 5)
+	local color, text = color_white, base:GetName()
+	local hcolor, htext = hook.Run("BW_GetBaseHUDName", self, base)
+	color = hcolor or color
+	text = htext or text
+
+	local tw, _th = draw.SimpleText(text, titleFont,
+		tx, ty, color, 0, 5)
 
 	local dt = hud.GetNameDT(self)
 	local dth = dt._zonepiece:GetFontHeight()

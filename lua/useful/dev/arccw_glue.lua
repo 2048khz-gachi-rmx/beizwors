@@ -23,27 +23,24 @@ require("gaceio")
 file.CreateDir("glue/")
 
 local outPath = "garrysmod/data/glue/arccw_tuna_atts_%d.lua"
+local folder = "ArcCW_UR-main"
+local path = "addons/" .. folder .. "/lua/arccw/shared/attachments/"
 
 local toW = {beginning}
-local curLen = 0
+local curLen = #beginning
 local num = 1
 
-local function awful(s)
-	return s--:gsub("%f[\r\n][\r\n]+%f[^\r\n]", "\r\n")
-end
+--:gsub("%f[\r\n][\r\n]+%f[^\r\n]", "\r\n")
 
 local function flush()
 	local str = table.concat(toW)
 	print(gaceio.Write(outPath:format(num), str))
-	num = num + 1
-	curLen = 0
-	toW = {beginning}
-
 	print("flushed", outPath:format(num), #str)
-end
 
-local folder = "weps_arccw_tuna"
-local path = "addons/" .. folder .. "/lua/arccw/shared/attachments/"
+	num = num + 1
+	curLen = #beginning
+	toW = {beginning}
+end
 
 for k,v in pairs(file.Find(path .. "*.lua", "GAME")) do
 	local dat = file.Read(path .. v, "GAME")
@@ -62,6 +59,7 @@ for k,v in pairs(file.Find(path .. "*.lua", "GAME")) do
 
 	curLen = curLen + #dat
 end
+
 flush()
 
 --[=[
