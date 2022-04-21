@@ -2,7 +2,8 @@ local hud = BaseWars.HUD
 local sin = hud.StructureInfo
 local anim = sin.Anims
 
-local col = Color(100, 80, 80)
+local lvCol = Color(200, 200, 200)
+local upgCol = Color(200, 200, 200)
 
 function sin:PaintLevel(cury)
 	local scale = DarkHUD.Scale
@@ -19,8 +20,11 @@ function sin:PaintLevel(cury)
 
 	self.EntLevel = lv or self.EntLevel
 	self.EntMaxLevel = mx or self.EntMaxLevel
+
+	if lv == 1 and mx == 1 then return end
+
 	if uc then
-		self.EntUpgCost = ent:GetUpgradeCost()
+		self.EntUpgCost = ent:GetUpgradeCost() or self.EntUpgCost
 	end
 
 	if not self.EntLevel then return end
@@ -28,15 +32,27 @@ function sin:PaintLevel(cury)
 	local offy = cury
 
 	local lvText = Language("Level", self.EntLevel, self.EntMaxLevel)
-	local lvFont, sz = Fonts.PickFont("EXSB", lvText, w,
+	local lvFont, sz, lvW = Fonts.PickFont("EXSB", lvText, w,
 		DarkHUD.Scale * 36, nil, "16")
 
 	local pad = 6
 
-	local lvW, lvH = draw.SimpleText(lvText, lvFont,
-		pad, offy - sz * 0.25, color_white, 0, 5)
+	if lv == mx and lv and mx then
+		anim:MemberLerp(self, "_lvCenter", 1, 0.3, 0, 0.3)
+	elseif lv and mx then
+		anim:MemberLerp(self, "_lvCenter", 0, 0.3, 0, 0.3)
+	end
 
-	if self.EntUpgCost and self.EntMaxLevel ~= self.EntLevel then
+	local lvc = self._lvCenter or 0
+	local lvpad = Lerp(lvc, 6, w / 2 - lvW / 2)
+	lvCol:Lerp(lvc, color_white, Colors.Yellowish)
+	upgCol:Lerp(lvc, Colors.DarkerWhite, Colors.Money)
+
+	local lvW, lvH = draw.SimpleText(lvText, lvFont,
+		lvpad, offy - sz * 0.25, lvCol, 0, 5)
+
+	if self.EntUpgCost and lvc < 1 then
+		upgCol.a = upgCol.a * (1 - lvc)
 		local str = Language("UpgCost", self.EntUpgCost)
 
 		-- whats upfont
@@ -48,10 +64,11 @@ function sin:PaintLevel(cury)
 
 		self:SetWide(math.max(self:GetWide(), maxW))
 		local _, th = draw.SimpleText(str,
-			upFont, maxW - tw - pad, offy + lvH / 2 - sz * 0.25, color_white, 0, 1)
+			upFont, maxW - tw - pad, offy + lvH / 2 - sz * 0.25, upgCol, 0, 1)
 
 		lvH = math.max(lvH, th)
 		lvW = lvW + tw + pad
+		print("lvw", lvW, tw, pad)
 	end
 
 	offy = offy - sz * 0.25 + lvH
