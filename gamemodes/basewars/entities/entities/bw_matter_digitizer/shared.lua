@@ -29,19 +29,19 @@ ENT.SubModels = {
 ENT.Levels = {
 	{
 		Cost = 0,
-		Rate = 200,
+		Rate = 350,
 	}, {
 		Cost = 5e6,
-		Rate = 500,
+		Rate = 700,
 	}, {
 		Cost = 50e6,
-		Rate = 850,
+		Rate = 1250,
 	}, {
 		Cost = 300e6,
-		Rate = 1200,
+		Rate = 2000,
 	}, {
 		Cost = 1.5e9,
-		Rate = 1750,
+		Rate = 3000,
 	}
 }
 

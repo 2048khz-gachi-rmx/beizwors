@@ -97,7 +97,7 @@ function ENT:PoweredThink(pw)
 		if self.Status:Get(i) == to then continue end
 
 		local have = self.Status:Get(i, 0)
-		local give = math.min(to - have, pw)
+		local give = math.min(to - have, pw) -- this can be negative btw
 		self.Status:Set(i, have + give)
 
 		if give > 0 then
@@ -107,7 +107,7 @@ function ENT:PoweredThink(pw)
 			end
 		end
 
-		pw = pw - give
+		pw = pw - math.max(0, give)
 		if pw == 0 then return end
 	end
 end

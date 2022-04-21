@@ -168,7 +168,7 @@ function ENT:MakeToFrom(width, vault, bp)
 
 	hook.Add("InventoryItemDragStop", toVt, function(_, itFr, itm, rec)
 		itm = itm or rec:GetItem() -- huh
-		unhovTime = SysTime()  + 0.25
+		unhovTime = SysTime() + 0.25
 
 		if itFr:GetInventory().IsVault then
 			vault:FadeQueue(false)
@@ -181,10 +181,11 @@ function ENT:MakeToFrom(width, vault, bp)
 	hook.Add("InventoryItemHovered", toVt, function(_, itFr, itm)
 		if not itm then return end
 		local inv = itm:GetInventory()
-		if not inv or (not inv.IsVault and not inv.IsBackpack) then return end
+		if not inv or (not inv.IsVault and not inv.IsBackpack) then
+			return
+		end
 
 		unhovTime = nil
-
 
 		if itm:GetInventory().IsVault then
 			fromVt.Cost = fromVt.Cost or 0
@@ -199,6 +200,10 @@ function ENT:MakeToFrom(width, vault, bp)
 
 	hook.Add("InventoryItemUnhovered", toVt, function(_, itFr, itm)
 		if not itm then return end
+		local inv = itm:GetInventory()
+		if not inv or (not inv.IsVault and not inv.IsBackpack) then
+			return
+		end
 
 		if unhovTime ~= math.huge then
 			unhovTime = SysTime() + 0.25
