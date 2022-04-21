@@ -24,15 +24,19 @@ local BWAddons = {
 	"2131057232", -- arccw base(d on what)
 	-- "2710878169", -- arccw muzzleflashes
 	"2131058270", -- arccw cs+
-	"2175261690", -- arccw fa:s 1
+	--"2175261690", -- arccw fa:s 1
+	"2795112951", -- arccw fa:s 1 reupload
 	"2274508982", -- arccw: fas2 WIP one
-	"2183045158", -- arccw kf2 dedeagle
-	"2552928606", -- arccw uhhh tuna
+	--"2183045158", -- arccw kf2 dedeagle
+	--"2552928606", -- arccw uhhh tuna
 	"2131161276", -- arccw m9k "extras"
 	"2257255110", -- arccw GO
 	"2393318131", -- arccw fa:s 2
 	"2427171109", -- gso unlamifier
 	"2409364730", -- gunsmith offensive extras
+
+	"2640556672", --arccw uc content
+	"2641653126", --arccw uc itself
 
 	"2155366756", -- vmanip
 
