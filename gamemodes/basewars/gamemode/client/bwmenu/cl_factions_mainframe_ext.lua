@@ -9,6 +9,16 @@ local pickFactionButtonTextColor = function(h, s, v)
 	return v > 0.75 and color_black or color_white
 end
 
+function BW.PickContrast(col, thresh, bright, dark)
+	local h, s, v = col:ToHSV()
+
+	if v > (thresh or 0.4) then
+		return dark or color_black
+	else
+		return bright or color_white
+	end
+end
+
 local fonts = BaseWars.Menu.Fonts
 
 --[[------------------------------]]

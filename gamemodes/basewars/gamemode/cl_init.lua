@@ -14,37 +14,41 @@ ScoreBoard = ScoreBoard or nil
 
 surface.CreateFont("SB_TeamName", {
 	font = "Open Sans SemiBold",
-	size = 36,
+	size = 28,
 	weight = 600,
 	antialias = true,
 })
 
-local scale = 1
-
-local render = render
 local c = Material("vgui/circle")
 c:SetInt("$alpha", 1)
 c:Recompute()
-function CreatePlayerFrame(sb, ply)
 
+local plyFrameSize = 48
+
+function CreatePlayerFrame(sb, ply)
 	local f = vgui.Create("EButton", sb)
 
-	f:SetTall(64)
+	f:SetTall(plyFrameSize)
 	f.DrawShadow = false
-	f.ExpandTo = 64
-	f:SetColor(Color(50, 50, 50), true)
+	f.ExpandTo = 48
+	f.RBRadius = 8
 
 	function f:OnClick()
-		for k,v in pairs(sb.Frs) do
+		for k,v in pairs(sb.plys) do
 			if v ~= self and IsValid(v) then v:RetractBtn() end
 		end
 	end
 
-	local av = vgui.Create("AvatarImage", f)
+	f:On("ExpandChanged", "fuck", function()
+		sb:UpdateSize()
+	end)
+
+	local av = vgui.Create("CircularAvatar", f)
 	av:SetPlayer(ply, 64)
-	av:SetSize(48, 48)
-	av.HovSize = 56
-	av.X = 12
+	av:SetSize(40, 40)
+	av.HovSize = 48
+	av.X = 8
+	av.Rounding = 8
 	av:CenterVertical()
 
 	av:SetPaintedManually(true)
@@ -123,7 +127,7 @@ function CreatePlayerFrame(sb, ply)
 
 		local mute = vgui.Create("FButton", f.ExpandPanel)
 		mute.DrawShadow = false
-		mute:SetSize(64, 32)
+		mute:SetSize(80, 32)
 		mute:SetColor(190, 50, 50)
 
 		mute.Label = "Mute"
@@ -131,13 +135,10 @@ function CreatePlayerFrame(sb, ply)
 		mute:Dock(RIGHT)
 		mute:DockMargin(4, 8, 16, 8)
 		local muted = ply:IsMuted()
+
 		function mute:PrePaint(w,h)
 			if IsValid(ply) then muted = ply:IsMuted() end
-			if muted ~= 0 then
-					self.Label = "Unmute"
-				return
-			end
-			self.Label = "Mute"
+			self.Label = muted and "Unmute" or "Mute"
 		end
 
 		function mute:DoClick()
@@ -248,7 +249,12 @@ function CreatePlayerFrame(sb, ply)
 
 	local avSz = av:GetSize()
 
+	local dim = Color(0, 0, 0)
+
 	function f:PostPaint(w, h)
+		dim:Set(col)
+		BW.DimColor(dim, 0.6, 0.7)
+		self:SetColor(dim, true)
 
 		if not IsValid(ply) then --ok bye bye
 			if not self.ByeBye then
@@ -268,13 +274,14 @@ function CreatePlayerFrame(sb, ply)
 		end
 
 		local newSz = Lerp(av.HovFrac or 0, avSz, av.HovSize)
-		av.X = 16 - (newSz - avSz) / 2
-
+		av.X = 4 - (newSz - avSz) / 2
+		av.Rounding = Lerp(av.HovFrac or 0, 8, 0)
 		av:SetSize(newSz, newSz)
 		-- centervertical wont work properly due to expand button
 		av.Y = h / 2 - av:GetTall() / 2
 
-		local _, nh = draw.SimpleText(lastnick .. " ", "EXM32", av.X + av:GetWide() + 8, 2, color_white)
+		local textCol = BW.PickContrast(dim, 0.5)
+		local _, nh = draw.SimpleText(lastnick .. " ", "EXM32", av.X + av:GetWide() + 8, 2 - 32 * 0.2, textCol)
 
 		local infoFont = "OS20"
 		local lines = 2
@@ -282,7 +289,7 @@ function CreatePlayerFrame(sb, ply)
 
 		local y = h / 2 - lHgt / 2
 
-		local _, th = draw.SimpleText(Language.Money(mon), "OS20", 88, nh, color_white)
+		local _, th = draw.SimpleText(Language.Money(mon), "OS20", av.X + av:GetWide() + 16, nh * 0.75, textCol)
 
 		local time = string.FormattedTime(time)
 		local str = "%s%s%s"
@@ -302,7 +309,7 @@ function CreatePlayerFrame(sb, ply)
 		secs = ("%ss."):format(time.s)
 		str = str:format(hrs, mins, secs)
 
-		_, th = draw.SimpleText(str, "OS20", w - 32, y, color_white, 2, 5)
+		_, th = draw.SimpleText(str, "OS20", w - 32, y, textCol, 2, 5)
 		y = y + th
 
 		local aW, aH = av:GetSize()
@@ -310,7 +317,7 @@ function CreatePlayerFrame(sb, ply)
 
 		col.a = 255
 
-		draw.BeginMask()
+		--[[draw.BeginMask()
 
 			surface.SetDrawColor(color_white)
 			draw.Circle(x + aW/2, y + aH/2, aW / 2 - 2, 16)
@@ -319,11 +326,12 @@ function CreatePlayerFrame(sb, ply)
 			av:SetAlpha(255)
 			av:PaintManual()
 
-		draw.DisableMask()
+		draw.DisableMask()]]
+		av:PaintManual()
 
-		surface.SetDrawColor(ColorAlpha(col, self:GetAlpha()))
+		--[[surface.SetDrawColor(ColorAlpha(col, self:GetAlpha()))
 		surface.DrawMaterial("https://i.imgur.com/VMZue2h.png",
-			"circle_outline.png", x, y, aW, aH)
+			"circle_outline.png", x, y, aW, aH)]]
 
 
 	end
@@ -346,12 +354,43 @@ function GM:ScoreboardShow()
 	local sw, sh = ScrW(), ScrH()
 
 	local ww = math.min(sw*0.8, 900)
-	sb:SetSize(ww, sh * 0.7)
+	sb:SetSize(ww, sh * 0.92)
 	sb:Center()
 
-	sb:DockPadding(8, sb.HeaderSize + 16, 8, 12)
+	sb:DockPadding(8, sb.HeaderSize, 8, 12)
 
 	sb:PopIn(0.04)
+
+	local head = vgui.Create("InvisPanel", sb)
+	head:Dock(TOP)
+	head:SetTall(56)
+
+	local ftext = "Lodestar Basewars"
+	local font1 = "OSB36"
+
+	local ftx2 = "Currently housing %d/%d players"
+	local font2 = "EX24"
+
+	local icSz = head:GetTall() * 0.8
+	local ic = Icons.Lodestar:Copy()
+
+	function head:PostPaint(w, h)
+		local text = ftext
+		local tx2 = ftx2:format(player.GetCount(), game.MaxPlayers())
+
+		local tw1, th1 = surface.GetTextSizeQuick(text, font1)
+		local tw2, th2 = surface.GetTextSizeQuick(tx2, font2)
+
+		local rw, rh = ic:RatioSize(icSz, icSz)
+		local ix = w / 2 - math.max(tw1, tw2) / 2 - rw / 2 - 8
+		local iy = h / 2 - rh / 2
+
+		ic:Paint(ix, iy, rw, rh)
+
+		local x = ix + rw + 16
+		draw.SimpleText(text, font1, x, 2, color_white)
+		draw.SimpleText(tx2, font2, x + tw1 / 2 - tw2 / 2, h - th2 - 2, color_white)
+	end
 
 	local frs = {}
 	local scr
@@ -367,21 +406,23 @@ function GM:ScoreboardShow()
 		end
 	end
 
-	local function NewPlayerFrame(ply, col)
-		local f = CreatePlayerFrame(scr, ply)
+	local function NewPlayerFrame(ply, col, parTo)
+		local f = CreatePlayerFrame(parTo, ply)
 
 		f:InvalidateParent(true)
 
 		f.TeamColor = col --if col isnt provided it'll update
 
 		f:Dock(TOP)
-		f:DockMargin(16, 6, 24, 6)
+		f:DockMargin(16, 0, 24, 6)
 
 		--py = py + f:GetTall() + 8
 
 		frs[ply] = f
 		return f
 	end
+
+	local teamFrames = {}
 
 	function sb:Think()
 
@@ -392,9 +433,8 @@ function GM:ScoreboardShow()
 		end
 
 		for k,v in ipairs(player.GetAll()) do
-			if not frs[v] then
-				local f = NewPlayerFrame(v)
-				f:PopIn()
+			if not frs[v] and v:Team() and IsValid(teamFrames[v:Team()]) then
+				teamFrames[v:Team()]:AddPlayer(v)
 			end
 		end
 	end
@@ -406,9 +446,12 @@ function GM:ScoreboardShow()
 	scr.BackgroundColor = Color(0, 0, 0, 110)
 	scr:GetCanvas():DockPadding(16, 4, 16, 8)
 
-	local v = scr:GetVBar()
+	local vbar = scr:GetVBar()
+	vbar:SetEnabled(true)	--goddamnit garry
 
-	v:SetEnabled(true)	--goddamnit garry
+	scr:On("ScrollbarAppear", "aaa", function()
+		scr:GetCanvas():DockPadding(16, 4, vbar:IsVisible() and 16 - vbar:GetWide() or 16, 8)
+	end)
 
 	local pteams = {}
 
@@ -428,26 +471,54 @@ function GM:ScoreboardShow()
 		if not teaminfo[k] then print('the fuck?') continue end
 
 		local col = teaminfo[k].Color
+		local dim = BW.DimmedColor(col, 0.35, 0.5, true)
 		local name = teaminfo[k].Name
 		local tn = vgui.Create("InvisPanel", scr)
 		local bgCol = Colors.Button
 
-		function tn:Paint(w,h)
-			draw.RoundedBox(8, 0, 0, w, h, bgCol)
-			draw.SimpleText(name, "SB_TeamName", 16, h/2, col, 0, 1)
-
+		function tn:Paint(w, h)
+			local bord = 2
+			draw.RoundedBox(8, 0, 0, w, h, col)
+			draw.RoundedBox(8, bord, bord, w - bord * 2, h - bord * 2, dim)
+			draw.SimpleText(name, "SB_TeamName", 16, 2, col)
 		end
+
+		tn.plys = {}
+		function tn:AddPlayer(ply)
+			if not IsValid(ply) then errorNHf("what %s", ply) return end
+			if self.plys[ply] then return end
+
+			self.plys[ply] = NewPlayerFrame(ply, col, self)
+			self:SetTall(28 + 2 * 2 +
+				table.Count(self.plys) * (plyFrameSize + 6) - 6
+				+ 8
+			)
+		end
+
+		function tn:UpdateSize()
+			local h = 28 + 2 * 2
+
+			for k,v in pairs(self.plys) do
+				h = h + (v.Expand and v.ExpandTo or 0) + v:GetRealH() + 8
+			end
+
+			self:SizeTo(self:GetWide(), h, 0.3, 0, 0.3)
+		end
+
+		teamFrames[k] = tn
+
 		tn:Dock(TOP)
 		tn:DockMargin(0, 4, 18, 4)
-		tn:SetTall(48)
+		tn:DockPadding(0, 32, 0, 8)
 
 		for num, ply in pairs(v) do
-			NewPlayerFrame(ply, col)
+			tn:AddPlayer(ply)
 		end
 
 		--ty = ty + py + 24
 	end
-	v:SetEnabled(false)
+
+	vbar:SetEnabled(false)
 	scr.Frs = frs
 end
 

@@ -405,6 +405,10 @@ function ebutton:PrePaint(w,h)
 
 end
 
+function ebutton:GetRealH()
+	return self.FakeH
+end
+
 function ebutton:ExpandPaint(w,h)
 	draw.RoundedBoxEx(4, 0, 0, w, h, Color(35, 35, 35), false, false, true, true)
 end
@@ -437,7 +441,7 @@ end
 
 
 function ebutton:DoClick()
-	if self.Expandable == false then print("not expandable bruh") return end
+	if self.Expandable == false then return end
 	local should = self:OnClick()
 
 	if should ~= false then
@@ -446,6 +450,7 @@ function ebutton:DoClick()
 
 	self.ClickHeight = self:GetTall()
 	self:To("ExpandFrac", self.Expand and 1 or 0, self.ExpandTime, 0, self.Easing)
+	self:Emit("ExpandChanged")
 end
 
 function ebutton:GetDrawableHeight()

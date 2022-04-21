@@ -52,7 +52,13 @@ local getDimmed = function(col, amt, sat, safe)
 	return col
 end
 
+function BW.DimmedColor(...)
+	return getDimmed(...)
+end
 
+function BW.DimColor(...)
+	return dim(...)
+end
 
 --[[------------------------------]]
 --	   	   Action Selection

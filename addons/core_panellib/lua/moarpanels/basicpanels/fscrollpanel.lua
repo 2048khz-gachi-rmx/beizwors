@@ -191,6 +191,10 @@ function FScrollPanel:DrawBorder(w, h, bt, bb, br, bl)
 
 end
 
+function FScrollPanel:OnScrollbarAppear()
+	self:Emit("ScrollbarAppear", self:GetVBar())
+end
+
 function FScrollPanel:GetBorders()
 	local bb, bt = self.BorderBH, self.BorderTH
 	local br, bl = self.BorderR, self.BorderL
