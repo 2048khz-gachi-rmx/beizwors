@@ -3,8 +3,8 @@
 AIBases.WeaponPools = {
 	shotgun = {
 		{"cw_shorty"},
-		{"cw_saiga12k_official", "cw_m3super90"},
-		{"cw_xm1014_official"}
+		{"cw_saiga12k_official", "cw_m3super90", "arccw_go_mag7"},
+		{"cw_xm1014_official", "arccw_go_m1014"}
 	},
 	ar = {
 		{"cw_g36c", "cw_ak74"},
@@ -13,12 +13,14 @@ AIBases.WeaponPools = {
 	},
 
 	smg = {
-		{"cw_mp5", "cw_mac11", "cw_ump45"},
-		{"cw_mp7_official", "cw_mp9_official"}
+		{"cw_mp5", "cw_mac11", "cw_ump45", "arccw_go_bizon"},
+		{"cw_mp7_official", "cw_mp9_official",},
+		{"arccw_fml_fas_mp5", "arccw_go_p90"}
 	},
 	pistol = {
-		{"cw_makarov", "cw_p99",},
-		{"cw_fiveseven", "cw_deagle",}
+		{"cw_makarov", "cw_p99", "arccw_go_p250"},
+		{"cw_fiveseven", "arccw_fml_fas_g20",},
+		{"cw_deagle", "arccw_deagle50", "arccw_mifl_fas2_ragingbull"}
 	},
 	sniper = {
 		{},
