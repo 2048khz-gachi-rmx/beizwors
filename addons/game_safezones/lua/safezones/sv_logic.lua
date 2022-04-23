@@ -6,6 +6,7 @@ local rtrk = Safezones.RemTracker
 
 Safezones.Data = Safezones.Data or muldim:new()
 local data = Safezones.Data
+data.Linger = data.Linger or muldim:new()
 
 function Safezones.StartTouch(brush, ent)
 	local t = trk:GetOrSet(ent)
@@ -37,9 +38,12 @@ function Safezones.EndTouch(brush, ent)
 	local t = trk:GetOrSet(ent)
 	local dat = data:GetOrSet(ent)
 
+	local last = next(t) == brush and not next(t, brush)
+
+	hook.Run("SafezoneOnExit", last, ent, brush)
+
 	t[brush] = nil
 	rtrk[ent] = nil
-	local last = table.IsEmpty(t)
 
 	hook.Run("SafezoneExited", last, ent, brush)
 	if not last then return end
@@ -66,10 +70,16 @@ hook.Add("SafezoneEntered", "GiveInvuln", function(first, ent)
 	if first and IsPlayer(ent) then
 		ent:SetNWFloat("Safezone", CurTime())
 		ent:SetNWBool("InSafezone", true)
-
 	end
 
+end)
 
+hook.Add("SafezoneOnExit", "LingerTrack", function(last, ent)
+	if not last or not IsPlayer(ent) then return end
+
+	if Safezones.IsProtected(ent, true) and Safezones.ShouldLinger(ent) then
+		Safezones.AddLinger(ent)
+	end
 end)
 
 hook.Add("SafezoneExited", "GiveInvuln", function(last, ent)
@@ -77,12 +87,6 @@ hook.Add("SafezoneExited", "GiveInvuln", function(last, ent)
 	if last and IsPlayer(ent) then
 		ent:SetNWFloat("Safezone", CurTime())
 		ent:SetNWBool("InSafezone", false)
-
-		local t = data:GetOrSet(ent)
-
-		if Safezones.IsProtected(ent, true) then
-			t.exitWithProt = CurTime()
-		end
 	end
 end)
 
@@ -100,9 +104,6 @@ function Safezones.TimeSinceOut(ent)
 	return CurTime() - (t.exitTime or 0), t.exitTime
 end
 
-Safezones.TimeTillProtection = 5
-Safezones.ProtectionLinger = 30
-
 function Safezones.IsProtecting(ent)
 	-- returns whether the entity is in the process of being protected
 	local t = data:GetOrSet(ent)
@@ -117,29 +118,96 @@ function Safezones.IsProtecting(ent)
 	return CurTime() - Safezones.TimeSinceIn(ent) < Safezones.TimeTillProtection
 end
 
-function Safezones.IsProtected(ent, nolinger)
-	-- returns whether the entity is already protected
+function Safezones.AddLinger(ply, t)
+	t = t or CurTime()
+	data.Linger[ply] = math.max(t, data.Linger[ply] or 0)
 
-	if not nolinger and not Safezones.IsIn(ent) then
-		-- ?
+	local dat = data:GetOrSet(ply)
+	dat.exitWithProt = math.max(t, dat.exitWithProt or 0)
+
+	ply:SetNWFloat("LingerStart", t)
+end
+
+function Safezones.ResetLinger(ply)
+	local t = data:GetOrSet(ply)
+	t.exitWithProt = nil
+
+	ply:SetNWFloat("LingerStart", 0)
+	data.Linger[ply] = nil
+end
+
+function Safezones.IsLingering(ent)
+	local t = data.Linger[ent]
+	if not t then return false end
+
+	if not Safezones.ShouldLinger(ent) then
+		Safezones.ResetLinger(ent)
 		return false
 	end
 
-	return Safezones.TimeSinceIn(ent) > Safezones.TimeTillProtection
+	if CurTime() - t > Safezones.ProtectionLinger then
+		Safezones.ResetLinger(ent)
+		return false
+	end
+
+	return true
 end
 
-hook.Add("PlayerShouldTakeDamage", "Safezones", function( ply, atk )
-	if not IsValid(ply) then return end
+local whitelist = {
+	weapon_physgun = true,
+	weapon_physcannon = true,
+	hands = true,
+	gmod_camera = true,
+	gmod_tool = true,
+}
 
-	local vicIn, atkIn = Safezones.IsIn(ply), Safezones.IsIn(atk)
-	if atkIn and vicIn then return false end
+function Safezones.ShouldLinger(ply)
+	local wep = ply:GetActiveWeapon()
+	if IsValid(wep) and not whitelist[wep:GetClass()] then return false end
+	if ply:InRaid() then return false end
 
-	if ply:GetNWFloat("Safezone", 0) ~= 0 and ply:GetNWFloat("Safezone", 0) < CurTime() - 5 then return false end
-	if atk:GetNWFloat("Safezone", 0) > 0 then return false end
+	return true
+end
+
+timer.Create("SafezoneLinger", 0.25, 0, function()
+	for k,v in pairs(data.Linger) do
+		if not k:IsValid() then data.Linger[k] = nil continue end
+		if not Safezones.ShouldLinger(k) then
+			Safezones.ResetLinger(k)
+		end
+	end
+end)
+
+hook.Add("PlayerShouldTakeDamage", "Safezones", function(vic, atk)
+	if not IsValid(vic) then return end
+
+	local vicIn, atkIn = Safezones.IsIn(vic), Safezones.IsIn(atk)
+	if atkIn and vicIn then return false end -- cant attack if both are in safezone
+
+	if Safezones.IsProtected(atk, true) then return false end -- protected cant attack
+	if Safezones.IsProtected(vic) then return false end -- cant attack protected (w/ linger)
 end)
 
 hook.Add("PostEntityTakeDamage", "Safezones", function(ent, dmg, took)
 	if not took or dmg:GetDamage() == 0 then return end
 
 	data:GetOrSet(ent).lastDmg = CurTime()
+
+	local atk = dmg:GetAttacker()
+
+	if IsPlayer(atk) then
+		Safezones.ResetLinger(atk)
+	end
+end)
+
+hook.Add("PlayerSpawnObject", "Safezones", function(ply)
+	Safezones.ResetLinger(ply)
+end)
+
+hook.Add("PlayerSpawnedProp", "Safezones", function(ply)
+	Safezones.ResetLinger(ply)
+end)
+
+hook.Add("ArcCW_GunDeployed", "Safezones", function(wep, ply)
+	Safezones.ResetLinger(ply)
 end)
