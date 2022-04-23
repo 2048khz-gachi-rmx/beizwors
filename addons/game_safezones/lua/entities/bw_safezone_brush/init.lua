@@ -1,7 +1,7 @@
 ENT.Base = "base_brush"
 ENT.Type = "brush"
 
-include("logic.lua")
+-- include("logic.lua")
 
 Safezones = Safezones or {}
 Safezones.Brushes = Safezones.Brushes or {}
@@ -72,13 +72,7 @@ function Safezones.Reload()
 		me:SetBrushBounds(v[1], v[2])
 	end
 end
+
 hook.Add("InitPostEntity", "SafezonesSpawn", Safezones.Reload)
 hook.Add("OnReloaded", "SafezonesSpawn", Safezones.Reload)
-
-hook.Add("PlayerShouldTakeDamage", "Safezones", function( ply, atk )
-	if not IsValid(ply) then return end
-	if ply:GetNWFloat("Safezone", 0) ~= 0 and ply:GetNWFloat("Safezone", 0) < CurTime() - 5 then return false end
-	if atk:GetNWFloat("Safezone", 0) > 0 then return false end
-
-end)
 hook.Add("PostCleanupMap", "Safezones", Safezones.Reload)

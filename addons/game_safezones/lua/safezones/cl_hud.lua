@@ -27,9 +27,12 @@ hook.Add("HUDPaint", "SafeZone", function()
 	anim = anim or Animatable("safezones")
 	anim.Safe = anim.Safe or 0
 
-	local safe = LocalPlayer():GetNWFloat("Safezone", 0)
+	local me = LocalPlayer()
 
-	if safe > 0 then
+	local isIn = me:GetNWBool("InSafezone", false)
+	local safe = me:GetNWFloat("Safezone", 0)
+
+	if isIn and safe > 0 then
 		anim:To("Fr", 1, 0.3, 0, 0.3)
 	else
 		anim:To("Fr", 0, 0.2, 0, 0.3)
@@ -58,14 +61,15 @@ hook.Add("HUDPaint", "SafeZone", function()
 	local txt = "??? forsenE"
 
 	-- in process
-	local in_safe = CurTime() - safe < 5 and CurTime() - safe > 0
-	local is_safe = CurTime() - safe > 5 and safe ~= 0
+	local ttp = Safezones.TimeTillProtection
+	local in_safe = isIn and CurTime() - safe < ttp and CurTime() - safe > 0
+	local is_safe = isIn and CurTime() - safe > ttp and safe ~= 0
 
 	if in_safe then
 		anim:To("Safe", 0, 0.3, 0, 0.3)
 
 		icona = 200 + math.sin(CurTime()*25)*100
-		txt = ("You will be safe in %s seconds."):format(5 - math.Round(CurTime() - safe))
+		txt = ("You will be safe in %s seconds."):format(ttp - math.floor(CurTime() - safe))
 		txsz = 1
 	elseif is_safe then
 		anim:To("Safe", 1, 0.3, 0, 0.3)
