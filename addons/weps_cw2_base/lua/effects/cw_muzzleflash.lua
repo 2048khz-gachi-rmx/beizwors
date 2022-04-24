@@ -11,7 +11,7 @@ function EFFECT:Init(fx)
 		return
 	end
 
-	local ow = self:GetOwner()
+	local ow = ent:GetOwner()
 	local npc = not ow:IsPlayer()
 	local human = not npc
 
