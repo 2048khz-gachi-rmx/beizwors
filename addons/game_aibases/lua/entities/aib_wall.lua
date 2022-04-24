@@ -28,7 +28,7 @@ function ENT:TestCollision( startpos, delta, isbox, extents )
 		return
 	end
 
-	colT.Hitpos = hit
+	colT.HitPos = hit
 	colT.Normal = norm
 	colT.Fraction = frac
 
