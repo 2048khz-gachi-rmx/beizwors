@@ -201,14 +201,14 @@ function bld.NavClass:PostSpawn(navs, lnavs)
 				printf("!! failed to find lua nav with ID:`%s` to connect to %d !!", v, self.id)
 				continue
 			end
-			print("connecting lua handles", lnavs[v].handle, self.handle)
+
 			self.handle:ConnectTo(lnavs[v].handle)
 		else
 			if not navs[v] then
 				printf("!! failed to find Cnav with ID:`%s` to connect to %d !!", v, self.id)
 				continue
 			end
-			print("connecting to map nav", navs[v], self.handle)
+
 			self.handle:ConnectTo(navs[v])
 		end
 	end

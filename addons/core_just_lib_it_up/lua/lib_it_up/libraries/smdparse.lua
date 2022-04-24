@@ -1,5 +1,4 @@
 function smdparse(what, asdata)
-	print("who?", what, asdata)
 	local path = what
 	local smd = asdata and what or file.Read(path, "DATA")
 
