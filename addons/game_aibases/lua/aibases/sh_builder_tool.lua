@@ -310,7 +310,7 @@ if CLIENT then
 		end
 
 		local props = bld.NW:Get(LocalPlayer():UserID())
-		if props[ent] then
+		if props and props[ent] then
 			net.Start("aib_layout")
 				net.WriteUInt(0, 4)
 				net.WriteEntity(ent)
@@ -507,8 +507,13 @@ else
 			-- mark
 			local ent = net.ReadEntity()
 			local how = net.ReadUInt(4)
-			if how == 15 then how = nil end
-			if ent.IsAIBaseBot then how = AIBases.BRICK_ENEMY end
+
+			if how == 15 then
+				how = nil
+			else
+				if ent.IsAIBaseBot then how = AIBases.BRICK_ENEMY end
+				if ent.IsMorphDoor then how = AIBases.BRICK_DOOR end
+			end
 
 			setEnum(ply, ent, how)
 		elseif mode == 1 then

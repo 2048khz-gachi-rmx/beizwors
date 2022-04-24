@@ -101,7 +101,6 @@ function ENT:InitializeTier(tier)
 		self:SetModel(mdl)
 	else
 		self:SetModel(self.ModelOverride)
-		print("le model", self.ModelOverride)
 	end
 
 	local wep = self.ForceWeapon

@@ -8,6 +8,7 @@ local cols = {
 	[AIBases.BRICK_PROP] = Colors.Money,
 	[AIBases.BRICK_BOX] = Colors.Golden,
 	[AIBases.BRICK_ENEMY] = Colors.Reddish,
+	[AIBases.BRICK_DOOR] = Color(0, 255, 255),
 }
 
 hook.Add("PostDrawTranslucentRenderables", "aibases", function()
