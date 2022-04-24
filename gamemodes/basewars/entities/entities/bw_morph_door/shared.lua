@@ -28,7 +28,6 @@ function ENT:DerivedDataTables()
 			if v1 and v2 and v1 ~= Vector(0, 0, 0) and v2 ~= Vector(0, 0, 0) then
 				self:BoksFiziks(v1, v2)
 			elseif v1 and v2 then
-				print("brr")
 				self:PhysicsDestroy()
 				self:EnableCustomCollisions(false)
 			end
@@ -86,15 +85,15 @@ function ENT:CreateCollision()
 		return true
 	end
 
-	self:PhysicsInitConvex(self.BoxMesh)
-	self:SetMoveType( MOVETYPE_VPHYSICS )
-	self:SetSolid( SOLID_VPHYSICS )
-	self:EnableCustomCollisions( true )
-	self:SetCustomCollisionCheck(true)
-	self:CollisionRulesChanged()
+	-- self:PhysicsInitConvex(self.BoxMesh)
+	self:SetMoveType( MOVETYPE_NONE )
+	-- self:SetSolid( SOLID_VPHYSICS )
+	-- self:EnableCustomCollisions( true )
+	-- self:SetCustomCollisionCheck(true)
+	-- self:CollisionRulesChanged()
 end
 
-hook.Add("ShouldCollide", "NocollideOpenDoors", function(ent1, ent2)
+--[[hook.Add("ShouldCollide", "NocollideOpenDoors", function(ent1, ent2)
 	if not ent1.IsMorphDoor and not ent2.IsMorphDoor then return end
 
 	local door = ent1.IsMorphDoor and ent1 or ent2
@@ -104,7 +103,30 @@ hook.Add("ShouldCollide", "NocollideOpenDoors", function(ent1, ent2)
 	if door:GetOpen() then
 		return false
 	end
-end)
+end)]]
+
+function ENT:TestCollision( startpos, delta, isbox, extents )
+	if not IsValid( self.PhysCollide ) then
+		return
+	end
+
+	local max = extents
+	local min = -extents
+	max.z = max.z - min.z
+	min.z = 0
+
+	local hit, norm, frac = self.PhysCollide:TraceBox( self:GetPos(), self:GetAngles(), startpos, startpos + delta, min, max )
+
+	if not hit then
+		return
+	end
+
+	return {
+		HitPos = hit,
+		Normal  = norm,
+		Fraction = frac,
+	}
+end
 
 function ENT:BoksFiziks(min, max)
 	local x0 = min.x
@@ -127,14 +149,15 @@ function ENT:BoksFiziks(min, max)
 	}
 
 	self.BoxMesh = mesh
-	self:PhysicsInitConvex(mesh)
+	self.PhysCollide = CreatePhysCollideBox(min, max)
 
-	-- Set up solidity and movetype
-	self:SetMoveType( MOVETYPE_VPHYSICS )
-	self:SetSolid( SOLID_VPHYSICS )
-
-	-- Enable custom collisions on the entity
-	self:EnableCustomCollisions( true )
+	if SERVER then
+		self:PhysicsInitBox(min, max)
+		--self:PhysicsInitConvex(mesh)
+		self:SetMoveType( MOVETYPE_NONE )
+		self:SetSolid( SOLID_VPHYSICS )
+	end
+	-- self:EnableCustomCollisions( true )
 
 	if SERVER then
 		self:SetBound1(min)
@@ -147,10 +170,25 @@ function ENT:BoksFiziks(min, max)
 
 	self:SetInstalled(true)
 	self:SetOpen(false)
-	self:SetCustomCollisionCheck(true)
+	self:EnableCustomCollisions(true)
+	-- self:SetCustomCollisionCheck(true)
+	-- self:CollisionRulesChanged()
 end
 
 function ENT:GetBounds()
+	if istable(self.ForceBounds) then
+		local verts = {}
+		local vertDist = {}
+		local pos = self:GetPos()
+
+		for i=1, 4 do
+			verts[i] = self.ForceBounds[i]
+			vertDist[i] = pos:Distance(verts[i])
+		end
+
+		return verts, vertDist, true
+	end
+
 	sides[1], sides[2] = self:GetRight(), self:GetUp()
 	local pos = self:GetPos()
 	trtbl.filter = self

@@ -11,6 +11,12 @@ function ENT:Think()
 
 end
 
+function ENT:Install()
+	self:CreateCollision()
+	self:SetInstalled(true)
+	self.HasPhysics = true
+end
+
 
 function ENT:Use(ply)
 	if self.HasPhysics then
@@ -18,9 +24,10 @@ function ENT:Use(ply)
 
 		if close then
 			self:CreateCollision()
+			self:SetCollisionGroup(COLLISION_GROUP_NONE)
 			self:SetOpen(false)
 		else
-			--self:PhysicsInit(SOLID_NONE)
+			self:SetCollisionGroup(COLLISION_GROUP_WORLD)
 			self:SetOpen(true)
 		end
 		--self:PhysicsInit(SOLID_VPHYSICS)
@@ -35,9 +42,7 @@ function ENT:Use(ply)
 
 	--if not allHit then ply:ChatPrint("no") return end
 
-	self:CreateCollision()
-	self:SetInstalled(true)
-	self.HasPhysics = true
+	self:Install()
 end
 
 function ENT:Think()
