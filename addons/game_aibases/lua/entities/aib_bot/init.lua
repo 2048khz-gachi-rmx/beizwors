@@ -40,7 +40,7 @@ function ENT:GetMood()
 end
 
 function ENT:Initialize()
-	self:SetModel(self.Model)
+	-- self:SetModel(self.Model)
 
 	self.Moods = table.KeysToValues(self.Moods)
 

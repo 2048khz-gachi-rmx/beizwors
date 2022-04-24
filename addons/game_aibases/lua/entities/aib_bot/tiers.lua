@@ -95,9 +95,14 @@ function ENT:InitializeTier(tier)
 	tier = tier or 1
 
 	local td = self.TierData[tier] or {}
-	local mdl = td.models and table.Random(td.models) or "models/player/skeleton.mdl"
 
-	self:SetModel(mdl)
+	if not self.ModelOverride then
+		local mdl = td.models and table.Random(td.models) or "models/player/skeleton.mdl"
+		self:SetModel(mdl)
+	else
+		self:SetModel(self.ModelOverride)
+		print("le model", self.ModelOverride)
+	end
 
 	local wep = self.ForceWeapon
 	if wep then
