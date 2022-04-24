@@ -23,6 +23,8 @@ ENT.AnimActivities = {
 		passive = ACT_HL2MP_WALK_PASSIVE,
 		passive_idle = ACT_HL2MP_WALK_PASSIVE,
 		passive_run = ACT_HL2MP_RUN,
+
+		reload = ACT_HL2MP_WALK_CROUCH,
 	},
 
 	ar2 = {
@@ -41,10 +43,20 @@ ENT.AnimActivities = {
 
 	smg = {},
 
-	revolver = {}
+	revolver = {
+		passive = ACT_HL2MP_WALK,
+		passive_idle = ACT_HL2MP_IDLE,
+		passive_run = ACT_HL2MP_RUN,
+	}
 }
 
 ENT.EquippedType = "ar2"
+ENT.HostileMoods = {
+	engaging = true,
+	chasing = true,
+	covering = true,
+	alert = true,
+}
 
 function ENT:_getAc(base, pfx, sfx)
 	local ac = self.AnimActivities[self.EquippedType]
@@ -109,8 +121,8 @@ function ENT:MatchActivity()
 
 	if want ~= self:GetActivity() then
 		self:StartActivity(want)
-		printf("server: activity set to [%s] -> %s (seq: %s = %s)",
+		--[[printf("server: activity set to [%s] -> %s (seq: %s = %s)",
 			wanted, want, self:GetSequence(), self:GetSequenceName(self:GetSequence()))
-		printf("	translated %s -> %s", want, self:SelectWeightedSequence(want))
+		printf("	translated %s -> %s", want, self:SelectWeightedSequence(want))]]
 	end
 end

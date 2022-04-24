@@ -229,17 +229,12 @@ local mults = {
 
 function GM:ScaleNPCDamage(npc, hg, dmg)
 	local ret = self.BaseClass.ScaleNPCDamage and self.BaseClass.ScaleNPCDamage(self, npc, hg, dmg)
-	print("scalenpc ret", ret)
+
 	if ret then return ret end
-
-
-		print("hitgroup", hg, mults[hg])
 
 	if mults[hg] then
 		dmg:ScaleDamage(mults[hg])
 	end
-
-	print("total:", dmg)
 end
 
 --[[

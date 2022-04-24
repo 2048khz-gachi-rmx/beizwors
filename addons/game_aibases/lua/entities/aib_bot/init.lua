@@ -23,13 +23,6 @@ ENT.Moods = {
 	"chasing",
 }
 
-ENT.HostileMoods = {
-	engaging = true,
-	chasing = true,
-	covering = true,
-	alert = true,
-}
-
 function ENT:SetMood(m)
 	if not self.Moods[m] then errorNHf("not a mood: %s", m) return end
 	self.Mood = m
