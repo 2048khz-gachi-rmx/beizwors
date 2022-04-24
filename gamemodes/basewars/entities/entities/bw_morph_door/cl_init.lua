@@ -48,15 +48,15 @@ end
 function ENT:OnOpen()
 	anim = anim or Animatable("MorphDoors")
 
-	anim:MemberLerp(self, "LeftClose", 0, 0.3, 0, 0.3)
-	anim:MemberLerp(self, "RightClose", 0, 0.3, 0, 0.3)
+	anim:MemberLerp(self, "LeftClose", 0, 1.5, 0, 0.5)
+	anim:MemberLerp(self, "RightClose", 0, 1.5, 0, 0.5)
 end
 
 function ENT:OnClose()
 	anim = anim or Animatable("MorphDoors")
 
-	anim:MemberLerp(self, "LeftClose", 1, 0.3, 0, 0.3)
-	anim:MemberLerp(self, "RightClose", 1, 0.3, 0, 0.3)
+	anim:MemberLerp(self, "LeftClose", 1, 1.5, 0, 0.5)
+	anim:MemberLerp(self, "RightClose", 1, 1.5, 0, 0.5)
 end
 
 local cols = {
@@ -68,7 +68,7 @@ for k,v in pairs(cols) do
 	v.a = 50
 end
 
-function ENT:GenerateMesh(vectbl)
+function ENT:GenerateMesh()
 
 	self.DoorMeshes = {
 		Mesh(),
@@ -159,8 +159,64 @@ function ENT:GenerateMesh(vectbl)
 	end
 end
 
+local t = {Mesh = Mesh(), Material = Material("color")}
+
+function ENT:GetRenderMesh()
+	t.Mesh = self:UpdateMesh()
+	return t
+end
+
+function ENT:UpdateMesh()
+	local op = self:GetInstalled()
+	if not op then
+		--if self.PackedMesh then return self.PackedMesh end
+		self.PackedMesh = Mesh()
+
+		local positions = {
+			Vector( -0.5, -0.5, -0.5 ),
+			Vector(  0.5, -0.5, -0.5 ),
+			Vector( -0.5,  0.5, -0.5 ),
+			Vector(  0.5,  0.5, -0.5 ),
+			Vector( -0.5, -0.5,  0.5 ),
+			Vector(  0.5, -0.5,  0.5 ),
+			Vector( -0.5,  0.5,  0.5 ),
+			Vector(  0.5,  0.5,  0.5 ),
+		}
+
+		local indices = {
+	        1, 7, 5,
+	        1, 3, 7,
+	        6, 4, 2,
+	        6, 8, 4,
+	        1, 6, 2,
+	        1, 5, 6,
+	        3, 8, 7,
+	        3, 4, 8,
+	        1, 4, 3,
+	        1, 2, 4,
+	        5, 8, 6,
+	        5, 7, 8,
+	    }
+
+		local verts = {}
+		local scale = 11.5
+	    for vert_i = 1, #indices do
+	        verts[vert_i] = {
+	            pos = positions[indices[vert_i]] * scale,
+	        }
+	    end
+
+	    self.PackedMesh:BuildFromTriangles( verts )
+	    return self.PackedMesh
+	else
+		if self.EmptyMesh then return self.EmptyMesh end
+		self.EmptyMesh = Mesh()
+		return self.EmptyMesh
+	end
+end
+
 local mat = Material( "models/debug/debugwhite" )
-local wf = Material( "models/wireframe" )
+local wf = Material( "phoenix_storms/FuturisticTrackRamp_1-2" )
 
 local mtrx = Matrix()
 local shang = Angle()
@@ -168,11 +224,16 @@ local scl = Vector(1, 1, 1)
 local magicOffset = Vector(0, 6.66, 0)
 local vReuse = {}
 
+local vCpy, leftClip, rightClip = Vector(), Vector(), Vector()
+
 function ENT:Draw()
 	self:DrawModel()
 
 	local pos = self:GetPos()
 	local ang = self:GetAngles()
+
+	local right = ang:Right()
+	vCpy:Set(right)
 
 	if not self.DoorMeshes then
 		local verts, vertDist, all_hit = self:GetBounds()
@@ -186,11 +247,12 @@ function ENT:Draw()
 
 		render.DrawWireframeBox(pos, ang, mins, maxs, color_white)
 	else
+		cam.PushModelMatrix(self:GetWorldTransformMatrix())
+
 		local b1, b2 = self:GetBound1(), self:GetBound2()
 		local mins = b1
 		local maxs = b2
 		OrderVectors(mins, maxs)
-		render.DrawWireframeBox(pos, ang, self:GetBound1(), self:GetBound2(), color_white)
 
 		-- print(b1, b2)
 		vReuse[2], vReuse[3], vReuse[1], vReuse[4] = math.abs(b1.y), math.abs(b1.z), math.abs(b2.y), math.abs(b2.z)
@@ -206,6 +268,7 @@ function ENT:Draw()
 		local boxDist = vertDist[3] + vertDist[4]
 		local sc = boxDist / 36.785
 
+		-- drawing the door frames
 		scl.x = 1
 		scl.z = sc
 		mtrx:SetScale(scl)
@@ -214,25 +277,15 @@ function ENT:Draw()
 		mtrx:Translate(mins)
 
 		mtrx:RotateNumber(0, 90, 0)
+		rightClip:Set(mtrx:GetTranslation())
 
 		cam.PushModelMatrix(mtrx)
 			self.DoorMeshes[3]:Draw()
 		cam.PopModelMatrix()
-
 
 		maxs.z = maxs.z / sc
 
-		mtrx:Reset()
-		mtrx:SetAngles(ang)
-		mtrx:SetTranslation(pos)
-		mtrx:SetScale(scl)
-
-		mtrx:Translate(maxs)
-		mtrx:RotateNumber(0, -90, 180)
-
-		cam.PushModelMatrix(mtrx)
-			self.DoorMeshes[3]:Draw()
-		cam.PopModelMatrix()
+		--rightClip:Set(mtrx:GetTranslation())
 
 		mtrx:Reset()
 		mtrx:SetAngles(ang)
@@ -242,11 +295,17 @@ function ENT:Draw()
 		mtrx:Translate(maxs)
 		mtrx:RotateNumber(0, -90, 180)
 
+		leftClip:Set(mtrx:GetTranslation())
+
 		cam.PushModelMatrix(mtrx)
 			self.DoorMeshes[3]:Draw()
 		cam.PopModelMatrix()
 
-		scl.x = math.abs(self.RightClose * (vertDist[1] - 6.66) / 1.344) -- wtf
+
+
+		-- drawing the doors
+		scl.x = math.abs((vertDist[1] - 6.66) / 1.344) -- wtf
+		pos:Sub(vCpy:CMul((1 - self.LeftClose) * vertDist[1]))
 
 		mtrx:Reset()
 
@@ -263,11 +322,22 @@ function ENT:Draw()
 
 		render.SetMaterial(wf)
 
+		local clip = render.EnableClipping( true )
+
+		local normal = mtrx:GetForward()
+		local posDot = normal:Dot(leftClip)
+
+		render.PushCustomClipPlane(normal, posDot)
 		cam.PushModelMatrix(mtrx)
 			self.DoorMeshes[2]:Draw()
 		cam.PopModelMatrix()
+		render.PopCustomClipPlane()
 
-		scl.x = math.abs(self.LeftClose * (vertDist[2] - 6.66) / 1.344)
+		scl.x = math.abs((vertDist[2] - 6.66) / 1.344)
+
+		pos:Add(vCpy)
+		vCpy:Set(right)
+		pos:Add(vCpy:CMul((1 - self.RightClose) * vertDist[2]))
 
 		mtrx:Reset()
 
@@ -282,11 +352,20 @@ function ENT:Draw()
 
 		mtrx:Scale(scl)
 
+		normal:Mul(-1)
+		posDot = normal:Dot(rightClip)
 
+		render.PushCustomClipPlane(normal, posDot)
 		cam.PushModelMatrix(mtrx)
 			self.DoorMeshes[2]:Draw()
 		cam.PopModelMatrix()
+		render.PopCustomClipPlane()
+
+		if not clip then render.EnableClipping(clip) end
+		cam.PopModelMatrix()
 	end
+
+
 end
 
 

@@ -13,6 +13,7 @@ ENT.Cableable = true
 ENT.BoxThickness = 4
 ENT.IsMorphDoor = true
 ENT._UsesNetDTNotify = true
+ENT.WantBlink = false
 
 function ENT:DerivedDataTables()
 	self:NetworkVar("Vector", 0, "Bound1")
@@ -194,7 +195,7 @@ function ENT:GetBounds()
 	trtbl.filter = self
 
 	local verts = {}
-	local vertDist = {}
+	local vertDist = {} -- right, left, up, down ?
 
 	local all_hit = true
 
