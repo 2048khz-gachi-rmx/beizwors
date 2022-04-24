@@ -53,7 +53,7 @@ function ENT:Initialize()
 	self._curActs = {}
 	self.DynCoros = {}
 
-	self:MatchActivity()
+	--self:MatchActivity()
 	self:SetLagCompensated(true)
 end
 
@@ -77,98 +77,6 @@ function ENT:HasCoro(name)
 	return self.DynCoros[name]
 end
 
-ENT.AnimActivities = {
-	ar2 = {
-		aggro = ACT_MP_WALK,
-		aggro_run = ACT_MP_RUN,
-		reload = ACT_HL2MP_WALK_CROUCH_AR2,
-		passive = ACT_HL2MP_WALK_PASSIVE,
-	},
-
-	shotgun = {
-		aggro = ACT_MP_WALK,
-		aggro_run = ACT_MP_RUN,
-		reload = ACT_HL2MP_WALK_CROUCH_SHOTGUN,
-		passive = ACT_HL2MP_WALK_PASSIVE,
-	},
-
-	pistol = {
-		aggro = ACT_MP_WALK,
-		aggro_run = ACT_MP_RUN,
-		reload = ACT_HL2MP_WALK_CROUCH_PISTOL,
-		passive = ACT_HL2MP_WALK_PASSIVE,
-	},
-
-	smg = {
-		aggro = ACT_MP_WALK,
-		aggro_run = ACT_MP_RUN,
-		reload = {ACT_MP_WALK, ACT_HL2MP_WALK_CROUCH_SMG1},
-		passive = {ACT_MP_WALK, ACT_HL2MP_WALK_PASSIVE},
-	},
-
-	revolver = {
-		aggro = ACT_MP_WALK,
-		aggro_run = ACT_MP_RUN,
-		reload = ACT_HL2MP_WALK_CROUCH_REVOLVER,
-		passive = ACT_HL2MP_WALK_PASSIVE,
-	}
-}
-
-ENT.EquippedType = "ar2"
-
-function ENT:_getAc(base, pfx, sfx)
-	local ac = self.AnimActivities[self.EquippedType]
-	if not ac then print("no activities!") return ACT_HL2MP_WALK_PASSIVE end
-
-	return 	ac[pfx .. base .. sfx] or
-			ac[pfx .. base 		 ] or
-			ac[		  base .. sfx] or
-			ac[		  base		 ]
-end
-
-function ENT:GetDesiredActivity()
-	local wep = self:GetActiveWeapon()
-	if wep:IsValid() then
-		self.EquippedType = wep:GetHoldType() or self.EquippedType
-	end
-
-	local acts = self.AnimActivities[self.EquippedType]
-	if not acts then print("no acts tard", self.EquippedType) return ACT_HL2MP_WALK_PASSIVE end
-
-	local sfx = self.loco:GetVelocity():Length() > 100 and "_run" or ""
-	local pfx = ""
-
-	if self:HasActivity("Reload") then
-		return self:_getAc("reload", pfx, sfx)
-	end
-
-	if self.HostileMoods[self:GetMood()] then
-		return self:_getAc("aggro", pfx, sfx)
-	end
-
-	return self:_getAc("passive", pfx, sfx)
-end
-
-function ENT:MatchActivity()
-	local wep = self:GetCurrentWeapon()
-	local want = self:GetDesiredActivity()
-
-	if IsValid(wep) then
-		local toTr = istable(want) and want[1] or want
-		local tr = wep:TranslateActivity(toTr)
-		if tr == -1 then
-			if istable(want) then want = want[2] end
-		else
-			want = tr
-		end
-	end
-
-	if want ~= self:GetActivity() then
-		self:StartActivity(want)
-		--printf("server: activity set to %s (seq: %s = %s)", want, self:GetSequence(), self:GetSequenceName(self:GetSequence()))
-		--printf("	translated %s -> %s", want, self:SelectWeightedSequence(want))
-	end
-end
 
 function ENT:BodyUpdate()
 	self:BodyMoveXY()

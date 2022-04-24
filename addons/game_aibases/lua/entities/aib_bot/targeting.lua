@@ -230,6 +230,9 @@ function ENT:OnEnemyLost()
 end
 
 function ENT:LoseEnemy()
-	self:OnEnemyLost()
+	if self:GetEnemy() then
+		self:OnEnemyLost()
+	end
+
 	self:SetEnemy(nil)
 end

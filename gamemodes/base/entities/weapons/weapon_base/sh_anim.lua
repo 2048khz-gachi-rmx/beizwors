@@ -70,8 +70,9 @@ SWEP:SetWeaponHoldType( "pistol" )
 			Depending on how you want the player to be holding the weapon
 -----------------------------------------------------------]]
 function SWEP:TranslateActivity( act )
+	local ow = self:GetOwner()
 
-	if ( self.Owner:IsNPC() ) then
+	if ( ow:IsNPC() or ow.UseAIActivities ) then
 		if ( self.ActivityTranslateAI[ act ] ) then
 			return self.ActivityTranslateAI[ act ]
 		end
