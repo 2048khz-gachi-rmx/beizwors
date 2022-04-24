@@ -283,7 +283,10 @@ SWEP.Attachments = {
 SWEP.Hook_SelectInsertAnimation = function(wep, data)
     --local nomen = (wep:GetBuff_Override("Override_FAS2NomenBackup") and "_nomen") or ""
 
-    local insertAmt = math.min(wep.Primary.ClipSize + wep:GetChamberSize() - wep:Clip1(), wep:GetOwner():GetAmmoCount(wep.Primary.Ammo), 4)
+    local insertAmt = math.min(math.floor(wep:GetCapacity()) + wep:GetChamberSize() - wep:Clip1(),
+    	wep:GetOwner():GetAmmoCount(wep.Primary.Ammo),
+    	4)
+
     local anim = "sgreload_insert" .. insertAmt
 
     return {count = insertAmt, anim = anim, empty = false}
