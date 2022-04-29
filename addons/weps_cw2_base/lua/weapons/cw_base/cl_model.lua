@@ -1590,7 +1590,7 @@ function SWEP:DrawWorldModel()
 			end
 		end
 	end
-				
+
 	if self.DrawTraditionalWorldModel then
 		self:DrawModel()
 	else

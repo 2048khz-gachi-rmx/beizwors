@@ -5,41 +5,42 @@ local noDraw = {CHudAmmo = true,
 	CHudHealth = true,
 	CHudBattery = true}
 
-local noDrawAmmo = {CHudAmmo = true,
-	CHudSecondaryAmmo = true}
-	
+local noDrawAmmo = {
+	CHudAmmo = true,
+	CHudSecondaryAmmo = true
+}
+
 local wep, ply
 
+local customHud = false
+local customAmmo = false
+
+timer.Create("CW_CheckConvars", 1, 0, function()
+	customHud = GetConVarNumber("cw_customhud") >= 1
+	customAmmo = GetConVarNumber("cw_customhud_ammo") >= 1
+end)
+
 local function CW_HUDShouldDraw(n)
-	local customHud = GetConVarNumber("cw_customhud") >= 1
-	local customAmmo = GetConVarNumber("cw_customhud_ammo") >= 1
-	
-	if customAmmo or customHud then
-		ply = LocalPlayer()
-		
-		if IsValid(ply) and ply:Alive() then
-			wep = ply:GetActiveWeapon()
-		end
-	else
-		ply, wep = nil, nil
-	end
-	
+	if not customHud and not customAmmo then return end
+	if not CachedLocalPlayer or not CachedLocalPlayer() then return end
+
+	local ply = CachedLocalPlayer()
+	ply = ply and ply:Alive() and ply
+	local wep = ply and ChainValid(ply:GetActiveWeapon())
+	if not wep then return end
+
 	if customAmmo then
-		if IsValid(ply) and ply:Alive() then
-			if IsValid(wep) and wep.CW20Weapon then
-				if noDrawAmmo[n] then
-					return false
-				end
+		if wep.CW20Weapon then
+			if noDrawAmmo[n] then
+				return false
 			end
 		end
 	end
-	
+
 	if customHud then
-		if IsValid(ply) and ply:Alive() then
-			if IsValid(wep) and wep.CW20Weapon then
-				if noDraw[n] then
-					return false
-				end
+		if  wep.CW20Weapon then
+			if noDraw[n] then
+				return false
 			end
 		end
 	end
