@@ -153,6 +153,12 @@ function COLOR:Lerp(fr, from, to)
 	return self
 end
 
+local st = Color(0, 0, 0)
+function COLOR:IAlpha(a) --alpha into singleton copy
+	st:Set(self.r, self.g, self.b, a)
+	return st
+end
+
 function IsMaterial(m)
 	return type(m) == "IMaterial"	--we can't really compare m.MetaName because m might not even be a table
 end
