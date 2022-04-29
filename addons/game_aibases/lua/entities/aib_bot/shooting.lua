@@ -18,24 +18,28 @@ function ENT:SetupWeapon(wep)
 
 	--wep:SetMoveType(MOVETYPE_NONE)
 
-	wep:RemoveSolidFlags(FSOLID_TRIGGER)
-	wep:RemoveEffects(EF_ITEM_BLINK) -- tha fuck is this valve
-	wep:AddEFlags(EFL_USE_PARTITION_WHEN_NOT_SOLID)
-	wep:SetOwner(self)
 
-	wep:PhysicsDestroy() -- fuck you
-
-	wep:SetParent(self, att)
-	wep:SetMoveType(MOVETYPE_NONE)
-
-	--wep:AddEffects(EF_BONEMERGE)
 	wep:SetTransmitWithParent(true)
 
 	wep.UsedByAI = self
 
 	wep:Spawn()
-	wep:SetLocalPos(-wep:OBBCenter())
+
+	--wep:RemoveSolidFlags(FSOLID_TRIGGER)
+	--wep:RemoveEffects(EF_ITEM_BLINK) -- tha fuck is this valve
+	--wep:AddEFlags(EFL_USE_PARTITION_WHEN_NOT_SOLID)
+	wep:SetOwner(self)
+
+	wep:SetParent(self)
+
+	wep:SetLocalPos(vector_origin)
 	wep:SetLocalAngles(angle_zero)
+
+	wep:SetMoveType(MOVETYPE_NONE)
+	wep:PhysicsDestroy()
+	wep:AddEffects(EF_BONEMERGE)
+
+	wep:DrawShadow(false)
 
 	self:SetCurrentWeapon(wep)
 end
@@ -114,7 +118,6 @@ function ENT:WaitForReload()
 		(wep.CW20Weapon and wep.ReloadDelay and wep.ReloadDelay > CurTime()) or
 		(wep.ArcCW and wep:GetReloading()) do
 
-		print("reloading", wep.ReloadDelay, CurTime())
 		coroutine.yield()
 	end
 end
