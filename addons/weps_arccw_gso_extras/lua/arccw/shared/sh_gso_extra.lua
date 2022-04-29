@@ -1103,7 +1103,8 @@ local tttEditList = {
 
 local function GSOE()
     local wpnList = list.GetForEdit("Weapon")
-    for class, t in pairs(balanceList) do
+    
+    --[[for class, t in pairs(balanceList) do
         local stored = weapons.GetStored(class)
         if not stored then continue end
 
@@ -1164,7 +1165,7 @@ local function GSOE()
                 wpnList[class].Category = "ArcCW - GSO"
             end
         end
-    end
+    end]]
 
     if addSway:GetInt() >= 1 then
         for _, t in pairs(weapons.GetList()) do
@@ -1364,7 +1365,7 @@ local function GSOE()
         VMBodygroups = {{ind = 4, bg = 1},},
     }
 
-    local ssg = weapons.GetStored("arccw_go_ssg08")
+    --[[local ssg = weapons.GetStored("arccw_go_ssg08")
     ssg.Animations["fire"].MinProgress = 0.3
     ssg.Animations["fire_iron"].MinProgress = 0.3
     ssg.Animations["cycle"].MinProgress = 0.75
@@ -1390,7 +1391,7 @@ local function GSOE()
     mag7.Animations["fire"].MinProgress = 0.2
     mag7.Animations["fire_iron"].MinProgress = 0.2
     mag7.Animations["cycle"].Time = 0.6
-    mag7.Animations["cycle"].MinProgress = 0.3
+    mag7.Animations["cycle"].MinProgress = 0.3]]
 
     local mp7 = weapons.GetStored("arccw_go_mp7")
     mp7.Attachments[1].Slot = {"go_mp7_irons", "optic_lp", "optic"}

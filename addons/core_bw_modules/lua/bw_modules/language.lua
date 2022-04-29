@@ -157,7 +157,8 @@ Strings.SpawnMenuMoney		= "You don't have enough money to buy this!"
 Strings.EntLimitReached		= "You reached the limit for %s (max. %s)!"
 Strings.SpawnMenuBuyConfirm = "Are you sure you want to purchase %s for " .. Strings.Currency .. "%s?"
 Strings.DeadBuy				= "Dead people buy nothing."
-
+Strings.DontBuildSpawn 		= "Don't build at spawn."
+Strings.CannotPurchaseRaid  = "You cannot purchase this in a raid."
 if KROMER then
 	Strings.UpgradeNoMoney		= "YOU [NoPossess] ENOUGH KR0<MER!"
 	Strings.SpawnMenuMoney		= "YOU [NoPossess] KR0M+3r TO BUY [Goods]!"

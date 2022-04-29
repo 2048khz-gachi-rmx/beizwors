@@ -469,12 +469,13 @@ function bw.Base:_CheckValidity()
 	end
 end
 
-function bw.Base:CanClaim(who)
+function bw.Base:CanClaim(who, ply)
 	self:_CheckValidity()
 
 	if self:GetClaimed() then return false, bw.Errors.AlreadyClaimed(self) end
 	if who and who:GetBase() then return false, bw.Errors.AlreadyHaveABase(who) end
 	local pin = CanGetPInfo(who) and GetPlayerInfo(who)
+		or CanGetPInfo(ply) and GetPlayerInfo(ply)
 
 	--print(pin, pin:GetFaction(), pin:GetFaction():GetOwnerInfo(), pin)
 

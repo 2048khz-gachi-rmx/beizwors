@@ -10,7 +10,7 @@ function BaseWars.Ents.AssignOwner(eid, sid)
 	if IsEntity(eid) then eid = eid:EntIndex() end
 	if IsPlayer(sid) then sid = sid:SteamID() end
 
-	print("recv assignowner", eid, sid)
+	--print("recv assignowner", eid, sid)
 
 	assert(isnumber(eid))
 	assert(isstring(sid))
@@ -18,6 +18,8 @@ function BaseWars.Ents.AssignOwner(eid, sid)
 	eidToOwner[eid] = sid
 
 	prs[eid] = EventualEntity(eid):Then(function(self)
+		--[[print("eventual recv", eid, Entity(eid), self.nvm,
+			player.GetBySteamID(sid), Entity(eid), sid)]]
 		if self.nvm then return end -- ???
 
 		hook.Run("EntityOwnershipChanged",
@@ -38,13 +40,16 @@ function BaseWars.Ents.UnassignOwner(eid)
 end
 
 function BaseWars.Ents.EntityToSteamID(eid)
-	if IsEntity(eid) then eid = eid:EntIndex() end
+	if IsEntity(eid) then
+		eid = eid:EntIndex()
+	end
 	assert(isnumber(eid))
 
 	return eidToOwner[eid]
 end
 
 hook.Add("EntityActuallyRemoved", "BW_OwnershipYeet", function(ent, tbl, eid)
+	if eid == -1 then return end
 	BaseWars.Ents.UnassignOwner(eid)
 end)
 

@@ -22,9 +22,9 @@ SWEP.ViewModelFOV = 60
 
 SWEP.DefaultBodygroups = "000000000000"
 
-SWEP.Damage = 15
+SWEP.Damage = 14
 SWEP.DamageMin = 4 -- damage done at maximum range
-SWEP.Num = 12
+SWEP.Num = 8
 SWEP.Range = 40 -- in METRES
 SWEP.Penetration = 1
 SWEP.DamageType = DMG_BUCKSHOT
@@ -39,7 +39,7 @@ SWEP.RecoilSide = 1.3
 SWEP.RecoilRise = 0.8
 
 SWEP.ShotgunReload = true
-SWEP.Delay = 60 / 400 -- 60 / RPM.
+SWEP.Delay = 60 / 210 -- 60 / RPM.
 SWEP.Firemodes = {
     {
         Mode = 1,
@@ -340,6 +340,7 @@ SWEP.Animations = {
     ["sgreload_start"] = {
         Source = "reload_start",
         TPAnim = ACT_HL2MP_GESTURE_RELOAD_SHOTGUN,
+        Time = 0.3
     },
     ["sgreload_start_empty"] = {
         Source = "reload_start_empty",
@@ -354,24 +355,28 @@ SWEP.Animations = {
         Source = "reload_load1",     
         TPAnim = ACT_HL2MP_GESTURE_RELOAD_SHOTGUN,
         TPAnimStartTime = 0.3,
+        Time = 0.8,
     },
     ["sgreload_insert2"] = {
         Source = "reload_load2",     
         TPAnim = ACT_HL2MP_GESTURE_RELOAD_SHOTGUN,
         TPAnimStartTime = 0.3,
+        Time = 1.05,
     },
     ["sgreload_insert3"] = {
         Source = "reload_load3",    
         TPAnim = ACT_HL2MP_GESTURE_RELOAD_SHOTGUN,
+        Time = 1.3,
         TPAnimStartTime = 0.3,
     },
     ["sgreload_insert4"] = {
         Source = "reload_load4",
-		Time = 1.8,
+		Time = 1.6,
         TPAnim = ACT_HL2MP_GESTURE_RELOAD_SHOTGUN,
         TPAnimStartTime = 0.3,
     },
     ["sgreload_finish"] = {
         Source = "reload_abort",
+        Time = 0.3,
     },
 }

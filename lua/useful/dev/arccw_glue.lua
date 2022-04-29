@@ -22,8 +22,8 @@ require("gaceio")
 
 file.CreateDir("glue/")
 
-local outPath = "garrysmod/data/glue/arccw_tuna_atts_%d.lua"
-local folder = "ArcCW_UR-main"
+local outPath = "garrysmod/data/glue/arccw_ud_atts_%d.lua"
+local folder = "ArcCW-UC-Urban-Decay"
 local path = "addons/" .. folder .. "/lua/arccw/shared/attachments/"
 
 local toW = {beginning}
@@ -49,14 +49,13 @@ for k,v in pairs(file.Find(path .. "*.lua", "GAME")) do
 		if s:match("[^%c]") then subdat[#subdat + 1] = "	" .. s end
 	end
 
-	dat = table.concat(subdat, "\n")
-
-	toW[#toW + 1] = fmt:format(v, v:gsub("%.lua", ""), dat)
+	dat = fmt:format(v, v:gsub("%.lua", ""), table.concat(subdat, "\n"))
 
 	if curLen + #dat > 64000 then
 		flush()
 	end
 
+	toW[#toW + 1] = dat
 	curLen = curLen + #dat
 end
 

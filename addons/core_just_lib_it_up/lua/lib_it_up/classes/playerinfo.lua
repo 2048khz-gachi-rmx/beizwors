@@ -4,7 +4,9 @@ LibItUp.SetIncluded()
 LibItUp.PlayerInfo = LibItUp.PlayerInfo or LibItUp.Emitter:callable()
 local PI = LibItUp.PlayerInfo
 PI.IsPlayerInfo = true
-PI.CleanupIn = 600 -- being absent for 5min = playerinfo is cleaned up
+
+PI.CleanupIn = 300 -- being absent for 5min = playerinfo is cleaned up
+-- keep in mind that this includes freeing base spots
 
 LibItUp.PlayerInfoTables = LibItUp.PlayerInfoTables or {
 	-- [info] = PI
@@ -60,6 +62,8 @@ function PI:Initialize(id, is_sid64) -- we can't know that the id is a steamID64
 			sid or "[nil]", sid64 or "[nil]", ply or "[nil]")
 		return
 	end
+
+	self._Nick = "[unknown]"
 
 	if ply then self:SetPlayer(ply) end
 	self:SetSteamID(sid)

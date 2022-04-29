@@ -24,10 +24,10 @@ hook.Add("PlayerInfoDestroy", "BaseUnclaim", function(pin)
 	end
 end)
 
-function bw.Base:AttemptClaim(by)
+function bw.Base:AttemptClaim(by, ply)
 	self:_CheckValidity()
 
-	if not self:CanClaim(by) then return false end
+	if not self:CanClaim(by, ply) then return false end
 
 	if IsFaction(by) then
 		if by:GetBase() then return false end

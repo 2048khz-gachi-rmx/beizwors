@@ -51,11 +51,8 @@ hook.Add("CanTool", "FuckRopes", function(ply, tr, tool, tTbl)
 		local obj2 = tr.Entity
 
 		if obj:IsWorld() and obj2:IsWorld() then
-			print("both worlds")
 			return false
 		end
-
-		print(obj, obj2)
 	end
 
 	local amt = 0
@@ -75,7 +72,7 @@ local function AntiDupeTrash()
 		if ply:IsAdmin() or ply:IsSuperAdmin() then return  --you don't need it anyways
 
 		else
-			print(tostring(ply).. " tried to arm a dupe despite lacking admin privileges.")
+			print(tostring(ply) .. " tried to arm a dupe despite lacking admin privileges.")
 		end
 
 	end
@@ -87,50 +84,52 @@ hook.Add("InitPostEntity", "AntiDupeCrash",function()
 end)
 
 
-local bad = {
-	"models/cranes/crane_frame.mdl",
-	"models/items/item_item_crate.mdl",
-	"models/props/cs_militia/silo_01.mdl",
-	"models/props/cs_office/microwave.mdl",
-	"models/props/de_train/biohazardtank.mdl",
-	"models/props_buildings/building_002a.mdl",
-	"models/props_buildings/collapsedbuilding01a.mdl",
-	"models/props_buildings/project_building01.mdl",
-	"models/props_buildings/row_church_fullscale.mdl",
-	"models/props_c17/consolebox01a.mdl",
-	"models/props_c17/oildrum001_explosive.mdl",
-	"models/props_c17/paper01.mdl",
-	"models/props_c17/trappropeller_engine.mdl",
-	"models/props_canal/canal_bridge01.mdl",
-	"models/props_canal/canal_bridge02.mdl",
-	"models/props_canal/canal_bridge03a.mdl",
-	"models/props_canal/canal_bridge03b.mdl",
-	"models/props_combine/combine_citadel001.mdl",
-	"models/props_combine/combine_mine01.mdl",
-	"models/props_combine/combinetrain01.mdl",
-	"models/props_combine/combinetrain02a.mdl",
-	"models/props_combine/combinetrain02b.mdl",
-	"models/props_combine/prison01.mdl",
-	"models/props_combine/prison01c.mdl",
-	"models/props_industrial/bridge.mdl",
-	"models/props_junk/garbage_takeoutcarton001a.mdl",
-	"models/props_junk/gascan001a.mdl",
-	"models/props_junk/glassjug01.mdl",
-	"models/props_junk/trashdumpster02.mdl",
-	"models/props_phx/amraam.mdl",
-	"models/props_phx/ball.mdl",
-	"models/props_phx/cannonball.mdl",
-	"models/props_phx/huge/evildisc_corp.mdl",
-	"models/props_phx/misc/flakshell_big.mdl",
-	"models/props_phx/misc/potato_launcher_explosive.mdl",
-	"models/props_phx/mk-82.mdl",
-	"models/props_phx/oildrum001_explosive.mdl",
-	"models/props_phx/torpedo.mdl",
-	"models/props_phx/ww2bomb.mdl",
-	"models/props_wasteland/cargo_container01.mdl",
-	"models/props_wasteland/cargo_container01.mdl",
-	"models/props_wasteland/cargo_container01b.mdl",
-	"models/props_wasteland/cargo_container01c.mdl",
-	"models/props_wasteland/depot.mdl",
-	"models/xqm/coastertrack/special_full_corkscrew_left_4.mdl",
-}
+Antifa = Logger("Antifa", Color(200, 50, 50))
+
+function Antifa_OnAttemptedCrash(ply, dat)
+	if dat.ModelScale and tonumber(dat.ModelScale) ~= 1 then
+
+		if IsPlayer(ply) then
+			Antifa("Player %s (%s) attempted to paste a modelscale-d dupe (%s).", ply, ply:SteamID64(), dat.ModelScale)
+
+			local ban = not ply:IsAdmin()
+			if tonumber(dat.ModelScale) > 2 then
+				Antifa("Modelscale above crash limit -- %s", ban and "banning" or "not banning (player is admin).")
+				if ban then
+					ULib.kickban( ply, 0, "[Antifa] Attempted crash (MS).", "Antifa" )
+				else
+					ply:PopupNotify(NOTIFY_ERROR, "Nice crash attempt retard")
+				end
+
+				return false
+			end
+		else
+			Antifa("Antifa_OnAttemptedCrash called without player. Modelscale: %s, Stack: %s", dat.ModelScale, debug.traceback())
+			return false -- !?
+		end
+
+		dat.ModelScale = nil -- just fix it
+	end
+end
+
+
+hook.Add("AdvDupe2_AttemptedCrash", "FuckYou", function(dat, ply)
+	return Antifa_OnAttemptedCrash(ply, dat)
+end)
+
+duplicator.OldDoGeneric = duplicator.OldDoGeneric or duplicator.DoGeneric
+
+function Antifa_DuplicatorDoGeneric(ent, dat, ...)
+	if dat and dat.ModelScale then
+		local cont = Antifa_OnAttemptedCrash(nil, dat)
+		if cont ~= nil then return end
+	end
+
+	return duplicator.OldDoGeneric(ent, dat, ...)
+end
+
+hook.Add("InitPostEntity", "Antifa_Dupes", function()
+	timer.Create("JustInCase_Dupe", 1, 30, function()
+		duplicator.OldDoGeneric = duplicator.OldDoGeneric or duplicator.DoGeneric
+	end)
+end)

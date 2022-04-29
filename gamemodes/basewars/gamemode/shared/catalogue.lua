@@ -420,6 +420,9 @@ SetType(nil)
 
 		tv.Callback = function(ent)
 			ent:SetModel("models/props_phx/rt_screen.mdl")
+			ent.Model = "models/props_phx/rt_screen.mdl"
+
+			ent:PhysicsInit( SOLID_VPHYSICS ) -- ugh
 		end
 
 		AddRecreational("Media Players", "mediaplayer_tv", "Big TV", m * 500, "models/gmod_tower/suitetv_large.mdl")

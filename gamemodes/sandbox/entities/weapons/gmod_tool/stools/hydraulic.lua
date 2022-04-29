@@ -48,7 +48,7 @@ function TOOL:LeftClick( trace )
 		end
 
 		-- Get client's CVars
-		local width = self:GetClientNumber( "width", 3 )
+		local width = math.Clamp(self:GetClientNumber( "width", 3 ), 0, 10)
 		local bind = self:GetClientNumber( "group", 1 )
 		local AddLength = self:GetClientNumber( "addlength", 0 )
 		local fixed = self:GetClientNumber( "fixed", 1 )
@@ -152,7 +152,7 @@ function TOOL:RightClick( trace )
 	end
 
 	-- Get client's CVars
-	local width = self:GetClientNumber( "width", 3 )
+	local width = math.Clamp(self:GetClientNumber( "width", 3 ), 0, 10)
 	local bind = self:GetClientNumber( "group", 1 )
 	local AddLength = self:GetClientNumber( "addlength", 0 )
 	local fixed = self:GetClientNumber( "fixed", 1 )

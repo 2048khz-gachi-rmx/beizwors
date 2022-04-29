@@ -21,10 +21,6 @@ function IsFaction(t)
 	return meta and meta.IsFaction
 end
 
-function facmeta:InRaid()
-	return self.Raided or self.Raider
-end
-
 function facmeta:GetMembers()
 	return self.memvals
 end
@@ -179,6 +175,12 @@ function facmeta:Initialize(ply, id, name, pw, col)
 
 	self:On("Raided", "CooldownTracker", self.OnRaided)
 end
+
+hook.NHAdd("RaidStart", "FactionRaids", function(raid, rder, rded, fac)
+	if not fac then return end
+
+	rded:OnRaided()
+end)
 
 function facmeta:_SerializePlayerInfo(key, val)
 	if key == "PlayerInfo" then

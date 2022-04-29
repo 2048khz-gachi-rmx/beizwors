@@ -228,7 +228,8 @@ chathud.AddEmote("spunch")
 
 local function env(msg, spec)
 	local tick = 0
-	local env = {
+	local env
+	env = {
 		sin = math.sin,
 		cos = math.cos,
 		tan = math.tan,
@@ -253,6 +254,10 @@ local function env(msg, spec)
 			tick = tick + 1
 			return o / 100
 		end,
+		remap = math.RemapClamp,
+		lerp = Lerp,
+		passed = function() return env.t() - env.st end,
+		ease = Ease,
 		st = msg.SendTime,
 	}
 
@@ -282,7 +287,7 @@ local function CompileExpression(str, msg, special, preenv)
 
 	if not special then --special messages don't get all the checks and can run unrestricted codez
 
-		local ch = str:match("[^=1234567890%-%+%*/%%%^%(%)%.A-z%s]")
+		local ch = str:match("[^=1234567890%-%+%*/%%%^%(%)%.A-z%s,]")
 
 		if ch then 	--disallow strings and string methods ( e.g. ("Stinky poopy"):rep(999) )
 					--fun fact; the string library may not be in the envinroment but string methods will still work!

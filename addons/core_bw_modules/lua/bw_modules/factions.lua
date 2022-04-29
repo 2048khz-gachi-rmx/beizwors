@@ -102,6 +102,10 @@ hook.Add("FactionDisbanded", "PlayerInfoFill", function(fac)
 	end
 end)
 
+function facmeta:InRaid()
+	return Raids.Participants[self]
+end
+
 function facmeta:RaidedCooldown()
 	local has, max = false, 0
 	for k,v in ipairs(self:GetMembersInfo()) do

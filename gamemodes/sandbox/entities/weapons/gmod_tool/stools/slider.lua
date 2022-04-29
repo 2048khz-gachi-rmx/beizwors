@@ -36,7 +36,7 @@ function TOOL:LeftClick( trace )
 		end
 
 		-- Get client's CVars
-		local width = self:GetClientNumber( "width", 1.5 )
+		local width = math.Clamp(self:GetClientNumber( "width", 1.5 ), 0, 10)
 		local material = self:GetClientInfo( "material" )
 
 		local colorR = self:GetClientNumber( "color_r" )
@@ -123,7 +123,7 @@ function TOOL:RightClick( trace )
 		return true
 	end
 
-	local width = self:GetClientNumber( "width", 1.5 )
+	local width = math.Clamp(self:GetClientNumber( "width", 1.5 ), 0, 10)
 	local material = self:GetClientInfo( "material" )
 
 	local colorR = self:GetClientNumber( "color_r" )

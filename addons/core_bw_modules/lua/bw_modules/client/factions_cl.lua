@@ -64,10 +64,6 @@ function facmeta:IsValid()
 	return self._Valid ~= false
 end
 
-function facmeta:InRaid()
-	return self.PublicNW:Get("Raided") or self.PublicNW:Get("Raider")
-end
-
 function facmeta:GetMembers()
 	local ret = {}
 

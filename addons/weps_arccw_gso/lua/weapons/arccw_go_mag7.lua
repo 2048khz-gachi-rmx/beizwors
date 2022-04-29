@@ -283,16 +283,19 @@ SWEP.Animations = {
     ["fire"] = {
         Source = "shoot",
         Time = 0.5,
+        MinProgress = 0.3
     },
     ["fire_iron"] = {
         Source = "shoot",
         Time = 0.5,
+        MinProgress = 0.3
     },
     ["cycle"] = {
         Source = "cycle",
         ShellEjectAt = 0.25,
         Time = 0.75,
         TPAnim = ACT_HL2MP_GESTURE_RANGE_ATTACK_SHOTGUN,
+        MinProgress = 0.6
     },
     ["reload"] = {
         Source = "reload",

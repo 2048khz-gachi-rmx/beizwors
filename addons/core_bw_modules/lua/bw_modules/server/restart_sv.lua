@@ -64,13 +64,15 @@ hook.Add("Think", "CountDownWarn", function()
 
 		MsgC( ("--===== Automatic server restart %s =====--\n"):format(when) )
 
-		if next_warn <= 5 then
-			ChatAddText(Color(150, 150, 150), append)
-		end
 
 		table.remove(BaseWars.RestartWarnings, 1)
 
+		if next_warn <= 5 and BaseWars.RestartWarnings[1] then
+			ChatAddText(Color(150, 150, 150), append)
+		end
+
 		if not BaseWars.RestartWarnings[1] then
+			BaseWars.UTIL.RefundAll()
 			aowl.CountDown(30, "Restart", function() RunConsoleCommand("_restart") end)
 		end
 	end

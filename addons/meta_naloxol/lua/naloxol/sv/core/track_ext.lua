@@ -28,7 +28,7 @@ mysqloo.OnConnect(coroutine.wrap(function()
 
 	local banTbl = "nx_bans"
 	local arg = LibItUp.SQLArgList()
-		arg:AddArg("puid", "BIGINT NOT NULL PRIMARY KEY")
+		arg:AddArg("puid", "BIGINT NOT NULL")
 		arg:AddArg("banTime", "BIGINT NOT NULL")
 		arg:AddArg("unbanTime", "BIGINT NOT NULL")
 		arg:AddArg("admin", "MEDIUMTEXT")
@@ -121,9 +121,9 @@ function NX.OnBanned(dat)
 	q:setString(1, sid64)
 	q:setNumber(2, dat.banTime)
 	q:setNumber(3, dat.unbanTime)
-	q:setString(4, dat.reason)
 	q:setString(5, dat.admin)
-	q:setString(6, dat.name)
+	q:setString(4, dat.reason)
+	q:setString(6, dat.name or "[untracked]")
 
 	local em = MySQLQuery(q, true)
 	em:Catch(print)
@@ -133,11 +133,11 @@ end
 hook.Add("ULibPlayerBanned", "NX_Track", function(_, dat)
 	local ban = banStruct:new()
 		ban.puid = dat.steamID
-		ban.banTime = dat.time
-		ban.unbanTime = dat.unban
-		ban.reason = dat.reason
+		ban.banTime = tonumber(dat.time)
+		ban.unbanTime = tonumber(dat.unban)
+		ban.reason = dat.reason or "[none]"
 		ban.admin = dat.admin
-		ban.name = dat.name
+		ban.name = dat.name or "[untracked]"
 
 	NX.OnBanned(ban)
 end)

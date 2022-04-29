@@ -34,3 +34,8 @@ timer.Create("BW_Printers", BaseWars.Printers.PrintDelay, 0, function()
 	end
 
 end)
+
+for ent, dat in pairs(BaseWars.Printers.MasterTable) do
+	if not IsValid(ent) then continue end
+	ent.Level = ent.GetLevel and ent:GetLevel() or ent.Level
+end

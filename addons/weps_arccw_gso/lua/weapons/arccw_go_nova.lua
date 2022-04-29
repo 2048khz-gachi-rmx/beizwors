@@ -310,7 +310,7 @@ SWEP.Animations = {
         Source = "cycle",
         ShellEjectAt = 0.25,
         TPAnim = ACT_HL2MP_GESTURE_RANGE_ATTACK_SHOTGUN,
-        Time = 0.85
+        MinProgress = 0.8
     },
     ["sgreload_start"] = {
         Source = "start_reload",

@@ -35,7 +35,7 @@ function TOOL:LeftClick( trace )
 
 		if ( CLIENT ) then return true end
 
-		local width = self:GetClientNumber( "width" )
+		local width = math.Clamp(self:GetClientNumber( "width", 3 ), 0, 10)
 		local forcelimit = self:GetClientNumber( "forcelimit" )
 		local rigid = self:GetClientNumber( "rigid" ) == 1
 		local material = self:GetClientInfo( "material" )

@@ -210,15 +210,13 @@ if SERVER then
 		realPrint(ply:Nick() .. ": " .. data)
 	end
 
-	local lastmsges = {}
+	chathud.ChatCD_TimeTillWear = 2 -- how many seconds before violations start wearing off
+	chathud.ChatCD_SecondsWear = 1.5 -- s. / 1 cooldown violation reset
+	chathud.ChatCD = 2
 
-	chathud.ChatCD_TimeTillWear = 1 -- how many seconds before violations start wearing off
-	chathud.ChatCD_SecondsWear = 1 -- s. / 1 cooldown violation reset
-	chathud.ChatCD = 1
+	chathud.LetViolate = 3
 
-	chathud.LetViolate = 2
-
-	chathud.StrikeCD = 2
+	chathud.StrikeCD = 3
 	chathud.StrikePenalty = 2 -- 2s per each new strike
 	chathud.StrikeWearoff = 10 -- 15s to wear off one strike penalty
 
@@ -226,7 +224,7 @@ if SERVER then
 		local cant = hook.Run("CheckChatCooldown", ply) == false
 		if cant then return end
 
-		local len		= net.ReadUInt(16)
+		local len	= net.ReadUInt(16)
 		local cdata	= net.ReadData(len)
 
 		local mode	= net.ReadUInt(8)
@@ -250,15 +248,13 @@ if SERVER then
 		local cd = ply.ChatCD
 
 		if cd then
-
-			local cd = ply.ChatCD
-
 			local in_cd = CurTime() < cd.NextWrite
+			print("in cd?", in_cd)
 
 			if in_cd then
 				-- cooldown still not up
 				cd.Violations = cd.Violations + 1
-
+				print("violated", ply)
 				if cd.Violations <= chathud.LetViolate then
 					-- lets you violate chat cooldown a few times before giving you a big cooldown
 					goto docd

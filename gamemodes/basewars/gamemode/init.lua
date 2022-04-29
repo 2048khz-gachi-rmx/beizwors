@@ -71,7 +71,7 @@ function GM:OnEntityCreated(ent)
 		if not should then return end
 
 		local HP = (IsValid(ent:GetPhysicsObject()) and ent:GetPhysicsObject():GetMass() or 50) * BaseWars.Config.UniversalPropConstant
-		HP = math.Clamp(HP, 0, Class == "prop_physics" and 1000 or 50)
+		HP = math.Clamp(HP, 0, Class == "prop_physics" and BaseWars.Config.MaxPropHP or 50)
 
 		ent:SetHealth(HP)
 
@@ -316,7 +316,7 @@ function GM:Think()
 				return State
 			end
 
-			local Ents = ents.FindInSphere(s:GetPos(), 256)
+			local Ents = ents.FindInSphere(s:GetPos(), 128)
 
 			if #Ents < 2 then
 				continue

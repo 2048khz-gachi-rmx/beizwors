@@ -96,7 +96,7 @@ function ENT:GetBulletInfo(target, pos)
 
 				local ow = self:BW_GetOwner()
 				ow = ow and ow:GetPlayer()
-				if ow and not IsTarget(ow) then
+				if ow and not IsTarget(ow, vic) then
 
 					local should_neg = self:OnHitFriendly(vic, tr, dmg)
 					if should_neg then
@@ -286,9 +286,13 @@ function ENT:ThinkFunc()
 	b:Open()
 
 	-- determine what table do we search
-	local plys = player.GetConstAll()
 	local ow = self:BW_GetOwner()
 	local owPly = ow and ow:GetPlayer()
+	local in_raid = ow and ow:GetRaid()
+	local base = self:BW_GetBase()
+
+	local usingBase = not in_raid and base and base:GetPlayers()
+	local plys = usingBase or player.GetConstAll()
 
 	if not owPly then
 		self:FinishScan()
@@ -330,12 +334,14 @@ function ENT:ThinkFunc()
 	-- scan baddies; construct search arrays
 	local baddies, friends = {}, {}
 
-	for k,v in ipairs(plys) do
-		if IsTarget(owPly, v) then
-			baddies[#baddies + 1] = v
-		elseif IsFriend(owPly, v) then
+	for k,v in pairs(plys) do
+		local ply = usingBase and k or v
+
+		if IsTarget(owPly, ply) then
+			baddies[#baddies + 1] = ply
+		elseif IsFriend(owPly, ply) then
 			-- a player can be neither friend nor foe
-			friends[#friends + 1] = v
+			friends[#friends + 1] = ply
 		end
 	end
 

@@ -294,6 +294,8 @@ function BWSpawn(ply, cat, catID)
 		if existing_weapons and #existing_weapons >= 5 and IsValid(existing_weapons[1]) then
 			local rem = existing_weapons[1]
 			rem:Remove() -- this will delete the weapon from the purchased list
+			-- NEVERFUCKING MIND SOURCE MOMENT LMFAO
+			BaseWars.RemovePurchased(rem, ply)
 		end
 
 		local newEnt = ents.Create("bw_weapon")

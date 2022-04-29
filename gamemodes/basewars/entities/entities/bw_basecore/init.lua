@@ -71,7 +71,7 @@ function ENT:Claim(by, restore)
 	if restore then
 		ok = true
 	else
-		ok = base:AttemptClaim(fac or ply)
+		ok = base:AttemptClaim(fac or ply, ply)
 	end
 
 	if ok then

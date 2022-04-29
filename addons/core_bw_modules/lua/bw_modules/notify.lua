@@ -23,8 +23,8 @@ local actions = {
 		chat.AddText(...)
 	end,
 
-	[NOTIFY_POPUP] = function(typ, str, ...)
-		notification.AddTimed(str, typ, 5)
+	[NOTIFY_POPUP] = function(typ, str, dur, ...)
+		notification.AddTimed(str, typ, dur or 5)
 		MsgC(str)
 	end
 }
@@ -121,7 +121,7 @@ if CLIENT then
 				str = language.GetPhrase(str)
 			end
 
-			MODULE._Add(notif_typ, nil, str)
+			MODULE._Add(notif_typ, popup_typ, str)
 
 		elseif data_typ == 2 then
 			-- received table
@@ -142,7 +142,7 @@ if CLIENT then
 				end
 			end
 
-			MODULE._Add(notif_typ, nil, unpack(args))
+			MODULE._Add(notif_typ, popup_typ, unpack(args))
 		end
 	end)
 end

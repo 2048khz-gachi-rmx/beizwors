@@ -148,8 +148,8 @@ hook.NHAdd("PlayerSay", "Discord", function(ply, msg)
 		isfunction(ULib[cmd]) --ulib has a very gay method of storing commands
 	then return end
 
+	msg = discord.Escape(msg)
 	discord.Send("chat", ply:Nick(), msg)
-
 end)
 
 Embed = {}
@@ -347,6 +347,13 @@ hook.Add("Tick", "ServerNotify", function()
 
 end)
 
+function discord.Escape(str)
+	str = str:gsub("@everyone", "(at)everyone")
+		:gsub("@here", "(at)here")
+		:gsub("@", "\\@")
+
+	return str
+end
 
 local sendQueue = muldim:new()
 

@@ -40,7 +40,7 @@ function TOOL:LeftClick( trace )
 		end
 
 		-- Get client's CVars
-		local width = self:GetClientNumber( "width" )
+		local width = math.Clamp(self:GetClientNumber( "width", 3 ), 0, 10)
 		local material = self:GetClientInfo( "material" )
 		local damping = self:GetClientNumber( "damping" )
 		local rdamping = self:GetClientNumber( "rdamping" )

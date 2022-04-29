@@ -741,6 +741,11 @@ local function GenericDuplicatorFunction( data, Player )
 		return nil
 	end
 
+	if data.ModelScale then
+		local ok = hook.Run("AdvDupe2_AttemptedCrash", data, Player)
+		if ok ~= nil then return end
+	end
+
 	duplicator.DoGeneric( Entity, data )
 	Entity:Spawn()
 	Entity:Activate()
@@ -756,6 +761,7 @@ end
 	Params: <player> Player, <vector> Pos, <angle> Ang, <string> Model, <table> PhysicsObject, <table> Data
 	Returns: <entity> Prop
 ]]
+
 local function MakeProp(Player, Pos, Ang, Model, PhysicsObject, Data)
 
 	if( not util.IsValidModel(Model) and not file.Exists( Data.Model, "GAME" ) )then
@@ -778,6 +784,13 @@ local function MakeProp(Player, Pos, Ang, Model, PhysicsObject, Data)
 
 	local Prop = ents.Create( "prop_physics" )
 	if not IsValid(Prop) then return false end
+
+	if Data.ModelScale then
+		local ok = hook.Run("AdvDupe2_AttemptedCrash", Data, Player)
+		if ok ~= nil then return end
+	end
+
+	
 
 	duplicator.DoGeneric( Prop, Data )
 	Prop:Spawn()

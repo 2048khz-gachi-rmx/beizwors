@@ -351,14 +351,17 @@ SWEP.Animations = {
     ["fire"] = {
         Source = "shoot",
         Time = 0.5,
+        MinProgress = 0.35
     },
     ["fire_iron"] = {
         Source = "idle",
         Time = 0.5,
+        MinProgress = 0.35
     },
     ["cycle"] = {
         Source = "cycle",
         ShellEjectAt = 0.25,
+        MinProgress = 1,
     },
     ["reload"] = {
         Source = "reload",

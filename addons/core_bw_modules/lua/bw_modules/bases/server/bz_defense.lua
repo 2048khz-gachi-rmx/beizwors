@@ -103,9 +103,9 @@ hook.Add("BW_CanDealEntityDamage", "ResidenceCheck", function(atk, ent, imfl, dm
 	-- stuff in bases not claimed by the ent owner can be shot down
 	if not base:IsEntityOwned(ent) then
 
-		-- base owner deals 20x bullet damage to others' props in his base
+		-- base owner deals 150x bullet damage to others' props in his base
 		if IsPlayer(atk) and base:IsOwner(atk) then
-			dmg:ScaleDamage(20 * math.max(1, recent_frac))
+			dmg:ScaleDamage(150 * math.max(1, recent_frac))
 			return true
 		end
 

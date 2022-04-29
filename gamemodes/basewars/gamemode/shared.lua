@@ -280,12 +280,24 @@ local mults = {
 	[HITGROUP_LEFTLEG] = 3, [HITGROUP_RIGHTLEG] = 3, -- 75% to the legs
 }
 
+local buckMults = {
+	[HITGROUP_HEAD] = 0.5, -- 100% to the dome
+	[HITGROUP_LEFTARM] = 4, [HITGROUP_RIGHTARM] = 4, -- 100% to anywhere on the body
+	[HITGROUP_LEFTLEG] = 3, [HITGROUP_RIGHTLEG] = 3, -- 75% to the legs
+}
+
 function GM:ScalePlayerDamage(ply, hg, dmg)
 	local ret = self.BaseClass.ScalePlayerDamage and self.BaseClass.ScalePlayerDamage(self, ply, hg, dmg)
 	if ret then return ret end
 
-	if mults[hg] then
-		dmg:ScaleDamage(mults[hg])
+	if dmg:IsDamageType(DMG_BUCKSHOT) then
+		if buckMults[hg] then
+			dmg:ScaleDamage(buckMults[hg])
+		end
+	else
+		if mults[hg] then
+			dmg:ScaleDamage(mults[hg])
+		end
 	end
 end
 

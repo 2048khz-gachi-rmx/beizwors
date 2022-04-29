@@ -110,7 +110,7 @@ function raid.PickRaidedError(rder, rded)
 	local prefix = IsFaction(rded) and "" or "Player"
 	local main
 
-	-- they are raiding...
+	-- `rded` are raiding...
 	if rd:IsRaider(rded) then
 		if rd:IsRaided(rder) then
 			-- ...you
@@ -180,7 +180,7 @@ end
 
 function raid.CanRaidFaction(caller, fac2)
 	-- caller isnt guaranteed to be present, in that case
-	-- we're checking the raidability of our own faction
+	-- we're checking the raidability of our own (`fac2`) faction
 
 	local self_check = caller == false
 	local fac = not self_check and caller:GetFaction()
@@ -190,13 +190,13 @@ function raid.CanRaidFaction(caller, fac2)
 	if fac == fac2 then return false, err.OwnFaction end
 
 	if not self_check and fac:InRaid() then
-		local rded = fac:Get("Raided")
-		return raid.PickRaidedError(fac, rded)
+		local rder, rded = fac:InRaid():GetSides()
+		return false, raid.PickRaidedError(fac, rded)
 	end
 
 	if fac2:InRaid() then
-		local rded = fac2:Get("Raided")
-		return raid.PickRaidedError(fac2, rded)
+		local rded, rder = fac2:InRaid():GetSides()
+		return false, raid.PickRaidedError(fac2, rded)
 	end
 
 	if not self_check and fac2:RaidedCooldown() then
@@ -231,7 +231,11 @@ end
 local PINFO = LibItUp.PlayerInfo
 
 function PINFO:GetRaid()
-	return self._Raid and self._Raid:IsValid() and self._Raid
+	local rd = self._Raid and self._Raid:IsValid() and self._Raid
+	if rd then return rd end
+
+	rd = raid.Participants[self:SteamID64()]
+	return rd and rd:IsValid() and rd
 end
 
 function PINFO:SetRaid(rd)

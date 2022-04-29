@@ -38,7 +38,7 @@ function ENT:ForceUpdate()
 end
 
 function ENT:GetMaxLevel()
-	return (self.Levels and #self.Levels) or self.MaxLevel
+	return math.max( (self.Levels and #self.Levels or 0), self.MaxLevel or 0 )
 end
 
 function ENT:UpdateTransmitState()

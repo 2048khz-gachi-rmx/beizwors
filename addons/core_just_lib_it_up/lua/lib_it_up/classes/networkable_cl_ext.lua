@@ -135,6 +135,8 @@ function Networkable.ReadByDecoder(encid)
 	return dec[2](dec[3])
 end
 
+local unexist_warned = {}
+
 net.Receive("NetworkableSync", function(len)
 	local lBytes = len / 8
 
@@ -190,8 +192,9 @@ net.Receive("NetworkableSync", function(len)
 				warnf("Some hook created a networkable for `%s`, but didn't return success.", nwID)
 			end
 
-			if not obj then
+			if not obj and not unexist_warned[nwID] then
 				warnf("Networkable with the name `%s` (%d) didn't exist clientside.", nwID, num_id)
+				unexist_warned[nwID] = true
 			end
 
 		elseif added then
@@ -219,7 +222,7 @@ net.Receive("NetworkableSync", function(len)
 
 		printf("	reading change #%d", i)
 
-		if not obj then warnf("Reading an object-less change #%d", i) end
+		if not obj then printf("Reading an object-less change #%d", i) end
 		local k, v = ReadChange(obj)
 
 		if obj then
@@ -230,7 +233,7 @@ net.Receive("NetworkableSync", function(len)
 		else
 
 			idData:Set(v, NumberToID(num_id), k)
-			warnf("	Couldn't find object with numID %d; stashing change...", num_id)
+			printf("	Couldn't find object with numID %d; stashing change...", num_id)
 		end
 
 	end

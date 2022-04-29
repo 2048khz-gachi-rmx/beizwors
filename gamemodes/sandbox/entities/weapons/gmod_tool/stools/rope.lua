@@ -43,7 +43,7 @@ function TOOL:LeftClick( trace )
 		local forcelimit = self:GetClientNumber( "forcelimit" )
 		local addlength = self:GetClientNumber( "addlength" )
 		local material = self:GetClientInfo( "material" )
-		local width = self:GetClientNumber( "width" )
+		local width = math.Clamp(self:GetClientNumber( "width", 3 ), 0, 10)
 		local rigid = self:GetClientNumber( "rigid" ) == 1
 
 		local colorR = self:GetClientNumber( "color_r" )
@@ -105,7 +105,7 @@ function TOOL:RightClick( trace )
 		local forcelimit = self:GetClientNumber( "forcelimit" )
 		local addlength = self:GetClientNumber( "addlength" )
 		local material = self:GetClientInfo( "material" )
-		local width = self:GetClientNumber( "width" )
+		local width = math.Clamp(self:GetClientNumber( "width", 3 ), 0, 10)
 		local rigid = self:GetClientNumber( "rigid" ) == 1
 
 		local colorR = self:GetClientNumber( "color_r" )
