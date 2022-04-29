@@ -71,7 +71,10 @@ for i=1, 6 do
 end
 
 function ENT:SHInit()
-
+	print("sh init")
+	if SERVER then
+		WireLib.CreateInputs(self, {"Open", "Close", "State"}, {"Open on signal", "Close on signal", "Change state to signal"})
+	end
 end
 
 function ENT:CreateCollision()
