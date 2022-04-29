@@ -1,6 +1,6 @@
 AIBases.LayoutBrick = AIBases.LayoutBrick or Object:callable()
 AIBases.LayoutBrick.DataClass = AIBases.LayoutBrick.DataClass or Struct:extend({
-
+	uid = TYPE_NUMBER,
 })
 
 AIBases.LayoutBrick.IsBrick = true
@@ -26,6 +26,10 @@ end
 
 function AIBases.LayoutBrick:Spawn()
 	errorNHf("AIBases.LayoutBrick:Spawn() : not implemented. Override this method.")
+end
+
+function AIBases.LayoutBrick:PostBuild()
+
 end
 
 function AIBases.LayoutBrick:Serialize()
@@ -58,6 +62,7 @@ AIBases.BRICK_PROP = 0
 AIBases.BRICK_BOX = 1
 AIBases.BRICK_ENEMY = 2
 AIBases.BRICK_DOOR = 3
+AIBases.BRICK_SIGNAL = 4
 
 FInc.FromHere("bricks/*.lua", FInc.SHARED, FInc.RealmResolver()
 	:SetDefault(true)
