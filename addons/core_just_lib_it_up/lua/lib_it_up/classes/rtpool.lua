@@ -1,6 +1,7 @@
-RTPool = Emitter:callable()
+RTPool = RTPool or Emitter:callable()
 
-local entList = {}
+local entList = RTPool._EntList or muldim:new()
+RTPool._EntList = entList
 
 local frmt = function(...)
 	return table.concat({...}, ":")
@@ -18,16 +19,18 @@ function RTPool:Initialize(id)
 	self.ID = id
 
 	self.Pool = {}	-- [seqID] = {rt, mat}
+	self.LockedRTs = {}
 	self.IDs = {}
 end
 
 function RTPool:AddEntity(ent)
 	if not IsEntity(ent) then errorf("bad argument #1 to RTPool:AddEntity() (expected entity, got %s)", type(ent)) end
-	entList[ent] = self
+
+	entList:Set(true, ent, self)
 end
 
 function RTPool:GetEntity(ent)
-	self:AddEntity()
+	self:AddEntity(ent)
 	return self:Get(ent)
 end
 
@@ -94,33 +97,50 @@ function RTPool:Get(id)
 	end
 
 	local pool = self.Pool[num]
-	local rt = pool[1]
-	local mat = pool[2]
+	local rt, mat
 
-	if not rt then
+	if not pool then
 		rt = self:_CreateRT(num)
 		mat = self:_CreateMat(num, rt)
 		self.Pool[num] = {rt, mat}
+		pool = self.Pool[num]
 	end
+
+	rt = pool[1]
+	mat = pool[2]
 
 	return rt, mat
 end
 
 function RTPool:Free(id)
-	self.IDs[id] = nil
+
+end
+
+function RTPool:Lock(id)
+
 end
 
 hook.Add("EntityActuallyRemoved", "RTPool", function(ent)
-	if not entList[ent] then return end
-	entList[ent]:FreeEntity(ent)
+	local pools = entList[ent]
+	if not pools then return end
+
+	for pool, _ in pairs(pools) do
+		if pool:Emit("ShouldFree", ent, true) == false then continue end
+
+		pool:FreeEntity(ent)
+	end
+
 	entList[ent] = nil
 end)
 
 hook.Add("NotifyShouldTransmit", "RTPool", function(ent, new)
-	if not entList[ent] then return end
-	local rtpool = entList[ent]
-	if rtpool:Emit("ShouldFree", ent) == false then return end
+	if not entList[ent] or new then return end
 
-	entList[ent]:FreeEntity(ent)
-	entList[ent] = nil
+	local pools = entList[ent]
+
+	for pool, _ in pairs(pools) do
+		if pool:Emit("ShouldFree", ent) == false then continue end
+
+		pool:FreeEntity(ent)
+	end
 end)

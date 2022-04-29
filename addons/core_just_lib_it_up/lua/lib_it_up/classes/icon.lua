@@ -319,5 +319,6 @@ Icons.Money64 = Icon("https://i.imgur.com/NVl7wuF.png", "moneybag_64.png")
 Icons.Money32 = Icon("https://i.imgur.com/lRpS2NE.png", "moneybag_32.png")
 Icons.Unsafe = Icon("https://i.imgur.com/Xq0xmuF.png", "unsafe.png")
 Icons.RadGradient = Icon("https://i.imgur.com/uk9gDB8.png", "radial2.png")
+Icons.Arrow = Icon("https://i.imgur.com/jFHSu7s.png", "arr_right.png")
 
 Icons.Lodestar = Icon("https://i.imgur.com/rkdDDb0.png", "ldstar128.png")
