@@ -82,7 +82,7 @@ end
 local t = {}
 
 function ENT:GetRenderMesh()
-	if not self.Mesh then self:CreateMesh() return end
+	if not self.Mesh then self:CreateMesh() end
 
 	local mat = self:GetMaterial()
 	if mat == "" then mat = self.Material end

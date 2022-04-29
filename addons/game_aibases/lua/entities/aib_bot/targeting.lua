@@ -225,7 +225,6 @@ end
 
 function ENT:OnEnemyLost()
 	self:Emit("EnemyLost", self:GetEnemy())
-	self.TrackingEnemy = false
 	self:SetMood("alert")
 end
 
@@ -234,5 +233,6 @@ function ENT:LoseEnemy()
 		self:OnEnemyLost()
 	end
 
+	self.TrackingEnemy = false
 	self:SetEnemy(nil)
 end

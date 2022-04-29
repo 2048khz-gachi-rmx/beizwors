@@ -513,6 +513,7 @@ else
 			else
 				if ent.IsAIBaseBot then how = AIBases.BRICK_ENEMY end
 				if ent.IsMorphDoor then how = AIBases.BRICK_DOOR end
+				if ent.IsAIBaseSignal then how = AIBases.BRICK_SIGNAL end
 			end
 
 			setEnum(ply, ent, how)

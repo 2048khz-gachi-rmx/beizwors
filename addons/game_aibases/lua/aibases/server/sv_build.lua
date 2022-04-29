@@ -53,6 +53,7 @@ concommand.Add("aibases_savelayout", function(ply, _, arg)
 	printf("%d bricks", table.Count(bents))
 
 	local brs = {}
+	local uid = 0
 
 	for ent, id in pairs(bents) do
 		if not IsValid(ent) then
@@ -62,8 +63,16 @@ concommand.Add("aibases_savelayout", function(ply, _, arg)
 
 		local base = AIBases.IDToBrick(id)
 		local brick = base:Build(ent)
+		brick.Data.uid = uid
+		if ent.Brick then ent.Brick.uid = uid end
+
 		layout:AddBrick(brick)
+		uid = uid + 1
 		--brs[#brs + 1] = brick
+	end
+
+	for k,v in pairs(layout.Bricks) do
+		v:PostBuild(layout.Bricks)
 	end
 
 	local out = layout:Serialize() --
@@ -225,3 +234,23 @@ concommand.Add("aib_removeall", function(ply)
 		bld.Navs[ply] = {}
 	end
 end)
+
+function PLAYER:MarkAllWIP()
+	for k,v in ipairs(ents.FindByClass(("*prop_physics*"))) do
+		if v.Brick then
+			AIBases.Builder.AddBrick(self, v, AIBases.BRICK_PROP)
+		end
+	end
+
+	for k,v in ipairs(ents.FindByClass(("aib_wall"))) do
+		AIBases.Builder.AddBrick(self, v, AIBases.BRICK_BOX)
+	end
+
+	for k,v in ipairs(ents.FindByClass(("aib_bot"))) do
+		AIBases.Builder.AddBrick(self, v, AIBases.BRICK_ENEMY)
+	end
+
+	for k,v in ipairs(ents.FindByClass(("bw_morph_door"))) do
+		AIBases.Builder.AddBrick(self, v, AIBases.BRICK_DOOR)
+	end
+end
