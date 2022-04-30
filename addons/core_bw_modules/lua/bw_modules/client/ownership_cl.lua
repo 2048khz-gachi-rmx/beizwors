@@ -23,13 +23,15 @@ function BaseWars.Ents.AssignOwner(eid, sid)
 		if self.nvm then return end -- ???
 
 		local ply = player.GetBySteamID(sid)
+		local ent = Entity(eid) -- reminder: self ~= ent
+
 		if not ply then
 			errorNHf("BaseWars.Ents.AssignOwner: could not find player for steamid `%s` (ent: %s); might cause issues",
-				sid, self)
+				sid, ent)
 		end
 
 		hook.Run("EntityOwnershipChanged",
-			ply, self, sid)
+			ply, ent, sid)
 	end)
 end
 
