@@ -39,7 +39,11 @@ function ENT:CLInit()
 	anim = anim or Animatable("MorphDoors")
 
 	local dist = self.Dists
-	self:SetRenderBounds(Vector(-self.BoxThickness, -dist[1], -dist[2]), Vector(self.BoxThickness, dist[1], dist[2]), Vector(4, 4, 4))
+	self:SetRenderBounds(
+		Vector(-self.BoxThickness, -dist[1], -dist[2]),
+		Vector(self.BoxThickness, dist[1], dist[2]),
+		Vector(4, 4, 4)
+	)
 
 	self.LeftClose = 0
 	self.RightClose = 0
@@ -253,6 +257,8 @@ function ENT:Draw()
 		local mins = b1
 		local maxs = b2
 		OrderVectors(mins, maxs)
+
+		self:SetRenderBounds( mins, maxs, vector_origin )
 
 		-- print(b1, b2)
 		vReuse[2], vReuse[3], vReuse[1], vReuse[4] = math.abs(b1.y), math.abs(b1.z), math.abs(b2.y), math.abs(b2.z)

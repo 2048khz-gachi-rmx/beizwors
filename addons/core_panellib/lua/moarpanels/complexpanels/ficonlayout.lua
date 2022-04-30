@@ -28,7 +28,6 @@ function FIC:Init()
 	self.NoDrawBG = false
 
 	self.Color = Color(40, 40, 40)
-	self.drawColor = self.Color:Copy()
 end
 
 ChainAccessor(FIC, "MarginX", "MarginX")

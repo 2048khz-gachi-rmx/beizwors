@@ -1,6 +1,6 @@
 --
 
-local layout = AIBases.BaseLayout or Emitter:extend()
+local layout = AIBases.BaseLayout or Emitter:callable()
 AIBases.BaseLayout = layout
 
 function layout:Initialize(name)
@@ -69,4 +69,6 @@ function layout:ReadFrom(fn, layFn)
 	if not lay then print("no nav data @ ", "aibases/layouts/" .. (layFn or fn) .. "_nav.dat") end
 
 	self:Deserialize(dat, lay)
+
+	return self
 end
