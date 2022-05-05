@@ -623,6 +623,7 @@ function chatbox.Build()
 		self.BackgroundColor.a = 170
 		self.HeaderColor.a = 250
 
+
 		local x = self:GetCookie("x", 20)
 		local y = self:GetCookie("y", ScrH() - math.min(650, ScrH() - 350))
 		local w = self:GetCookie("w", 600)
@@ -630,6 +631,7 @@ function chatbox.Build()
 
 		self:SetPos(x, y)
 		self:SetSize(w, h)
+		self:CacheShadow(3, 3, 2)
 
 		self:SetSizable(true)
 		self:SetSizablePos(2)

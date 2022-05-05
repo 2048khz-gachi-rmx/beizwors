@@ -152,6 +152,7 @@ function ulx.showMotdMenu( steamid )
 	window:Center()
 	window.Y = window.Y - 48
 	window:MoveBy(0, 48, 0.3, 0, 0.3)
+	window:CacheShadow(2, 4, 4)
 
 	close.Y = window:GetTall() - close:GetTall() - 16
 	close:SetColor(50, 150, 250)
