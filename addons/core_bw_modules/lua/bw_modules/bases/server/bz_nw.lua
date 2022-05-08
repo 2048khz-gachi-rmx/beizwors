@@ -32,7 +32,6 @@ bNW:On("WriteChangeValue", "EncodeZones", function(self, key, base, plys) -- cha
 		for k,v in ipairs(base:GetZones()) do
 			net.WriteUInt(v:GetID(), 12)
 		end
-		net.WriteUInt(base:GetData().AIBaseTier or 0, 4)
 	else
 		net.WriteBool(false)
 	end
