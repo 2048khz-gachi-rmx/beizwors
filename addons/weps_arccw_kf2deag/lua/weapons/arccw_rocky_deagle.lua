@@ -99,7 +99,7 @@ SWEP.BulletBones = { -- the bone that represents bullets in gun/mag
 }
 
 SWEP.ProceduralRegularFire = false
-SWEP.ProceduralIronFire = false
+SWEP.ProceduralIronFire = true
 
 SWEP.CaseBones = {}
 
@@ -273,12 +273,13 @@ SWEP.Animations = {
     },
     ["fire"] = {
         Source = {"fire"},
-        --Time = 0.5,
+        Time = 0.7,
         ShellEjectAt = 0,
     },
     ["fire_empty"] = {
         Source = "fire_last",
         --Time = 0.5,
+        Time = 0.5,
         ShellEjectAt = 0,
     },
     ["fire_iron"] = {

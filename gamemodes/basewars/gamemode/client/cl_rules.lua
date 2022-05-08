@@ -146,8 +146,6 @@ function ulx.showMotdMenu( steamid )
 	window:InvalidateChildren(true)
 	sizer:InvalidateLayout(true)
 
-	print(sizer.Y, sizer:GetTall())
-
 	window:SetTall(sizer.Y + sizer:GetTall() + close:GetTall() + 32)
 	window:Center()
 	window.Y = window.Y - 48
