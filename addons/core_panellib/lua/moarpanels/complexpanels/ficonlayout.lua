@@ -1,9 +1,3 @@
---[[
-
-FIconLayout
-	this barely works; don't use it
-]]
-
 local FIC = {}
 
 function FIC:Init()
@@ -13,6 +7,7 @@ function FIC:Init()
 	self.PadY = 8
 
 	self.AutoPad = true
+	self.AutoMargin = false
 	self.AutoResize = true
 
 	self.MarginX = 4 -- distance between panels inside
@@ -49,16 +44,39 @@ end
 
 function FIC:OnRowShift(row, curX, w)
 
-	row.PnlW = row.PnlW - self.MarginX
-	local pad = (w - row.PnlW) / 2
-	local x = self.AutoPad and pad or self.PadX
-	row.PadX = x
+	local pad, x, marg
+
+	if not self.AutoMargin then
+		local pad = (w - row.PnlW - #row * self.MarginX) / 2
+		x = self.AutoPad and pad or self.PadX
+		row.PadX = x
+		marg = self.MarginX
+	else
+		local empty = w - row.PnlW
+		local padMult = isnumber(self.AutoMargin) and self.AutoMargin or 1
+
+		if self.AutoPad then
+			local margAmt = #row - 1
+			local padAmt = padMult * 2
+
+			local unit = empty / (margAmt + padAmt)
+
+			pad = unit * padMult
+			marg = unit
+		else
+			local unit = (empty - self.PadX * 2) / (#row - 1)
+			pad = self.PadX
+			marg = unit
+		end
+
+		x = pad
+	end
 
 	for _, pnl in ipairs(row) do
 		row.Positions[pnl][1] = x
 		self:ShiftPanel(pnl, x, row.Positions[pnl][2])
 
-		x = x + row.Sizes[pnl][1] + self.MarginX
+		x = x + row.Sizes[pnl][1] + marg
 	end
 
 end
@@ -114,7 +132,7 @@ function FIC:UpdateSize(w, h)
 		row.Sizes[v] = {vW, vH}
 		row.Positions[v] = {0, curY}
 
-		row.PnlW = row.PnlW + vW + self.MarginX
+		row.PnlW = row.PnlW + vW
 		row.MaxH = math.max(row.MaxH, vH)
 
 		row[#row + 1] = v
@@ -189,8 +207,10 @@ end
 
 vgui.Register("FIconLayout", FIC, "GradPanel")
 
+local TESTING = false
 
---[[if IsValid(_Pn) then _Pn:Remove() end
+if IsValid(_Pn) then _Pn:Remove() end
+if not TESTING then return end
 
 local f = vgui.Create("FFrame")
 _Pn = f
@@ -218,16 +238,18 @@ ic:Dock(NODOCK)
 ic:SetPos(x, y)
 ic:SetSize(w, h)
 ic.AutoPad = true
+ic.AutoMargin = true
 f:On("Think", function()
-	ic:SetWide(w + math.sin(CurTime() * 3) * 50)
+	ic:SetWide(w - 60 + math.sin(CurTime() * 1.5) * 60)
+	ic:CenterHorizontal()
 end)
 
 ic:On("ShiftPanel", function(self, pnl, x, y)
-	local dur = math.abs(pnl.X - x) / 1000
+	local dur = 0.2
 	local an = pnl:GetTo("X") or pnl:To("X", x, dur, 0, 0.3)
 	if an then an.ToVal = x end
 
-	pnl:To("Y", y, 0.7, 0, 0.3)
+	pnl:To("Y", y, dur, 0, 0.3)
 
 	return true
-end)]]
+end)
