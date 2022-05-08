@@ -139,6 +139,11 @@ function qobj:Close()
 	openedQM = CreateQuickMenu()
 end
 
+function qobj:RequestClose(t)
+	self.activeCD = CurTime() + self:GetTime() + (t or 0.2)
+	self:StartClose()
+end
+
 function qobj:Initialize(ent)
 	qmregistered[ent] = self
 
@@ -572,7 +577,7 @@ hook.Add("Think", "QuickMenus", function()
 
 	--then quickmenu counts up
 
-	qm.active = true
+	qm.active = not qm.activeCD or CurTime() > qm.activeCD
 
 	DoTimer()
 
