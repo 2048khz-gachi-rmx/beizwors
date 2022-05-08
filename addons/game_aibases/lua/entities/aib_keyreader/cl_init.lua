@@ -22,16 +22,19 @@ function ENT:Acq()
 end
 
 function ENT:QMOnOpen(qm, pnl)
+	local ent = self
 	local canv = qm:GetCanvas()
 	local hld = vgui.Create("FFrame", canv)
-	-- local lay = vgui.Create("FIconLayout", canv)
+
 	hld:SetCloseable(false, true)
 	hld.HeaderSize = 28
 
 	canv.Holder = hld
 	hld.Color = Color(40, 40, 40, 250)
 
-	hld:SetWide(canv:GetWide() * 0.25)
+	hld:SetWide(canv:GetWide() * 0.24)
+	hld:SetTall(canv:GetTall() * 0.18)
+
 	hld:CenterHorizontal()
 
 	hld.WantY = canv:GetTall() * 0.55
@@ -48,6 +51,50 @@ function ENT:QMOnOpen(qm, pnl)
 	end
 
 	-- generate card slots
+	local scr = vgui.Create("FScrollPanel", hld)
+	scr:Dock(FILL)
+
+	local lay = vgui.Create("FIconLayout", scr)
+	lay:Dock(FILL)
+	lay.NoDrawBG = true
+
+	lay.AutoMargin = 2
+	lay:SetSpaceX(16)
+
+	hld:InvalidateLayout(true)
+
+	local invs = Inventory.Util.GetUsableInventories(CachedLocalPlayer())
+	local cards = {}
+
+	for k, inv in pairs(invs) do
+		local its = inv:GetItems()
+		for k,v in pairs(its) do
+			local zased = v:GetBase()
+			if zased.IsKeyCard then cards[#cards + 1] = v end
+		end
+	end
+
+	table.sort(cards, function(a, b) return a:GetSlot() < b:GetSlot() end)
+
+	for i=1, math.max(#cards, 8) do
+		local slot = lay:Add("ItemFrame")
+		local sz = 72
+		slot:SetSize(sz, sz)
+		slot:On("CanDrag", function() return false end)
+
+		if cards[i] then
+			slot:SetItem(cards[i])
+			if not self:CanUseCard(cards[i]) then
+				slot:Dehighlight()
+				slot:SetMouseInputEnabled(false)
+			end
+		end
+
+		function slot:DoClick()
+			ent:UseCard(self:GetItem())
+			qm:RequestClose(0.5)
+		end
+	end
 end
 
 function ENT:QMOnBeginClose(qm, pnl)
@@ -64,6 +111,14 @@ function ENT:QMOnReopen(qm, pnl)
 	hld:MoveTo(hld.X, hld.WantY, qm:GetTime(), 0, 0.3)
 end
 
+function ENT:UseCard(itm)
+	LocalPlayer():EmitSound("weapons/arccw_fml/universal/uni-draw.wav", 70)
+
+	net.Start("aib_keyreader")
+		net.WriteUInt(itm:GetUID(), 32)
+		net.WriteEntity(self)
+	net.SendToServer()
+end
 
 function ENT:Initialize()
 	self:SetBodygroup(1, 1)
@@ -75,6 +130,13 @@ function ENT:Initialize()
 	qm.OnClose = function(qm, _, pnl) self:QMOnBeginClose(qm, pnl) end
 	qm.OnReopen = function(qm, _, pnl) self:QMOnReopen(qm, pnl) end
 end
+
+local bgCol = Color(220, 200, 100, 110)
+local bgOpenCol = Color(130, 255, 130, 110)
+
+local curBg = Color(0, 0, 0)
+
+local acGiven = Color(150, 255, 150)
 
 function ENT:RenderScreen()
 	local ep = EyePos()
@@ -92,12 +154,19 @@ function ENT:RenderScreen()
 
 	t.Dfr = t.Dfr or 0
 
+	local a = Ease(1 - t.Dfr, 0.3)
+
+	an:MemberLerp(t, "Ofr", self:GetOpened() and 1 or 0, 0.5, 0, 0.2)
+	local ofr = t.Ofr or 0
+	local cfr = 1 - ofr
+
+	curBg:Lerp(ofr, bgCol, bgOpenCol)
+	curBg.a = curBg.a * a
 
 	local w, h = 598, 280
 	local x, y = 0, 0
 
-	local nh = h * (1 - math.ease.InBack(t.Dfr or 0))
-	local a = Ease(1 - t.Dfr, 0.3)
+	local nh = h * (1 - math.ease.InBack(t.Dfr or 0)) * (1 - ofr * 0.5)
 
 	if ac then
 		-- appear
@@ -109,7 +178,8 @@ function ENT:RenderScreen()
 	end
 
 	y = math.ceil(y)
-	surface.SetDrawColor(220, 200, 100, 110 * a)
+
+	surface.SetDrawColor(curBg)
 	surface.DrawRect(x, y, w, h)
 
 	surface.SetDrawColor(255, 255, 255, 255)
@@ -141,8 +211,8 @@ function ENT:RenderScreen()
 	for i=0, 2 do
 		local aFr = ((CurTime() * 1 + i / 3) % 1.33) ^ 0.3 * 1
 		local pa = (1 - aFr) * 255
-		local aH = math.ceil(aH + (aH * (1 - aFr) * 0.5))
-		local naW = math.ceil(aW * (0.8 + (1 - aFr) * 0.2))
+		local aH = math.ceil(aH + (aH * (1 - aFr) * 0.5)) * cfr
+		local naW = math.ceil(aW * (0.8 + (1 - aFr) * 0.2)) * cfr
 		t.ic:GetColor().a = pa * a
 		t.ic:Paint(x + w - offsetToCardReader,
 			y + h - aW / 2 - i * aW * 0.66,
@@ -153,11 +223,109 @@ function ENT:RenderScreen()
 	local avW = w - bSz - offsetToCardReader - aH + 2
 	local tx, ty = bSz, y + h - aW / 2
 
-	local _, th = draw.SimpleText("Access Level: 1488", "EX40", tx + avW, ty, color_white:IAlpha(a * 255), 2, 4)
-	ty = ty - th
+	if cfr > 0 then
+		local ty = ty
 
-	local _, hh = draw.SimpleText("Insert Keycard", "EXB64", tx + avW, ty + draw.GetFontHeight("OSB64") * 0.125,
-		color_white:IAlpha(a * 255), 2, 4)
+		local _, th = draw.SimpleText("Access Level: " .. self:GetLevelRequired(), "EX40", tx + avW, ty, color_white:IAlpha(a * 255 * cfr), 2, 4)
+		ty = ty - th
+
+		local _, hh = draw.SimpleText("Insert Keycard", "EXB64", tx + avW, ty + draw.GetFontHeight("EXB64") * 0.125,
+			color_white:IAlpha(a * 255 * cfr), 2, 4)
+	end
+
+	if ofr > 0 then
+		acGiven.a = 255 * ofr
+		draw.SimpleText("Access Granted", "EXB64", w / 2, y + nh / 2, acGiven, 1, 1)
+	end
+end
+
+local animTime = 3
+local outOff = Vector(5.1733378171921, 13.528625488281, -1.5764809846878)
+local appOff = Vector(5, 13.528625488281, -4.5764809846878)
+
+function ENT:DrawCard()
+	local t = self:GetInsertTime()
+	local ct = CurTime()
+	local passed = ct - t
+	local ce = self.CLCard
+
+	if passed > animTime then
+		self:RemoveCard()
+		return
+	end
+
+	if not IsValid(ce) then
+		local base = Inventory.Util.GetBase("card" .. self:GetLevelRequired())
+		if not base then
+			errorNHf("no base found for card %s; using default", "card" .. self:GetLevelRequired())
+			base = Inventory.Util.GetBase("card1")
+		end
+
+		local mdl = base:GetModel()
+		self.CLCard = ClientsideModel(mdl, RENDERGROUP_TRANSLUCENT)
+		ce = self.CLCard
+		ce:Spawn()
+		ce:SetRenderMode(RENDERMODE_TRANSCOLOR)
+
+		self:Timer("Fuckyou", 5, 1, function() self:RemoveCard() end)
+	end
+
+	local outPos = self:LocalToWorld(outOff)
+	local inPos = self:GetSwipePos()
+	local ang = self:GetAngles()
+	ang:RotateAroundAxis(ang:Up(), 90)
+
+	local fr = 1
+
+	local inOutAnim = animTime - 0.3
+
+	local apFr = inOutAnim * 0.15
+	local inFr = inOutAnim * 0.4
+	local outFr = inOutAnim
+
+	-- yandev
+	if passed < apFr then
+		inPos = outPos
+		outPos = self:LocalToWorld(appOff)
+
+		fr = math.ease.OutCirc(math.Remap(passed, 0, apFr, 0, 1))
+		ang = LerpAngle(fr, ang + Angle(45, 45, 90), ang)
+	elseif passed < inFr then
+		local f2 = math.RemapClamp(passed, animTime * 0.2, inFr, 0, 1)
+		local speedup = 0.5
+
+		if f2 < speedup then
+			local f3 = math.Remap(f2, 0, speedup, 0, 1)
+			fr = Ease(f3, 0.7) * speedup
+		else
+			local f3 = math.Remap(f2, speedup, speedup + 0.1, 0, 1)
+			fr = speedup + Ease(f3, 2.2) * (1 - speedup)
+		end
+	elseif passed < outFr then
+		fr = math.ease.InElastic(math.RemapClamp(passed, inOutAnim * 0.8, inOutAnim, 1, 0))
+	else
+		fr = Ease(math.Remap(passed, inOutAnim, animTime, 0, 1), 3.3)
+
+		inPos = self:LocalToWorld(appOff)
+		outPos = outPos
+		ang = LerpAngle(1 - fr, ang + Angle(-45, 45, 0), ang)
+		ce:SetColor(Color(255, 255, 255, (1 - fr) * 255))
+	end
+
+	local pos = LerpVector(fr, outPos, inPos)
+	ce:SetPos(pos)
+	ce:SetAngles(ang)
+end
+
+function ENT:RemoveCard()
+	if IsValid(self.CLCard) then
+		self.CLCard:Remove()
+		self.CLCard = nil
+	end
+end
+
+function ENT:OnRemove()
+	self:RemoveCard()
 end
 
 local off = Vector (0.28, -13.411619186401, 20 * 280 / 380)
@@ -172,4 +340,6 @@ function ENT:Draw()
 	cam.Start3D2D(self:LocalToWorld(off), self:LocalToWorldAngles(ang), 0.05)
 		xpcall(self.RenderScreen, GenerateErrorer("AIBKeyReader"), self)
 	cam.End3D2D()
+
+	self:DrawCard()
 end
