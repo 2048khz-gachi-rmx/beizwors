@@ -9,6 +9,7 @@ function layout:Initialize(name)
 
 	self.Name = name
 	self.Bricks = {}
+	self.UIDBricks = {}
 	self.EnemySpots = {}
 	self.Enemies = {}
 	self.Navs = {}
@@ -19,6 +20,7 @@ function layout:AddBrick(brick)
 	assert(not table.HasValue(self.Bricks, brick))
 
 	self.Bricks[#self.Bricks + 1] = brick
+	self.UIDBricks[brick.Data.uid] = brick
 end
 
 function layout:Spawn()
@@ -28,7 +30,13 @@ function layout:Spawn()
 
 	for id, bs in pairs(self.Bricks) do
 		for _, brick in ipairs(bs) do
-			brick:Spawn()
+			brick:Spawn(self)
+		end
+	end
+
+	for id, bs in pairs(self.Bricks) do
+		for _, brick in ipairs(bs) do
+			brick:PostSpawn(self)
 		end
 	end
 end
@@ -54,11 +62,21 @@ function layout:Deserialize(str, nav)
 	local enemies = AIBases.Storage.DeserializeEnemies(enemyData)
 
 	self.Bricks = bricks
+	for bid, bx in pairs(bricks) do
+		for _, brick in pairs(bx) do
+			self.UIDBricks[brick.Data.uid] = brick
+		end
+	end
+
 	self.EnemySpots = enemies
 
 	if nav then
 		self.LuaNavs = AIBases.Storage.DeserializeNavs(nav)
 	end
+end
+
+function layout:GetBrick(uid)
+	return self.UIDBricks[uid]
 end
 
 function layout:ReadFrom(fn, layFn)

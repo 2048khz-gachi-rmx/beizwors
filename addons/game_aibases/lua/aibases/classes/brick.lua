@@ -1,6 +1,6 @@
 AIBases.LayoutBrick = AIBases.LayoutBrick or Object:callable()
 AIBases.LayoutBrick.DataClass = AIBases.LayoutBrick.DataClass or Struct:extend({
-	uid = TYPE_NUMBER,
+	uid = {TYPE_NUMBER, default = -1},
 })
 
 AIBases.LayoutBrick.IsBrick = true
@@ -24,9 +24,14 @@ function AIBases.LayoutBrick:GetType()
 	return self.type
 end
 
-function AIBases.LayoutBrick:Spawn()
+function AIBases.LayoutBrick:Spawn(lay)
 	errorNHf("AIBases.LayoutBrick:Spawn() : not implemented. Override this method.")
 end
+
+function AIBases.LayoutBrick:PostSpawn(lay)
+
+end
+
 
 function AIBases.LayoutBrick:PostBuild()
 

@@ -64,6 +64,7 @@ concommand.Add("aibases_savelayout", function(ply, _, arg)
 		local base = AIBases.IDToBrick(id)
 		local brick = base:Build(ent)
 		brick.Data.uid = uid
+		brick.BuiltFrom = ent
 		if ent.Brick then ent.Brick.uid = uid end
 
 		layout:AddBrick(brick)
