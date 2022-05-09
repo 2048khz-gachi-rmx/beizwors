@@ -19,32 +19,43 @@ function ENT:Use(ply)
 end
 
 function ENT:EmitSignal()
-	Wire_TriggerOutput(self, "KeycardUsed", 1)
-	Wire_TriggerOutput(self, "KeycardUsed", 0)
-
-	Wire_TriggerOutput(self, "OpenState", 1)
-	self:Close()
+	Wire_TriggerOutput(self, "OpenState", self:GetOpened() and 1 or 0)
 end
 
-function ENT:Open()
-	Wire_TriggerOutput(self, "OpenState", 1)
+function ENT:Open(nosig)
 	self:SetOpened(true)
+	if not nosig then self:EmitSignal() end
 end
 
-function ENT:Close()
-	Wire_TriggerOutput(self, "OpenState", 0)
+function ENT:Close(nosig)
 	self:SetOpened(false)
+	if not nosig then self:EmitSignal() end
 end
 
 function ENT:SwipeCard(ply, itm, inv)
 	self:Timer("CardReply", 0.2, 1, function()
-		sound.Play("grp/keycards/yes.wav", self:GetSwipePos(), 70, 100, 1)
-		self.LockedUse = false
-		self:Open()
+		local ok = self:CardValid(itm)
 
-		self:Timer("CardEmit", 1, 1, function()
-			self:EmitSignal()
-		end)
+		if ok then
+			self:Emit("UsedValidCard", ply, itm)
+		else
+			self:Emit("UsedInvalidCard", ply, itm)
+		end
+
+		sound.Play(("grp/keycards/%s.wav"):format(ok and "yes" or "no"), self:GetSwipePos(), 70, 100, 1)
+		self.LockedUse = false
+
+		if ok then
+			self:Open(true)
+
+			self:Timer("CardEmit", 1, 1, function()
+				Wire_TriggerOutput(self, "KeycardUsed", 1)
+				Wire_TriggerOutput(self, "KeycardUsed", 0)
+				self:EmitSignal()
+
+				self:Timer("debug", 3, 1, function() self:Close() end)
+			end)
+		end
 	end)
 end
 
@@ -57,6 +68,14 @@ function ENT:UseCard(ply, itm, inv)
 
 	self.LockedUse = true
 	self:SetInsertTime(CurTime())
+
+	local ok = self:CardValid(itm)
+
+	if ok then
+		self:Emit("StartUsingValidCard", ply, itm)
+	else
+		self:Emit("StartUsingInvalidCard", ply, itm)
+	end
 
 	self:Timer("UseCard", del, 1, function()
 		self:Timer("CardBleep", 0.6, 1, function()

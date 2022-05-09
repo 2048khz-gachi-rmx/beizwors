@@ -21,17 +21,26 @@ function ENT:DerivedDataTables()
 	self:SetLevelRequired(1)
 end
 
+function ENT:SetTier(t)
+	self:SetLevelRequired(t)
+end
+
 function ENT:CanUseCard(itm)
 	local base = itm and itm:GetBase()
 	if not base then return false end
 
 	if not base.IsKeyCard then return false end
 
-	-- todo: access level check
-	if base.AccessLevel < 0 then return false end
+	return true
+end
+
+function ENT:CardValid(itm)
+	local base = itm and itm:GetBase()
+	if base.AccessLevel < self:GetLevelRequired() then return false end
 
 	return true
 end
+
 
 ENT.SwipePosLocal = Vector(0.2, 13.528625488281, -1.5764809846878)
 
