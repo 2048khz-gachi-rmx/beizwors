@@ -35,6 +35,7 @@ function ENT:TriggerInput(sig, val)
 end
 
 function ENT:Open()
+	self:Emit("Opened")
 	self:SetCollisionGroup(COLLISION_GROUP_WORLD)
 	self:SetOpen(true)
 end

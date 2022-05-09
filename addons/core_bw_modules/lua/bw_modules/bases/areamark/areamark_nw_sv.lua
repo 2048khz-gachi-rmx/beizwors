@@ -4,11 +4,6 @@ local nw = bw.NW
 
 local function createNewBase(ply, pr)
 	local ns = netstack:new()
-	if not bw.CanModify(ply) then
-		ns:WriteCompressedString("no permissions")
-		pr:ReplySend("BWBases", false, ns)
-		return
-	end
 
 	local name = net.ReadString()
 
@@ -31,11 +26,6 @@ end
 
 local function createNewZone(ply, pr)
 	local ns = netstack:new()
-	if not bw.CanModify(ply) then
-		ns:WriteCompressedString("no permissions")
-		pr:ReplySend("BWBases", false, ns)
-		return
-	end
 
 	local baseID = net.ReadUInt(nw.SZ.base)
 	local name = net.ReadString()
@@ -60,12 +50,6 @@ end
 
 local function editZone(ply, pr)
 	local ns = netstack:new()
-
-	if not bw.CanModify(ply) then
-		ns:WriteCompressedString("no permissions")
-		pr:ReplySend("BWBases", false, ns)
-		return
-	end
 
 	local zoneID = net.ReadUInt(nw.SZ.zone)
 	local name = net.ReadString()
@@ -99,12 +83,6 @@ end
 local function editBase(ply, pr)
 	local ns = netstack:new()
 
-	if not bw.CanModify(ply) then
-		ns:WriteCompressedString("no permissions")
-		pr:ReplySend("BWBases", false, ns)
-		return
-	end
-
 	local baseID = net.ReadUInt(nw.SZ.base)
 	local name = net.ReadString()
 
@@ -136,12 +114,6 @@ end
 local function yeetBase(ply, pr)
 	local ns = netstack:new()
 
-	if not bw.CanModify(ply) then
-		ns:WriteCompressedString("no permissions")
-		pr:ReplySend("BWBases", false, ns)
-		return
-	end
-
 	local ID = net.ReadUInt(nw.SZ.base)
 	local base = bw.GetBase(ID)
 
@@ -170,12 +142,6 @@ end
 local function yeetZone(ply, pr)
 	local ns = netstack:new()
 
-	if not bw.CanModify(ply) then
-		ns:WriteCompressedString("no permissions")
-		pr:ReplySend("BWBases", false, ns)
-		return
-	end
-
 	local ID = net.ReadUInt(nw.SZ.zone)
 	local zone = bw.GetZone(ID)
 
@@ -203,12 +169,6 @@ end
 
 local function spawnCore(ply, pr)
 	local ns = netstack:new()
-
-	if not bw.CanModify(ply) then
-		ns:WriteCompressedString("no permissions")
-		pr:ReplySend("BWBases", false, ns)
-		return
-	end
 
 	local ID = net.ReadUInt(nw.SZ.base)
 	local base = bw.GetBase(ID)
@@ -245,13 +205,6 @@ end
 
 local function saveCore(ply, pr)
 	local ns = netstack:new()
-
-	if not bw.CanModify(ply) then
-		ns:WriteCompressedString("no permissions")
-		pr:ReplySend("BWBases", false, ns)
-		return
-	end
-
 	local ID = net.ReadUInt(nw.SZ.base)
 	local base = bw.GetBase(ID)
 
@@ -294,7 +247,33 @@ local function saveCore(ply, pr)
 	end)
 end
 
+local function editData(ply, pr)
+	local ID = net.ReadUInt(nw.SZ.base)
+	local base = bw.GetBase(ID)
+
+	if not base then
+		ns:WriteCompressedString("didn't find base with ID " .. ID)
+		pr:ReplySend("BWBases", false, ns)
+		return
+	end
+
+	--[[local key = net.ReadString()
+	local val = net.ReadString()
+
+	base:GetData()[key] = val
+	base:SaveData()
+
+	pr:ReplySend("BWBases", true, ns)]]
+end
+
 local function DetermineAction(mode, ply, pr)
+	local ns = netstack:new()
+
+	if not bw.CanModify(ply) then
+		ns:WriteCompressedString("no permissions")
+		pr:ReplySend("BWBases", false, ns)
+		return
+	end
 
 	if mode == bw.NW.BASE_NEW then
 		createNewBase(ply, pr)
@@ -312,6 +291,8 @@ local function DetermineAction(mode, ply, pr)
 		spawnCore(ply, pr)
 	elseif mode == bw.NW.BASE_CORESAVE then
 		saveCore(ply, pr)
+	elseif mode == bw.NW.BASE_BASEDATA then
+		editData(ply, pr)
 	else
 		local ns = netstack:new()
 		ns:WriteCompressedString("Unhandled action.")

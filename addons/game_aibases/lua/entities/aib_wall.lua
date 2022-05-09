@@ -4,6 +4,7 @@ ENT.Base = "base_gmodentity"
 ENT.Type = "anim"
 ENT.PrintName = "AI Base Wall"
 ENT.Spawnable = true
+ENT.IsAIWall = true
 
 function ENT:Initialize()
 

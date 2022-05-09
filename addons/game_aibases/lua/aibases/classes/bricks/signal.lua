@@ -87,24 +87,12 @@ function AIBases.SignalBrick:Spawn()
 			pobj:EnableMotion(false)
 		end
 	end
-
-	local con = data.con
-	-- WireLib.Link_Start(0, ent, input.StartPos, k, input.Material, input.Color, input.Width)
-
-	for out, dat in pairs(con) do
-		for uid, inp in pairs(dat) do
-
-		end
-	end
-	print("connecting")
-	PrintTable(con)
 end
 
 function AIBases.SignalBrick:PostSpawn(lay)
 	local con = self.Data.con
 	-- WireLib.Link_Start(0, ent, input.StartPos, k, input.Material, input.Color, input.Width)
 
-	print(lay, lay.Bricks)
 	for out, dat in pairs(con) do
 		for uid, inp in pairs(dat) do
 			local bk = lay:GetBrick(uid)
@@ -114,9 +102,6 @@ function AIBases.SignalBrick:PostSpawn(lay)
 			printf("connecting %s -> [%s]%s", out, uid, inp)
 		end
 	end
-
-	print("connecting")
-	PrintTable(con)
 
 	WireLib.Link_Start(0, this, there, "Open", "", color_trans, 0)
 

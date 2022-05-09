@@ -63,6 +63,16 @@ function AIBases.LayoutBrick:Remove()
 	errorNHf("AIBases.LayoutBrick:Remove() : not implemented. Override this method.")
 end
 
+do -- autorefresh
+	function AIBases.__bricktostring(self)
+		return ("LayoutBrick %s[%s]"):format(AIBases.IDToName(self.type) or "[untyped]", self.Data.uid)
+	end
+
+	function AIBases.LayoutBrick:__tostring()
+		return AIBases.__bricktostring(self)
+	end
+end
+
 AIBases.BRICK_PROP = 0
 AIBases.BRICK_BOX = 1
 AIBases.BRICK_ENEMY = 2
@@ -73,7 +83,17 @@ FInc.FromHere("bricks/*.lua", FInc.SHARED, FInc.RealmResolver()
 	:SetDefault(true)
 )
 
+AIBases.IDLookup = AIBases.IDLookup or {}
+for k,v in pairs(AIBases) do
+	if isstring(k) and k:match("^BRICK_") then
+		AIBases.IDLookup[v] = k
+	end
+end
 
 function AIBases.IDToBrick(id)
 	return AIBases.BrickLookup[id]
+end
+
+function AIBases.IDToName(id)
+	return AIBases.IDLookup[id]
 end

@@ -49,6 +49,11 @@ function bw.Base:SaveData()
 	end
 end
 
+function bw.Base:AddData(k, v)
+	self.Data[k] = v
+	self:SaveData()
+end
+
 function bw.Base:Claim(by)
 	self:_CheckValidity()
 
@@ -128,6 +133,13 @@ function bw.Base:Unclaim(temporarily)
 	end
 end
 
+function bw.Base:Spawn()
+	local dat = self:GetData()
+	if dat.AIEntrance then AIBases.SpawnBase(self) return end
+
+	if dat.BaseCore then self:SpawnCore() end
+end
+
 function bw.Base:SpawnCore()
 	local dat = self:GetData()
 	if not dat.BaseCore then return end
@@ -140,9 +152,9 @@ function bw.Base:SpawnCore()
 	Position: %s (valid: %s)\
 	Angle: %s (valid: %s)\
 	Model: %s (valid: %s)",
-	tostring(pos), isvector(pos),
-	tostring(ang), isangle(ang),
-	tostring(mdl), util.IsValidModel(mdl))
+			tostring(pos), isvector(pos),
+			tostring(ang), isangle(ang),
+			tostring(mdl), util.IsValidModel(mdl))
 	end
 
 	local prevCore = IsValid(self:GetBaseCore()) and self:GetBaseCore()

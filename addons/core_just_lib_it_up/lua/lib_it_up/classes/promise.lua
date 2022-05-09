@@ -144,6 +144,10 @@ end
 
 Promise.Rejecter = Promise.Rejector -- lole
 
+function Promise:Decide(ok, ...)
+	if ok then self:Resolve(...) else self:Reject(...) end
+end
+
 local function typecheck(tbl)
 	for k,v in ipairs(tbl) do
 		if not IsPromise(v) then
