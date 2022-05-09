@@ -277,7 +277,7 @@ function bw.Base:Initialize(id, json)
 		local t = json:FromJSON()
 		if t then
 			self.Data = t
-			self:SpawnCore()
+			self:Spawn()
 		end
 	end
 
@@ -508,7 +508,7 @@ hook.Add("PostCleanupMap", "RespawnBaseZone", function()
 	end
 
 	for k,v in pairs(bw.Bases) do
-		v:SpawnCore()
+		v:Spawn()
 	end
 
 

@@ -53,3 +53,84 @@ function AIBases.ConstructEnemies(spots)
 
 	return out]]
 end
+
+function AIBases.SelectLayout(base)
+	local dat = base:GetData()
+	local pool = dat.AILayouts
+
+	local sel, seltier
+
+	for tier, lays in RandomPairs(pool) do
+		if #lays == 0 then continue end
+		sel = table.Random(lays)
+		seltier = tier
+	end
+
+	base.SelectedLayout = sel
+	base.RequiredTier = seltier
+
+	return sel, seltier
+end
+
+function AIBases.BaseRequireTier(base, t)
+	local sigs = base.EntranceLayout:GetBricksOfType(AIBases.BRICK_SIGNAL)
+	if not sigs then
+		errorNHf("base `%s` has no signals; not requiring tier", base:GetName())
+		return
+	end
+
+	print("requiring tier", t)
+	for k,v in pairs(sigs) do
+		if v.SetTier then v:SetTier(t) end
+	end
+end
+
+function AIBases.SpawnBase(base)
+	local dat = base:GetData()
+	local entranceName = dat.AIEntrance
+	local pool = dat.AILayouts
+
+	if not pool then
+		errorNHf("no layouts pool for base %s", base:GetName())
+		return
+	end
+
+	base.EntranceLayout = AIBases.BaseLayout:new()
+	local ok = base.EntranceLayout:ReadFrom(entranceName)
+	if not ok then
+		errorNHf("failed to read entrance layout with the name `%s`.", entranceName)
+		return
+	end
+
+	ok:Spawn()
+
+	local layName, layTier = AIBases.SelectLayout(base)
+	AIBases.BaseRequireTier(base, layTier)
+
+	local dbricks = ok:GetBricksOfType(AIBases.BRICK_SIGNAL)
+	if not dbricks then
+		errorNHf("entrance layout `%s` has no keyreaders; not hooking generation", entranceName)
+		return
+	end
+
+	base.ActiveLayout = nil
+
+	local genned
+
+	for k,v in pairs(dbricks) do
+		if not IsValid(v.Ent) or not v.Ent.IsAIKeyReader then
+			errorNHf("brick %s has invalid ent!? %s", v, v.Ent)
+			return
+		end
+
+		v.Ent:On("StartUsingValidCard", "GenerateOnOpen", function()
+			if genned then return end -- already generated
+
+			genned = true
+
+			base.ActiveLayout = AIBases.BaseLayout:new()
+			base.ActiveLayout:ReadFrom(layName)
+			base.ActiveLayout:SlowSpawn(1)
+		end)
+	end
+end
