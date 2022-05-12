@@ -58,9 +58,7 @@ ENT.HostileMoods = {
 	alert = true,
 }
 
-function ENT:_getAc(base, pfx, sfx)
-	local ac = self.AnimActivities[self.EquippedType]
-	if not ac then print("no activities!") return ACT_HL2MP_WALK_PASSIVE end
+function ENT:_getAc(base, pfx, sfx, ac)
 
 	local def = self.AnimActivities.default
 
@@ -77,7 +75,10 @@ function ENT:GetDesiredActivity()
 	end
 
 	local acts = self.AnimActivities[self.EquippedType]
-	if not acts then print("no acts tard", self.EquippedType) return ACT_HL2MP_WALK_PASSIVE end
+	if not acts then
+		print("no acts tard", self.EquippedType)
+		acts = self.AnimActivities.default
+	end
 
 	local len = self.loco:GetVelocity():Length()
 
@@ -88,14 +89,14 @@ function ENT:GetDesiredActivity()
 	local pfx = ""
 
 	if self:HasActivity("Reload") then
-		return self:_getAc("reload", pfx, sfx)
+		return self:_getAc("reload", pfx, sfx, acts)
 	end
 
 	if self.HostileMoods[self:GetMood()] then
-		return self:_getAc("aggro", pfx, sfx)
+		return self:_getAc("aggro", pfx, sfx, acts)
 	end
 
-	return self:_getAc("passive", pfx, sfx)
+	return self:_getAc("passive", pfx, sfx, acts)
 end
 
 function ENT:MatchActivity()
