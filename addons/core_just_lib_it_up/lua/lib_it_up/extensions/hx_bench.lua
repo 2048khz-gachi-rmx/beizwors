@@ -50,6 +50,9 @@ function benchmark.Init(Name)
 			_Start	= 0,
 			_Dur = 0,
 			_LastPrint = SysTime(),
+
+			OpenSubs = {},
+			Subs = {},
 		},
 		benchmark
 	)
@@ -111,31 +114,78 @@ local function InMS(t)
 end
 
 function benchmark:__tostring(...)
+	local st = ST()
 	local str = "\"%s\" took %.3fms"
 	local ms = InMS(self:Read())
 	str = str:format(self.Name, ms)
 
 	if self.Frames then
-		local st = ST()
 		local sinceLast = InMS(st - self._LastPrint)
 		str = str .. (" (avg. across %d calls: %.3fms, since print: %.3fms; %.3f%%)"):format(
 			self.Frames, ms / self.Frames, sinceLast, ms / sinceLast * 100
 		)
 	end
 
+	if not table.IsEmpty(self.Subs) then
+		for name, t in pairs(self.Subs) do
+			str = str .. ("\n\t\"%s\" took %.3fms."):format(name, InMS(t))
+		end
+	end
+
 	return str
 end
 
+function benchmark:SubOpen(name)
+	local st = ST()
+
+	if self.OpenSubs[name] then
+		errorNHf("Subbench %s already open.", name)
+		return
+	end
 
 
-function benchmark:print(append)
+	self.OpenSubs[name] = st
+
+	return name
+end
+
+function benchmark:SubClose(name)
+	local st = ST()
+
+	if not self.OpenSubs[name] then
+		errorNHf("Subbench %s never opened.", name)
+		return
+	end
+
+	local diff = st - self.OpenSubs[name]
+	self.Subs[name] = diff
+end
+
+local function longprint(...)
+	local s = ""
+	local args = {...}
+	for k,v in ipairs(args) do
+		s = s .. v .. (args[k + 1] and "\t" or "")
+	end
+
+	for i=1, #s, 2046 do
+		Msg(s:sub(i, i + 2046))
+	end
+	Msg("\n")
+end
+
+function benchmark:print(min)
 
 	if self.Frames then
 		self.BenchedFrames = self.BenchedFrames + 1
 
 		if self.BenchedFrames >= self.Frames then
 			local s = self:__tostring()
-			if append then print(s, append) else print(s) end
+			local t = self:Read()
+
+			if not min or InMS(t) > min then
+				longprint(s)
+			end
 
 			self.BenchedFrames = 0
 			self:Reset()
@@ -144,7 +194,10 @@ function benchmark:print(append)
 
 	else
 		local s = self:__tostring()
-		if append then print(s, append) else print(s) end
+		local t = self:Read()
+		if not min or InMS(t) > min then
+			longprint(s)
+		end
 
 		self:Reset()
 	end
