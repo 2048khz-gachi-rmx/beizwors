@@ -29,6 +29,25 @@ AIBases.WeaponPools = {
 	},
 }
 
+local b = bench("CachingAIWeaponModels")
+
+b:Open()
+
+for typ, pool in pairs(AIBases.WeaponPools) do
+	for _, weps in pairs(pool) do
+		for _, cl in pairs(weps) do
+			if not isstring(cl) then continue end
+			local wep = weapons.GetStored(cl)
+			if not wep or not wep.WorldModel then print("missing weapon:", cl, wep, wep and wep.WorldModel) continue end
+
+			local n = b:SubOpen(("% -20s"):format(cl))
+			Model(wep.WorldModel)
+			b:SubClose(n)
+		end
+	end
+end
+
+b:Close():print(10)
 
 function AIBases.RollWeapon(type, tier)
 	local pool = AIBases.WeaponPools[type]
