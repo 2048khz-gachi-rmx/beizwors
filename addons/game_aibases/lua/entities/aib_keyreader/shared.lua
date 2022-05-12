@@ -2,7 +2,7 @@ AddCSLuaFile()
 
 ENT.Base = "bw_base"
 ENT.Type = "anim"
-ENT.PrintName = "Template Entity"
+ENT.PrintName = "AI Keycard Reader"
 
 ENT.Model = "models/lt_c/holo_keypad_large.mdl"
 ENT.Skin = 0
@@ -11,11 +11,14 @@ ENT.CanTakeDamage = false
 ENT.NoHUD = true
 ENT.IsAIBaseSignal = true
 ENT.IsAIKeyReader = true
+ENT.ActiveTime = 30
 
 function ENT:DerivedDataTables()
 	self:NetworkVar("Int", 1, "LevelRequired")
-	self:NetworkVar("Float", 1, "InsertTime")
 	self:NetworkVar("Bool", 1, "Opened")
+
+	self:NetworkVar("Float", 1, "InsertTime")
+	self:NetworkVar("Float", 2, "CloseTime")
 
 	self:SetOpened(false)
 	self:SetLevelRequired(1)

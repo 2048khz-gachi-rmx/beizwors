@@ -15,6 +15,9 @@ ENT.IsMorphDoor = true
 ENT._UsesNetDTNotify = true
 ENT.WantBlink = false
 
+ENT.CanTakeDamage = false
+ENT.NoHUD = true
+
 function ENT:DerivedDataTables()
 	self:NetworkVar("Vector", 0, "Bound1")
 	self:NetworkVar("Vector", 1, "Bound2")

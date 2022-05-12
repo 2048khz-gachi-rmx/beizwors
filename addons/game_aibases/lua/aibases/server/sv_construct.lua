@@ -79,7 +79,6 @@ function AIBases.BaseRequireTier(base, t)
 		return
 	end
 
-	print("requiring tier", t)
 	for k,v in pairs(sigs) do
 		if v.SetTier then v:SetTier(t) end
 	end
@@ -131,6 +130,31 @@ function AIBases.SpawnBase(base)
 			base.ActiveLayout = AIBases.BaseLayout:new()
 			base.ActiveLayout:ReadFrom(layName)
 			base.ActiveLayout:SlowSpawn(1)
+			base.ActiveLayout:BindToBase(base)
+
+			base.ActiveLayout:On("Despawn", "Base", function()
+				base.ActiveLayout = nil
+				genned = false
+			end)
 		end)
 	end
+end
+
+function AIBases.DespawnBase(base, layout)
+	-- close the entrances
+	local dbricks = base.EntranceLayout:GetBricksOfType(AIBases.BRICK_SIGNAL)
+	if dbricks then
+		for k,v in pairs(dbricks) do
+			if not IsValid(v.Ent) or not v.Ent.IsAIKeyReader then
+				errorNHf("brick %s has invalid ent!? %s", v, v.Ent)
+				continue
+			end
+
+			v.Ent:Close()
+		end
+	end
+
+	-- despawn the actual layout
+	layout:Despawn()
+	base.ActiveLayout = nil
 end
