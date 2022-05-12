@@ -45,7 +45,8 @@ function ENT:Initialize()
 	self.EnemyAwareness = {}
 	self._curActs = {}
 	self.DynCoros = {}
-
+	self.headEmpty = true
+	
 	--self:MatchActivity()
 	self:SetLagCompensated(true)
 end

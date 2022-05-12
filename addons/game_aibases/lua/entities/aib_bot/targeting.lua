@@ -70,7 +70,11 @@ local b = bench("targetlos", 600)
 
 function ENT:_changeLOS(b)
 	if self.HaveTargetLOS ~= b then
+		self:Emit("LOSChanged", b)
+		hook.Run("AIB_LOSChanged", self, b)
+
 		self.LOSLastChange = CurTime()
+		self[b and "_acqTime" or "_lostTime"] = CurTime()
 	end
 
 	self.HaveTargetLOS = b
@@ -200,6 +204,7 @@ function ENT:FindEnemy(noWriteLoss)
 		self:SetMood("engaging")
 		self:Emit("EnemyFound", tgt)
 		self:_changeLOS(true)
+		self.headEmpty = false
 		--b:Close():print()
 		return true
 	end
@@ -226,6 +231,7 @@ end
 function ENT:OnEnemyLost()
 	self:Emit("EnemyLost", self:GetEnemy())
 	self:SetMood("alert")
+	self.headEmpty = true
 end
 
 function ENT:LoseEnemy()
