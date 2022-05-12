@@ -47,20 +47,21 @@ function ENT:CLInit()
 
 	self.LeftClose = 0
 	self.RightClose = 0
+	self:DrawShadow(false)
 end
 
 function ENT:OnOpen()
 	anim = anim or Animatable("MorphDoors")
 
-	anim:MemberLerp(self, "LeftClose", 0, 1.5, 0, 0.5)
-	anim:MemberLerp(self, "RightClose", 0, 1.5, 0, 0.5)
+	anim:MemberLerp(self, "LeftClose", 0, 0.8, 0, 0.2)
+	anim:MemberLerp(self, "RightClose", 0, 0.8, 0, 0.2)
 end
 
 function ENT:OnClose()
 	anim = anim or Animatable("MorphDoors")
 
-	anim:MemberLerp(self, "LeftClose", 1, 1.5, 0, 0.5)
-	anim:MemberLerp(self, "RightClose", 1, 1.5, 0, 0.5)
+	anim:MemberLerp(self, "LeftClose", 1, 0.8, 0, 0.2)
+	anim:MemberLerp(self, "RightClose", 1, 0.8, 0, 0.2)
 end
 
 local cols = {
@@ -75,6 +76,7 @@ end
 function ENT:GenerateMesh()
 
 	self.DoorMeshes = {
+		Mesh(),
 		Mesh(),
 		Mesh(),
 		Mesh()
@@ -133,15 +135,6 @@ function ENT:GenerateMesh()
 
 		else
 			local msh = mshes[3]
-			local ang = Angle(0, -90, 0)
-			local vec = Vector()
-
-
-			for _, tri in ipairs(v) do
-				local vec2 = Vector()
-				vec2:Set(tri.pos)
-				tri.pos = vec2
-			end
 
 			msh:BuildFromTriangles(v)
 		end
@@ -153,13 +146,14 @@ function ENT:GenerateMesh()
 	for k,v in pairs(dtris) do
 		local msh = mshes[2]
 
+		msh:BuildFromTriangles(v)
+
 		for _, tri in ipairs(v) do
-			local vec2 = Vector()
-			vec2:Set(tri.pos)
-			tri.pos = vec2
+			tri.u = 1 - tri.u
+			tri.v = tri.v - 1
 		end
 
-		msh:BuildFromTriangles(v)
+		mshes[4]:BuildFromTriangles(v)
 	end
 end
 
@@ -220,7 +214,8 @@ function ENT:UpdateMesh()
 end
 
 local mat = Material( "models/debug/debugwhite" )
-local wf = Material( "phoenix_storms/FuturisticTrackRamp_1-2" )
+local frameMat = Material( "phoenix_storms/stripes" )
+local sheetMat = Material("phoenix_storms/dome")
 
 local mtrx = Matrix()
 local shang = Angle()
@@ -229,6 +224,10 @@ local magicOffset = Vector(0, 6.66, 0)
 local vReuse = {}
 
 local vCpy, leftClip, rightClip = Vector(), Vector(), Vector()
+
+function ENT:DrawTranslucent()
+	self:Draw()
+end
 
 function ENT:Draw()
 	self:DrawModel()
@@ -285,6 +284,8 @@ function ENT:Draw()
 		mtrx:RotateNumber(0, 90, 0)
 		rightClip:Set(mtrx:GetTranslation())
 
+		render.SetMaterial(frameMat)
+
 		cam.PushModelMatrix(mtrx)
 			self.DoorMeshes[3]:Draw()
 		cam.PopModelMatrix()
@@ -326,7 +327,7 @@ function ENT:Draw()
 
 		mtrx:Scale(scl)
 
-		render.SetMaterial(wf)
+		render.SetMaterial(sheetMat)
 
 		local clip = render.EnableClipping( true )
 
@@ -351,10 +352,11 @@ function ENT:Draw()
 		mtrx:Rotate(ang)
 
 		mtrx:Scale(scl)
-		mtrx:Translate(mins + magicOffset)
-		mtrx:SetScale(Vector(1, 1, 1))	-- yuck
 
+		mtrx:Translate(mins + magicOffset)-- + Vector(0, 0, 32))
+		mtrx:SetScale(Vector(1, 1, 1))	-- yuck
 		mtrx:RotateNumber(0, 90, 0)
+		--mtrx:RotateNumber(0, 180, 0)
 
 		mtrx:Scale(scl)
 
@@ -363,7 +365,7 @@ function ENT:Draw()
 
 		render.PushCustomClipPlane(normal, posDot)
 		cam.PushModelMatrix(mtrx)
-			self.DoorMeshes[2]:Draw()
+			self.DoorMeshes[4]:Draw()
 		cam.PopModelMatrix()
 		render.PopCustomClipPlane()
 
