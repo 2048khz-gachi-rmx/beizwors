@@ -50,6 +50,52 @@ hook.Add("PlayerCanPickupWeapon", "StopStealing", function(ply, wep)
 	end
 end)
 
+ENT.InaccuracyFrom = 10
+ENT.InaccuracyTo = 2
+ENT.InaccuracyTime = 3
+ENT.InaccuracyStartLosing = 2
+
+hook.Add("CW2_ConeModifiers", "AIInacc", function(wep, spr)
+	local ow = wep:GetOwner()
+	if not ow.IsAIBaseBot or not ow:GetEnemy() then return end
+
+	local t = ow:GetAccuracyLength()
+	local fr = math.RemapClamp(t, 0, ow.InaccuracyTime, 0, 1)
+
+	spr[1] = Lerp(fr, ow.InaccuracyFrom, ow.InaccuracyTo)
+	spr[2] = spr[1]
+	spr[3] = spr[1]
+end)
+
+hook.Add("AIB_LOSChanged", "AIInacc", function(bot, new)
+	local max = bot.InaccuracyTime
+	local len = bot.LOSLastChange or CurTime()
+
+	if new then
+		local lostFor = math.max(0, CurTime() - len - bot.InaccuracyStartLosing)
+
+		bot.accumAccuracy = math.max(0, (bot.accumAccuracy or 0) - lostFor)
+		bot.lostTime = CurTime()
+	else
+		-- lost; track how long we kept them in sights
+		local acqFor = CurTime() - len
+		bot.accumAccuracy = math.min(max, (bot.accumAccuracy or 0) + acqFor)
+		bot.acqTime = CurTime()
+	end
+end)
+
+function ENT:GetAccuracyLength()
+	local trk, time, prev = self:CanSeeTarget()
+	if trk then
+		local acqFor = CurTime() - (self.lostTime or CurTime())
+		return math.min(self.InaccuracyTime, (self.accumAccuracy or 0) + acqFor)
+	else
+		local lostFor = CurTime() - (self.acqTime or CurTime())
+		return math.min(self.InaccuracyTime, (self.accumAccuracy or 0) + lostFor)
+	end
+end
+
+
 function ENT:CanShoot()
 	local wep = self:GetCurrentWeapon()
 
