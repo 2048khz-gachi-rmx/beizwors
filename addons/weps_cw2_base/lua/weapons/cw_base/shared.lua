@@ -1022,18 +1022,18 @@ function SWEP:CalculateSpread(vel, dt)
 	aim = GetAimVector(ow)
 	CT = CurTime()
 
-	if not self.Owner.LastView then
-		self.Owner.LastView = aim
-		self.Owner.ViewAff = 0
+	if not ow.LastView then
+		ow.LastView = aim
+		ow.ViewAff = 0
 	else
-		self.Owner.ViewAff = LerpCW20(dt * 10, self.Owner.ViewAff, (aim - self.Owner.LastView):Length() * 0.5)
-		self.Owner.LastView = aim
+		ow.ViewAff = LerpCW20(dt * 10, ow.ViewAff, (aim - ow.LastView):Length() * 0.5)
+		ow.LastView = aim
 	end
 
 	local baseCone, maxSpreadMod = self:getBaseCone()
 	self.BaseCone = baseCone
 
-	if self.Owner:Crouching() then
+	if ow:Crouching() then
 		self.BaseCone = self.BaseCone * self:getCrouchSpreadModifier()
 	end
 
@@ -1064,7 +1064,6 @@ function SWEP:Think()
 	CustomizableWeaponry.actionSequence.process(self)
 
 	if self.dt.State == CW_HOLSTER_START then
-
 		return
 	end
 
@@ -1101,17 +1100,17 @@ function SWEP:Think()
 		end
 	end
 
-	vel = Length(GetVelocity(self.Owner))
+	vel = Length(GetVelocity(ow))
 	IFTP = IsFirstTimePredicted()
 
-	if (not SP and IFTP) or SP then
+	if (not SP and IFTP) or SP and not ow.headEmpty then
 		self:CalculateSpread(vel, FrameTime())
 	end
 
 	if CT > self.GlobalDelay then
 		wl = ow:WaterLevel()
 
-		if human then --self.Owner:OnGround() then
+		if human then --ow:OnGround() then
 			-- prone mod compatibility starts
 			if self:isPlayerEnteringProne() then
 				self.dt.State = CW_PRONE_BUSY
@@ -1127,9 +1126,9 @@ function SWEP:Think()
 					self.dt.State = CW_ACTION
 					self.FromActionToNormalWait = CT + 0.3
 				else
-					ws = self.Owner:GetWalkSpeed()
+					ws = ow:GetWalkSpeed()
 
-					if ((vel > ws * self.RunStateVelocity and self.Owner:KeyDown(IN_SPEED)) or vel > ws * 3 or (self.ForceRunStateVelocity and vel > self.ForceRunStateVelocity)) and self.SprintingEnabled then
+					if ((vel > ws * self.RunStateVelocity and ow:KeyDown(IN_SPEED)) or vel > ws * 3 or (self.ForceRunStateVelocity and vel > self.ForceRunStateVelocity)) and self.SprintingEnabled then
 						self.dt.State = CW_RUNNING
 					else
 						if self.dt.State != CW_AIMING and self.dt.State != CW_CUSTOMIZE then
@@ -1149,7 +1148,7 @@ function SWEP:Think()
 				end
 			end
 		else
-			--[[if (wl > 1 and self.HolsterUnderwater) or (self.Owner:GetMoveType() == MOVETYPE_LADDER and self.HolsterOnLadder) then
+			--[[if (wl > 1 and self.HolsterUnderwater) or (ow:GetMoveType() == MOVETYPE_LADDER and self.HolsterOnLadder) then
 				if self.ShotgunReloadState == 1 then
 					self.ShotgunReloadState = 2
 				end
@@ -1207,7 +1206,7 @@ function SWEP:Think()
 	end
 
 	if self.dt.Shots > 0 then
-		if human and not self.Owner:KeyDown(IN_ATTACK) then
+		if human and not ow:KeyDown(IN_ATTACK) then
 			if self.BurstAmount and self.BurstAmount > 0 then
 				self.dt.Shots = 0
 				self:SetNextPrimaryFire(CT + self.FireDelay * self.BurstCooldownMul)
@@ -1286,7 +1285,7 @@ function SWEP:Think()
 					local canInsertMore = false
 					local waitTime = self.ReloadFinishWait
 
-					if not self.ForcedReloadStop and self.Chamberable and self:Clip1() < self.Primary.ClipSize + 1 and self.Owner:GetAmmoCount(self.Primary.Ammo) > 0 then
+					if not self.ForcedReloadStop and self.Chamberable and self:Clip1() < self.Primary.ClipSize + 1 and ow:GetAmmoCount(self.Primary.Ammo) > 0 then
 						waitTime = self.PumpMidReloadWait or waitTime
 						canInsertMore = true
 					end
@@ -1372,7 +1371,7 @@ function SWEP:Think()
 				end
 			end
 
-			if self.Owner:KeyPressed(IN_USE) then
+			if ow:KeyPressed(IN_USE) then
 				if CT > self.BipodDelay and CT > self.ReloadWait then
 					if self.BipodInstalled then
 						if self.dt.BipodDeployed then
