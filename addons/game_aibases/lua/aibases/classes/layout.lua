@@ -10,6 +10,8 @@ function layout:Initialize(name)
 	self.Name = name
 	self.Bricks = {}
 	self.UIDBricks = {}
+	self.TypeBricks = {}
+
 	self.EnemySpots = {}
 	self.Enemies = {}
 	self.Navs = {}
@@ -19,6 +21,11 @@ function layout:AddBrick(brick)
 	assert(AIBases.IsBrick(brick))
 	assert(not table.HasValue(self.Bricks, brick))
 
+	local bs = self.TypeBricks[brick.type] or {}
+	self.TypeBricks[brick.type] = bs
+	assert(not table.HasValue(bs, brick))
+
+	bs[#bs + 1] = brick
 	self.Bricks[#self.Bricks + 1] = brick
 	self.UIDBricks[brick.Data.uid] = brick
 end
@@ -28,7 +35,7 @@ function layout:GetBrick(uid)
 end
 
 function layout:GetBricksOfType(id)
-	return self.Bricks[id]
+	return self.TypeBricks[id]
 end
 
 function layout:ReadFrom(fn, layFn)

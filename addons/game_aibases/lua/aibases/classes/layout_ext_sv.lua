@@ -12,7 +12,7 @@ function layout:Spawn()
 	end
 
 	local toSpawn = {}
-	for id, bs in pairs(self.Bricks) do
+	for id, bs in pairs(self.TypeBricks) do
 		for _, brick in ipairs(bs) do
 			toSpawn[#toSpawn + 1] = brick
 		end
@@ -39,7 +39,7 @@ function layout:SlowSpawn(msTimeout)
 	msTimeout = tonumber(msTimeout) or 3
 	msTimeout = msTimeout / 1000
 
-	for id, bs in pairs(self.Bricks) do
+	for id, bs in pairs(self.TypeBricks) do
 		for _, brick in ipairs(bs) do
 			bricksToSpawn[#bricksToSpawn + 1] = brick
 		end
@@ -53,6 +53,10 @@ function layout:SlowSpawn(msTimeout)
 	self._ssDone = spawned
 	self._ssProm = pr
 	self.SlowSpawning = true
+
+	if self.LuaNavs then
+		AIBases.ConstructNavs(self.LuaNavs)
+	end
 
 	self:Timer("SlowSpawn", 0, "0", function()
 		self:_DoSlowSpawnCycle(msTimeout)
@@ -107,6 +111,17 @@ function layout:Serialize()
 	return header .. bricks .. enemies
 end
 
+function layout:Despawn()
+	self:Emit("Despawn")
+	for k,v in pairs(self.Bricks) do
+		v:Remove()
+	end
+
+	for k,v in pairs(self.LuaNavs) do
+		v:Remove()
+	end
+end
+
 function layout:Deserialize(str, nav)
 	local data = str:sub(9)
 	local brickSize = bit.ToInt(string.byte(str, 1, 4))
@@ -118,10 +133,9 @@ function layout:Deserialize(str, nav)
 	local bricks = AIBases.Storage.DeserializeBricks(brickData)
 	local enemies = AIBases.Storage.DeserializeEnemies(enemyData)
 
-	self.Bricks = bricks
-	for bid, bx in pairs(bricks) do
-		for _, brick in pairs(bx) do
-			self.UIDBricks[brick.Data.uid] = brick
+	for typ, bs in pairs(bricks) do
+		for _, brick in pairs(bs) do
+			self:AddBrick(brick)
 		end
 	end
 
@@ -135,10 +149,30 @@ end
 function layout:MarkAll(ply)
 	assert(IsPlayer(ply))
 
-	for id, bs in pairs(self.Bricks) do
+	for id, bs in pairs(self.TypeBricks) do
 		for _, brick in pairs(bs) do
 			if not IsValid(brick.Ent) then print("no ent for brick", brick, brick.Data.uid) continue end
 			AIBases.Builder.AddBrick(ply, brick.Ent, id)
 		end
 	end
+end
+
+function layout:BindToBase(base)
+	local missed = 0
+	local boundWhen = CurTime()
+
+	self:Timer("PresenceCheck", 1, "0", function()
+		if CurTime() - boundWhen < 15 then return end -- grace period
+
+		if table.IsEmpty(base:GetPlayers()) then
+			missed = missed + 1
+			if missed > 10 then
+				print("despawning base")
+				AIBases.DespawnBase(base, self)
+				self:RemoveTimer("PresenceCheck")
+			end
+		else
+			missed = 0
+		end
+	end)
 end

@@ -36,7 +36,7 @@ function AIBases.DoorBrick:Remove()
 end
 
 function AIBases.DoorBrick:Spawn()
-	if IsValid(self.Ent) then self.Ent:Remove() end
+	self:Remove()
 
 	local door = ents.Create("bw_morph_door")
 	self.Ent = door

@@ -38,7 +38,7 @@ function AIBases.EnemyBrick:Remove()
 end
 
 function AIBases.EnemyBrick:Spawn()
-	if IsValid(self.Ent) then self.Ent:Remove() end
+	self:Remove()
 
 	local bot = ents.Create("aib_bot")
 	self.Ent = bot

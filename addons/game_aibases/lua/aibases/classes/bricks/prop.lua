@@ -16,7 +16,7 @@ AIBases.PropBrick.DataClass = brick.DataClass:callable({
 AIBases.PropBrick.type = AIBases.BRICK_PROP
 
 function AIBases.PropBrick:Spawn()
-	if IsValid(self.Ent) then self.Ent:Remove() end
+	self:Remove()
 
 	local data = self.Data
 	local ok, miss = data:Require()

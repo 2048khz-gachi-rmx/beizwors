@@ -62,7 +62,7 @@ function AIBases.SignalBrick:Remove()
 end
 
 function AIBases.SignalBrick:Spawn()
-	if IsValid(self.Ent) then self.Ent:Remove() end
+	self:Remove()
 
 	local data = self.Data
 

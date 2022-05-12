@@ -29,7 +29,7 @@ function AIBases.BoxBrick:Remove()
 end
 
 function AIBases.BoxBrick:Spawn()
-	if IsValid(self.Ent) then self.Ent:Remove() end
+	self:Remove()
 
 	local mins, maxs = self.Data.mins, self.Data.maxs
 	local ang = self.Data.angle
