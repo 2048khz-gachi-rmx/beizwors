@@ -244,10 +244,6 @@ local function dRB(rad, x, y, w, h, dc, ex)
 end
 
 -- draw the background
-local cpy = {
-	tl = false,
-	tr = false,
-}
 
 local tempCol = Color(0, 0, 0)
 
@@ -261,7 +257,6 @@ function button:DrawButton(x, y, w, h)
 	local brd = tempCol
 
 	local rbinfo = self.RBEx
-	cpy.bl, cpy.br = rbinfo and rbinfo.bl, rbinfo and rbinfo.bl
 
 	-- bg.a = 255 - math.abs(math.sin(CurTime()) * 250)
 
@@ -365,6 +360,35 @@ function button:PaintIcon(x, y)
 	ic:Paint(iX, iY, iW, iH, ic._Rotation)
 end
 
+function button:_ShadowGenerator(w, h)
+	self = self._pnl
+
+	local hc = self:GetColor()
+
+	local rad = self.RBRadius
+	local rbinfo = self.RBEx
+
+	dRB(rad, 0, 0, w, h, hc, rbinfo)
+end
+
+function button:CacheShadow(...)
+	self._requestCache = {...}
+end
+
+function button:DoCache()
+	if self.ShadowHandler then return self.ShadowHandler end
+	if not self._requestCache then return end
+
+	self.ShadowHandler = BSHADOWS.GenerateCache("FButton", self:GetSize())
+
+	local hn = self.ShadowHandler
+	hn:SetGenerator(self._ShadowGenerator)
+	hn._pnl = self
+
+	hn:CacheShadow(unpack(self._requestCache))
+	return hn
+end
+
 local AYToTextY = {
 	[0] = 4,
 	[1] = 1,
@@ -389,18 +413,35 @@ function button:Draw(w, h)
 	if not t.NoDraw then
 
 		if (t.DrawShadow and spr > 0) or t.AlwaysDrawShadow then
-			BSHADOWS.BeginShadow()
-			x, y = self:LocalToScreen(0, 0)
+			local sh = self:DoCache()
 
-			if t.ActiveMatrix then
-				cam.PushModelMatrix(t.ActiveMatrix, true)
+			if sh then
+				local a = shadow.Alpha or math.min(self:GetAlpha(),
+					self.drawColor and self.drawColor.a or 255,
+					self.Color.a)
+
+				if spr < 0.2 then
+					a = a * (spr / 0.2)
+				end
+
+				local prev = DisableClipping(true)
+					surface.SetDrawColor(255, 255, 255)
+					sh:SetAlpha(a)
+					sh:Paint(0, 0, w, h)
+				if not prev then DisableClipping(false) end
+			else
+				BSHADOWS.BeginShadow()
+				x, y = self:LocalToScreen(0, 0)
+
+				if t.ActiveMatrix then
+					cam.PushModelMatrix(t.ActiveMatrix, true)
+				end
 			end
-
 		end
 
 			self:DrawButton(x, y, w, h)
 
-		if (t.DrawShadow and spr > 0) or t.AlwaysDrawShadow then
+		if ((t.DrawShadow and spr > 0) or t.AlwaysDrawShadow) and not self.ShadowHandler then
 			local int = shadow.Intensity
 			local blur = shadow.Blur
 			local a = shadow.Alpha or math.min(self:GetAlpha(),
@@ -448,7 +489,7 @@ function button:Draw(w, h)
 		label = tostring(label)
 
 		local tx = t.TextX or w / 2
-		local ty = t.TextY or h / 2
+		local ty = t.TextY or t.GetDrawableHeight(self) / 2
 
 		local ax = t.TextAX or 1
 		local ay = t.TextAY or 1
@@ -564,8 +605,13 @@ function button:PopMatrix()
 	end
 end
 
-function button:GetRaise()
+function button:GetCurrentRaise()
 	return math.min(0, -self._UseRaiseHeight * (self.HoverFrac - self.DownFrac))
+end
+button.GetRaise = button.GetCurrentRaise
+
+function button:SetMaxRaise(n)
+	self.RaiseHeight = n
 end
 
 function button:PaintOver(w, h)
@@ -609,7 +655,7 @@ function button:Paint(w, h)
 		]]
 
 		sharedTranslVec:Zero()
-		sharedTranslVec[2] = math.min(self.DownSize - 1,
+		sharedTranslVec[2] = math.min(math.max(0, self.DownSize - 1),
 			self:GetRaise()
 		) + self.DownFrac * self.DownSize -- when held, the button should be pushed in completely
 
