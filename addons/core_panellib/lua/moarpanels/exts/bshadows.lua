@@ -18,7 +18,7 @@ local render = render
 --BSHADOWS.RenderTarget2 = GetRenderTarget("bshadows_shadow",  ScrW(), ScrH())
 
 BSHADOWS.ShadowMaterial = (not updating and BSHADOWS.ShadowMaterial) or
-	CreateMaterial("bshadows" .. BSHADOWS_ID, "UnlitGeneric",{
+	CreateMaterial("bshadows" .. BSHADOWS_ID, "UnlitGeneric", {
 	["$translucent"] = 1,
 	["$vertexalpha"] = 1,
 	["$vertexcolor"] = 1,
@@ -26,7 +26,7 @@ BSHADOWS.ShadowMaterial = (not updating and BSHADOWS.ShadowMaterial) or
 })
 
 BSHADOWS.ShadowMaterialGrayscale = (not updating and BSHADOWS.ShadowMaterialGrayscale) or
-	CreateMaterial("bshadows_grayscale" .. BSHADOWS_ID,"UnlitGeneric",{
+	CreateMaterial("bshadows_grayscale" .. BSHADOWS_ID, "UnlitGeneric", {
 	["$translucent"] = 1,
 	["$vertexalpha"] = 1,
 	["$alpha"] = 1,
@@ -34,7 +34,7 @@ BSHADOWS.ShadowMaterialGrayscale = (not updating and BSHADOWS.ShadowMaterialGray
 })
 
 BSHADOWS.ShadowMaterialColorscale = (not updating and BSHADOWS.ShadowMaterialColorscale) or
-	CreateMaterial("bshadows_colorscale" .. BSHADOWS_ID,"UnlitGeneric",{
+	CreateMaterial("bshadows_colorscale" .. BSHADOWS_ID, "UnlitGeneric", {
 	["$translucent"] = 1,
 	["$vertexalpha"] = 1,
 	["$alpha"] = 1,
@@ -94,6 +94,10 @@ function handle:Initialize(name, rt, mat, w, h)
 	self.W, self.H = w, h
 
 	BSHADOWS.Handles[name] = self
+end
+
+function handle:SetAlpha(a)
+	self.Mat:SetFloat("$alpha", a / 255)
 end
 
 function handle:SetGenerator(fn)
