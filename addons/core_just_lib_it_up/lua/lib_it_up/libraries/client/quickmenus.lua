@@ -330,8 +330,8 @@ function ENTITY:SetQuickInteractable(b)
 
 		local qm = qobj:new(self)
 			qm.dist = 192
-			qm.time = 0.4
-			qm.ease = 1.4
+			qm.time = 0.3
+			qm.ease = 2
 
 		local id = ("QuickMenus:%p"):format(self)
 
@@ -412,10 +412,10 @@ function CreateQuickMenu()
 	local circleOuterCol = Color(10, 10, 10)
 	p.CircleOuterColor = circleOuterCol
 
-	p.CircleInnerColor = Color(250, 250, 250)
+	p.CircleInnerColor = Colors.Sky:Copy():MulHSV(1, 0.3, 1.4)
 	p._CircleAlpha = 255
 	p.MaxCircleSize = 64
-	p.MinCircleSize = 40
+	p.MinCircleSize = 32
 
 	local maxperc = 0
 
@@ -451,6 +451,7 @@ function CreateQuickMenu()
 			shrinking = true
 
 			self:To("CurrentCircleSize", p.MinCircleSize, 0.1, 0, 0.4)
+			self:To("OpenedFrac", 1, 0.1, 0, 0.4)
 
 			self:MakePopup()
 
@@ -463,6 +464,7 @@ function CreateQuickMenu()
 		elseif shrinking and maxperc < 1 then
 			shrinking = false
 			self:To("CurrentCircleSize", self.MaxCircleSize, 0.1, 0, 0.4)
+			self:To("OpenedFrac", 0, 0.1, 0, 0.4)
 
 			self:SetMouseInputEnabled(false)
 
@@ -492,23 +494,14 @@ function CreateQuickMenu()
 		local perc = (maxperc ^ lastEase)
 		local size = self.CurrentCircleSize
 
-		local mask = function()
-			draw.Circle(midX, midY, size+6, 32, perc * 100)
-		end
-
 		self.Alpha = perc * 100
 		self.QMFrac = perc
 
-		local op = function()
-			surface.SetDrawColor(self.CircleInnerColor:Unpack())
-			draw.MaterialCircle(midX, midY, (size-pad)*2 )
-		end
-
-		self.CircleOuterColor.a = perc * 100
+		self.CircleOuterColor.a = perc * 160
 		self.CircleInnerColor.a = perc * self._CircleAlpha
 
 		local canv = qm:GetCanvas(true)
-	
+
 		if canv and canv.MaxInnerAlpha then
 			self:To("_CircleAlpha", canv.MaxInnerAlpha, qm:GetTime(), 0, 0.3)
 		else
@@ -516,9 +509,16 @@ function CreateQuickMenu()
 		end
 
 		surface.SetDrawColor(self.CircleOuterColor:Unpack())
-		draw.MaterialCircle(midX, midY, size*2)
+		draw.MaterialCircle(midX, midY, size * Lerp(perc, 4, 2))
 
-		draw.Masked(mask, op)
+		draw.BeginMask()
+			draw.Circle(midX, midY, size + 6, 32, perc * 100)
+		draw.DeMask()
+			draw.Circle(midX, midY, size - pad - Lerp(self.OpenedFrac or 0, 16, 4), 32)
+		draw.DrawOp()
+			surface.SetDrawColor(self.CircleInnerColor:Unpack())
+			draw.MaterialCircle(midX, midY, (size-pad)*2 )
+		draw.FinishMask()
 
 		self.CircleSize = size
 
