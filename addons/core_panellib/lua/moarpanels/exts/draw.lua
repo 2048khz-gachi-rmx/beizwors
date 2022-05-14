@@ -491,6 +491,112 @@ function draw.RoundedPolyBoxEx(rad, x, y, w, h, col, notr, nobr, nobl, notl)
 	BenchPoly(cache)
 
 end
+--[==================================[
+				Util
+--]==================================]
+local tex_corner8	= surface.GetTextureID( "gui/corner8" )
+local tex_corner16	= surface.GetTextureID( "gui/corner16" )
+local tex_corner32	= surface.GetTextureID( "gui/corner32" )
+
+local surface = surface
+
+function draw.RoundedBoxCorneredSize(bordersize, x, y, w, h, color, btl, btr, bbl, bbr, stencil)
+	-- the difference is that this has configurable radiuses per-corner
+
+	if w <= 0 or h <= 0 then return end
+
+	surface.SetDrawColor( color.r, color.g, color.b, color.a )
+
+	if ( bordersize <= 0 ) then
+		surface.DrawRect( x, y, w, h )
+		return
+	end
+
+	x = math.floor( x )
+	y = math.floor( y )
+	w = math.floor( w )
+	h = math.floor( h )
+
+	btl = math.floor( math.min(tonumber(btl) or btl and bordersize or 0, w) )
+	bbl = math.floor( math.min(tonumber(bbl) or bbl and bordersize or  0, w) )
+	btr = math.floor( math.min(tonumber(btr) or btr and bordersize or  0, w - btl) )
+	bbr = math.floor( math.min(tonumber(bbr) or bbr and bordersize or  0, w - bbl) )
+
+	bordersize = math.min( math.floor( bordersize ), math.floor( w / 2 ) )
+
+	-- Draw as much of the rect as we can without textures
+
+	local rx, ry = x + math.max(btl, bbl), y + math.max(btl, btr)
+	local rw, rh = w - (rx - x) - math.max(btr, bbr), h - (ry - y) - math.max(bbl, bbr)
+
+	surface.DrawRect(rx, ry, rw, rh)
+
+	local TbordH = math.max(btl, btr)
+	local BbordH = math.max(bbl, bbr)
+
+	-- vertical fill ( |_| )
+
+	--local LbordW = math.max(btl, bbl)
+	local RbordW = math.max(btr, bbr)
+
+	if h - bbl - btl > 0 then
+		surface.DrawRect( x, y + btl, rx - x, h - bbl - btl ) -- draw left
+	end
+
+	if h - btr - bbr > 0 and RbordW > 0 then
+		surface.DrawRect( x + w - RbordW, y + btr, RbordW, h - btr - bbr )
+	end
+
+	-- horiz fill
+
+	surface.DrawRect(x + btl, y, w - btl - btr, TbordH)
+	surface.DrawRect(x + bbl, y + h - BbordH, w - bbl - bbr, BbordH)
+
+	--surface.DrawRect( x, y + btr, RbordW, h - (y + btr) - bbr ) -- draw right
+
+	local tex
+	local fn = surface.SetTexture
+	if stencil then
+		fn = surface.SetMaterial
+		tex = corners.tex_corner8
+		if ( bordersize > 8 ) then tex = corners.tex_corner16 end
+		if ( bordersize > 16 ) then tex = corners.tex_corner32 end
+	else
+		tex = tex_corner8
+		if ( bordersize > 8 ) then tex = tex_corner16 end
+		if ( bordersize > 16 ) then tex = tex_corner32 end
+	end
+
+	local en = false
+
+	if math.min(btl, btr, bbl, bbr) < 8 then
+		draw.EnableFilters()
+		en = true
+	end
+
+	fn( tex )
+
+	if btl > 0 then
+		surface.DrawTexturedRectUV( x, y, btl, btl, 0, 0, 1, 1 )
+	end
+
+	if btr > 0 then
+		surface.DrawTexturedRectUV( x + w - btr, y, btr, btr, 1, 0, 0, 1 )
+	end
+
+
+	if bbl > 0 then
+		surface.DrawTexturedRectUV( x, y + h - bbl, bbl, bbl, 0, 1, 1, 0 )
+	end
+
+	if bbr > 0 then
+		surface.DrawTexturedRectUV( x + w - bbr, y + h - bbr, bbr, bbr, 1, 1, 0, 0 )
+	end
+
+	if en then
+		draw.DisableFilters()
+	end
+end
 
 function draw.ScuffedBlur(pnl, int, x, y, w, h)
 	local sx, sy = 0, 0
