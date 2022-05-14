@@ -236,7 +236,11 @@ local function dRB(rad, x, y, w, h, dc, ex)
 		local bl = (r.bl == nil and true) or r.bl
 		local br = (r.br == nil and true) or r.br
 
-		draw.RoundedBoxEx(rad, x, y, w, h, dc, tl, tr, bl, br)
+		if isnumber(tl) or isnumber(tr) or isnumber(bl) or isnumber(br) then
+			draw.RoundedBoxCorneredSize(rad, x, y, w, h, dc, tl, tr, bl, br)
+		else
+			draw.RoundedBoxEx(rad, x, y, w, h, dc, tl, tr, bl, br)
+		end
 	else
 		draw.RoundedBox(rad, x, y, w, h, dc)
 	end

@@ -316,6 +316,9 @@ vgui.Register("FListView_Line", flv_l, "DListView_Line")
 
 local ebutton = {}
 
+ebutton.ExpandTime = 0.2
+ebutton.Easing = 0.3
+
 function ebutton:Init()
 	if self.Initted then return end
 
@@ -332,9 +335,6 @@ function ebutton:Init()
 		self:CreateExpandPanel(self:GetSize())
 	end
 
-	self.ExpandTime = 0.25
-	self.Easing = 0.2
-
 	self.Initted = true
 
 	self.LastOKW = 60
@@ -342,6 +342,10 @@ function ebutton:Init()
 
 	self.ExpandFrac = 0
 	self.CT = CurTime()
+	self.RBEx = {}
+
+	self:SetMaxRaise(0)
+	self.DownSize = 2
 end
 
 function ebutton:CreateExpandPanel(w, h)
@@ -351,6 +355,7 @@ function ebutton:CreateExpandPanel(w, h)
 	self.ExpandPanel = vgui.Create("InvisPanel", self)
 	self.ExpandPanel:SetPos(0, h)
 	self.ExpandPanel:SetSize(self.ExpandW or w, self.ExpandTo or 90)
+	self.ExpandPanel.CanvasColor = Color(35, 35, 35)
 
 	function self.ExpandPanel.Paint(me, w, h)
 		self.ExpandPaint(me, w, h)
@@ -381,7 +386,7 @@ function ebutton:OnSizeChanged(w, h)
 														-- i honestly dont know where it comes from and how to prevent it
 		self.FakeH = h
 
-		self.ExpandPanel:SetPos(0, self.FakeH)
+		self.ExpandPanel:SetPos(0, self:GetDrawableHeight())
 		self.ExpandPanel:SetSize(self.ExpandW or w, self.ExpandTo)
 
 		return
@@ -409,8 +414,8 @@ function ebutton:GetRealH()
 	return self.FakeH
 end
 
-function ebutton:ExpandPaint(w,h)
-	draw.RoundedBoxEx(4, 0, 0, w, h, Color(35, 35, 35), false, false, true, true)
+function ebutton:ExpandPaint(w, h)
+	draw.RoundedBoxEx(4, 0, 0, w, h, self.CanvasColor, false, false, true, true)
 end
 
 function ebutton:Think()
@@ -422,7 +427,10 @@ function ebutton:Think()
 	local frac = self.ExpandFrac
 
 	self:SetTall( Lerp(frac, self.FakeH, self.FakeH + self.ExpandTo) )
+	self.ExpandPanel:SetPos(0, Lerp(frac, self.FakeH, self:GetDrawableHeight()))
 
+	self.RBEx.bl = (1 - frac) * self.RBRadius
+	self.RBEx.br = (1 - frac) * self.RBRadius
 end
 
 function ebutton:OnClick()
@@ -432,6 +440,7 @@ end
 function ebutton:ExpandBtn()
 	self.Expand = true
 	self:To("ExpandFrac", 1, self.ExpandTime, 0, self.Easing)
+
 end
 
 function ebutton:RetractBtn()
@@ -448,16 +457,16 @@ function ebutton:DoClick()
 		self.Expand = not self.Expand
 	end
 
+	if self.Expand then self:ExpandBtn() else self:RetractBtn() end
 	self.ClickHeight = self:GetTall()
-	self:To("ExpandFrac", self.Expand and 1 or 0, self.ExpandTime, 0, self.Easing)
+
 	self:Emit("ExpandChanged")
 end
 
 function ebutton:GetDrawableHeight()
-	local raise = self._UseRaiseHeight * self.HoverFrac
 	local bSz = self.DownSize
 
-	return self.FakeH - bSz - raise
+	return self.FakeH - bSz
 end
 
 function ebutton:Paint(w, h)
