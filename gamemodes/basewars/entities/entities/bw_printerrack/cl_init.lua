@@ -245,7 +245,7 @@ function ENT:CreateButton(f, ent, entKey)
 
 	function fr.ExpandPanel:Paint(w, h)
 						-- V only because 3d2d panels act wonky with clipping
-		fr:ExpandPaint(w, fr:GetTall() - fr.FakeH)
+		fr.ExpandPaint(self, w, fr:GetTall() - fr.FakeH)
 
 		-- somehow makes upgrade/eject buttons clip properly??
 		-- i ain't askin

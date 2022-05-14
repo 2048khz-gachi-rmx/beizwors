@@ -502,7 +502,7 @@ function GM:ScoreboardShow()
 				h = h + (v.Expand and v.ExpandTo or 0) + v:GetRealH() + 8
 			end
 
-			self:SizeTo(self:GetWide(), h, 0.3, 0, 0.3)
+			self:SizeTo(self:GetWide(), h, 0.2, 0, 0.3)
 		end
 
 		teamFrames[k] = tn
