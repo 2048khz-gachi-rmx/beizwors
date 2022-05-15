@@ -18,6 +18,23 @@ local function findHigher(arr, v, lo, hi)
 	return lo
 end
 
+local function findLower(arr, v, lo, hi)
+	local mid, val
+
+	while hi - lo > 1 do
+		mid = math.floor( lo + (hi - lo) / 2 )
+		val = arr[mid]
+
+		if val >= v then
+			hi = mid
+		else
+			lo = mid
+		end
+	end
+
+	return hi
+end
+
 function gen()
 	local WeightedRand = {}
 	WeightedRand.NewEnvinroment = gen
@@ -99,12 +116,14 @@ function gen()
 		return out, sum
 	end
 
+	local math_Random = math.random
+
 	function WeightedRand.Select(tbl)
 		local data, sum = WeightedRand.ConvertInput(tbl)
 		local keys, sums = data[1], data[2]
 		local len = #sums
 
-		return keys[ findHigher(sums, math.random() * sum, 1, len) ]
+		return keys[ findHigher(sums, math_Random() * sum, 1, len) ]
 	end
 
 	function WeightedRand.SelectTable(tbl, amt, into)
@@ -116,8 +135,44 @@ function gen()
 		local len = #sums
 
 		for i=1, amt do
-			local k = findHigher(sums, math.random() * sum, 1, len)
+			local k = findHigher(sums, math_Random() * sum, 1, len)
 			out[i] = keys[k]
+		end
+
+		return out
+	end
+
+
+	function WeightedRand.SelectNoRepeat(tbl, amt, into)
+		local data, sum = WeightedRand.ConvertInput(tbl)
+		assert(#data <= amt)
+
+		local keys, sums = data[1], data[2]
+		local len = #sums
+
+		local sumCopy = {}
+		for i=1, len do sumCopy[i] = sums[i] end
+
+		local out = into or {}
+
+		for i=1, amt do
+			local rand = math_Random() * sum
+			local k = findLower(sumCopy, rand, 0, len)
+
+			local weight = sumCopy[k] - (sumCopy[k - 1] or 0)
+
+			sum = sum - weight
+			out[i] = keys[k]
+
+			-- this will be slow for big tables, need a better algo
+			for i2=k, len do
+				sumCopy[i2] = sumCopy[i2] - weight
+			end
+
+			-- make this entry's sum be equal to the previous one
+			-- the binary search will find the leftmost entry if there are duplicates,
+			-- so this effectively means this entry will be ignored
+			sumCopy[k] = (sumCopy[k - 1] or 0)
 		end
 
 		return out
@@ -127,3 +182,4 @@ function gen()
 end
 
 WeightedRand = gen()
+return WeightedRand

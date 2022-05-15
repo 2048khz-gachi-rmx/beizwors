@@ -586,5 +586,4 @@ hook.Add("Think", "QuickMenus", function()
 	end
 
 	qm:OnHold(qm.ent, openedQM)
-
 end)
