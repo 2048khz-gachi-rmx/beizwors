@@ -77,6 +77,13 @@ function Emitter:Initialize()
 	end
 end
 
+function Emitter:__tostring()
+	local evs = {}
+	for k,v in pairs(self.__Events) do evs[#evs + 1] = k end
+
+	return ("Emitter [") .. table.concat(evs, ", ") .. "]"
+end
+
 function Emitter:OnExtend(new)
 	new.__Events = muldim:new()
 	recursiveParentCopy(new, self)
