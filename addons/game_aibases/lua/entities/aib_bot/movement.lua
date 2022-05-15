@@ -1,3 +1,11 @@
+--[[
+	reference point: https://github.com/lua9520/source-engine-2018-hl2_src/blob/3bf9df6b2785fa6d951086978a3e66f49427166a/game/server/hl2/npc_combine.cpp
+
+	TODO:
+		- when running low on mag, start moving & shooting towards nearest cover
+			when completely out, run towards it instead while reloading
+
+]]
 function ENT:DoWander()
 	local cnav = navmesh.GetNearestNavArea(self:GetPos(), false, 200, false, true)
 

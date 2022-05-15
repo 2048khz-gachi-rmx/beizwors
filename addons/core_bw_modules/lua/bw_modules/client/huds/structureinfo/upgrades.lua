@@ -68,7 +68,6 @@ function sin:PaintLevel(cury)
 
 		lvH = math.max(lvH, th)
 		lvW = lvW + tw + pad
-		print("lvw", lvW, tw, pad)
 	end
 
 	offy = offy - sz * 0.25 + lvH
