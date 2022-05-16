@@ -64,6 +64,9 @@ end
 
 function ENT:CanToBuf(inv, ply, itm, toInv)
 	if toInv and not toInv.IsBackpack then return false end
+	if SERVER and not self._Allow then return false end
+
+	return true
 end
 
 function ENT:CreateInventories()
