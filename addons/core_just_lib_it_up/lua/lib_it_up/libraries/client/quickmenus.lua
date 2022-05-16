@@ -8,7 +8,7 @@ local qmregistered = QuickMenus.Registered
 
 local iqmr = QuickMenus.IRegistered
 
-openedQM = nil --panel
+openedQM = openedQM or nil --panel
 
 local ENTITY = FindMetaTable("Entity")
 
@@ -112,6 +112,7 @@ function qobj:StartOpen()
 			end)
 		end
 
+		self:Emit("BeginReopen")
 		return
 	end
 
@@ -120,6 +121,8 @@ function qobj:StartOpen()
 			if not IsValid(openedQM) then return end -- yes, this can happen
 			self:__OnOpen()
 		end)
+
+		self:Emit("BeginOpen")
 	end
 end
 
@@ -315,7 +318,7 @@ function qobj:GetCanvas(nocreate)
 	if not ret and not nocreate then
 		ret = vgui.Create("InvisPanel", openedQM)
 		ret:SetSize(openedQM:GetSize())
-
+		ret:SetMouseInputEnabled(true)
 		new = true
 	end
 
@@ -326,28 +329,29 @@ end
 
 function ENTITY:SetQuickInteractable(b)
 
-	if b==nil or b then
-
-		local qm = qobj:new(self)
-			qm.dist = 192
-			qm.time = 0.3
-			qm.ease = 2
-
-		local id = ("QuickMenus:%p"):format(self)
-
-		hook.OnceRet("EntityActuallyRemoved", id, function(ent)
-			if ent ~= self then return false end
-			if qm.progress > 0 then
-				qm:Close()
-				qm:Destroy()
-			end
-		end)
-
-		return qm
+	if b == false then
+		table.RemoveByValue(iqmr, qmregistered[self])
+		qmregistered[self] = nil
 	end
 
-	table.RemoveByValue(iqmr, qmregistered[self])
-	qmregistered[self] = nil
+	local qm = qobj:new(self)
+		qm.dist = 192
+		qm.time = 0.3
+		qm.ease = 2
+
+	local id = ("QuickMenus:%p"):format(self)
+
+	self.QM = qm
+
+	hook.OnceRet("EntityActuallyRemoved", id, function(ent)
+		if ent ~= self then return false end
+		if qm.progress > 0 then
+			qm:Close()
+			qm:Destroy()
+		end
+	end)
+
+	return qm
 end
 
 function ENTITY:SetQuickMenuDist(num)
@@ -467,7 +471,6 @@ function CreateQuickMenu()
 			self:To("OpenedFrac", 0, 0.1, 0, 0.4)
 
 			self:SetMouseInputEnabled(false)
-
 		end
 
 		--DoTimer()
