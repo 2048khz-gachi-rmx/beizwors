@@ -98,6 +98,13 @@ function ENT:GetRenderMesh()
 	return t
 end
 
+function ENT:OnRemove()
+	local pc = self.PhysCollide
+	if not pc then return end
+
+	self.PhysCollide = nil
+	pc:Destroy()
+end
 function ENT:CreateMesh()
 	self.Mesh = Mesh()
 
