@@ -68,7 +68,7 @@ function perk:AddLevel(i, noadd)
 		i
 	})
 
-	ret:SetName(table.concat(ret:GetNameFragments()))
+	--ret:SetName(table.concat(ret:GetNameFragments()))
 
 	if self:GetLevel(i - 1) and not noadd then
 		ret:AddPrerequisite(self:GetLevel(i - 1))
@@ -106,6 +106,11 @@ end
 
 function level:GetName()
 	return table.concat(self:GetNameFragments(), "")
+end
+
+function level:SetName(n)
+	errorNHf("dont use SetName; use SetNameFragments instead")
+	return
 end
 
 function level:GetPerk()

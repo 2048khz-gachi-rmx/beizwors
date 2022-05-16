@@ -10,6 +10,7 @@ local DefaultZoom = 0.75
 
 function MAP:Init()
 	self.Scroll:Hide() -- we use searchlayout for the search bar only
+	self.SearchBar:SetPlaceholderText("not implemented")
 
 	local main = self
 

@@ -126,7 +126,7 @@ local itCol = Color(0, 0, 0)
 
 function PANEL:PaintRequirements(items, y, level)
 	local main = self.Main
-	local comp = ChainValid(main._comp)
+	local comp = ChainValid(self._comp)
 
 	local reqs = level:GetReqs()
 	local del = 0.15
@@ -342,6 +342,7 @@ function PANEL:_AnimateRequirements(level, old)
 	end
 end
 
+local scale, scaleW = Scaler(1600, 900)
 
 function PANEL:_AnimateButton(level, old)
 	local main = self
