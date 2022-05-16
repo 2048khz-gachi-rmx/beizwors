@@ -168,10 +168,13 @@ local function longprint(...)
 		s = s .. v .. (args[k + 1] and "\t" or "")
 	end
 
-	for i=1, #s, 2046 do
-		Msg(s:sub(i, i + 2046))
+	local mi = 0
+
+	for i=1, #s, 1022 do
+		Msg(s:sub(i, i + 1022))
+		mi = i + 1022
 	end
-	Msg("\n")
+	Msg(s:sub(mi + 1) .. "\n")
 end
 
 function benchmark:print(min)

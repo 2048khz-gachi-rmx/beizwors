@@ -25,15 +25,18 @@ function file.PathToMe(lv)
 end
 
 local sep = "/\\"
-
+local setsep = "[" .. sep .. "]"
 function file.GetFile(path)
 	return path:match("[^" .. sep .. "]+$")
 end
 
 -- adds an / at the end if there isn't one
 function file.GetPath(path)
-	local ret = path:match("(.+[" .. sep .. "]).+") or ""
-	if not ret:sub(-1) == "/" then ret = ret .. "/" end
+	local ret, fl = path:match("(.+" .. setsep .. ")(.+)")
+	ret = ret or ""
+	if fl and fl:match(setsep .. "$") then ret = ret .. fl end
+
+	if ret:sub(-1) ~= "/" then ret = ret .. "/" end
 
 	return ret
 end
@@ -65,8 +68,7 @@ function file.HasInPath(path, fld, ptrn)
 end
 
 function file.ForEveryFile(path, where, func, recurse)
-
-	local wildcard = path:match("[^" .. sep .. "]+$")
+	local wildcard = path:match("[^" .. sep .. "]+$") or "*"
 	local path = file.GetPath(path)
 
 	if isfunction(where) then

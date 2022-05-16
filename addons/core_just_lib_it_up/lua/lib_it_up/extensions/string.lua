@@ -286,6 +286,7 @@ local function WrapWord(word, curwid, fullwid, widtbl, line, first)
 
 	local wmult = WrapData and WrapData.ScaleW or 1
 	local dash = not WrapData or WrapData.AllowDashing ~= false
+	local dashW = dash and surface.GetTextSize("-")
 
 	tw = tw * wmult
 	local wrapped = false --did word wrap?
@@ -297,9 +298,9 @@ local function WrapWord(word, curwid, fullwid, widtbl, line, first)
 
 		-- if this passes, the first 3 letters can remain on this line
 		if dash then
-			if #word > 6 and (surface.GetTextSize(word:sub(1, 3))) * wmult < fullwid - curwid then
+			if #word > 6 and (surface.GetTextSize(word:sub(1, 3))) * wmult < fullwid - curwid - dashW then
 				--if this passes, there are at least 3 letters on the next line
-				if (surface.GetTextSize(word:sub(1, #word - 3))) * wmult > fullwid - curwid then
+				if (surface.GetTextSize(word:sub(1, #word - 3))) * wmult > fullwid - curwid - dashW then
 					should_hyphenate = true -- hyphenate, if at least 3 letters remain on the previous line and at least 3 letters can be carried over
 				end
 			end

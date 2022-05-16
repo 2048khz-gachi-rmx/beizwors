@@ -107,8 +107,14 @@ function ENTITY:Subscribe(ply, dist, onunsub, addtwice)
 
 	onunsub = onunsub or BlankFunc
 
-	if ent_subs[self] and ent_subs[self][ply] and not addtwice then return end  --prevent subscribing multiple times for the same entity
+	if ent_subs[self] and ent_subs[self][ply] and not addtwice then return false end  --prevent subscribing multiple times for the same entity
 																				--..unless you want to.
+
+	local epos = self:GetPos()
+
+	if ply:GetPos():Distance(epos) > dist then
+		return false
+	end
 
 	local sub_ply = subs[ply] or {}
 	subs[ply] = sub_ply
@@ -122,6 +128,8 @@ function ENTITY:Subscribe(ply, dist, onunsub, addtwice)
 	ent_subs[self] = sub_ent
 
 	sub_ent[ply] = ply
+
+	return true
 end
 
 function ENTITY:IsSubscribed(ply)
