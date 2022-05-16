@@ -102,6 +102,7 @@ if SERVER then
 
 		if canSetOwner == false then return false end
 		ply = canSetOwner ~= nil and canSetOwner ~= true and canSetOwner or ply
+		hook.Run("CPPIAssignedOwnership", ply, self, ply:SteamID64())
 		self.FPPOwner = ply
 		self.FPPOwnerID = steamId
 		self.FPPOwnerSID64 = valid and ply:SteamID64()

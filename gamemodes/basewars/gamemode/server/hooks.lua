@@ -44,7 +44,7 @@ hook.Add("BaseWars_PlayerCanBuyEntity", "Gennies", function(ply, ent)
 	end
 end)
 
-hook.Add("CPPIAssignOwnership", "UpdateSID64", function(ply, ent)
+hook.Add("CPPIAssignedOwnership", "UpdateSID64", function(ply, ent)
 	if IsPlayer(ply) then
 		ent.FPPSteamID64 = ply:SteamID64()
 	end

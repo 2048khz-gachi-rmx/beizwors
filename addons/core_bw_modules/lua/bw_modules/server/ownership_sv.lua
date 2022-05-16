@@ -7,7 +7,7 @@ local bwe = BaseWars.Ents
 	bwe.EntsArr = bwe.EntsArr or ValidSeqIterable() 	-- sequential table of all basewars entities
 	bwe.EntsOwners = bwe.EntsOwners or {}				-- table of [sid64] = {ValidSeqIter}
 
-hook.NHAdd("CPPIAssignOwnership", "BWTrackOwner", function(ply, ent)
+hook.NHAdd("CPPIAssignedOwnership", "BWTrackOwner", function(ply, ent)
 	if not ply:IsValid() then return end
 	if ent.CPPI_OwnerSID == ply:SteamID() then return end
 
