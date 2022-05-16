@@ -182,7 +182,7 @@ local function RoundedBoxCorneredSize(bordersize, x, y, w, h, color, btl, btr, b
 	local en = false
 
 	if math.min(btl, btr, bbl, bbr) < 8 then
-		draw.EnableFilters()
+		--draw.EnableFilters()
 		en = true
 	end
 
@@ -206,7 +206,7 @@ local function RoundedBoxCorneredSize(bordersize, x, y, w, h, color, btl, btr, b
 	end
 
 	if en then
-		draw.DisableFilters()
+		--draw.DisableFilters()
 	end
 end
 
