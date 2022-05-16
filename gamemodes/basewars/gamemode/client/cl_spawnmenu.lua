@@ -271,8 +271,6 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 		draw.EnableFilters()
 	end
 
-	
-
 	function pnl:PaintOver()
 		draw.DisableFilters()
 	end
@@ -366,6 +364,8 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 	local barelyEnoughColor = Color(200, 180, 110, 150)
 	--local notEvenCloseColor = Color(85, 85, 85)
 
+	local drawBtn = bclass.DrawButton
+
 	for _, dat in ipairs(its) do
 		local name, lv, price = dat.Name, dat.Level, dat.Price
 		if name == "soon" then continue end
@@ -408,19 +408,14 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 			draw.RoundedStencilBox(8, x + 3, y + 3, w - 6, h - 6, color_white)
 			surface.PopAlphaMult()
 		end
-		function btn:Mask(x, y, w, h)
-			surface.SetDrawColor(color_white:Unpack())
-			surface.DrawRect(x, y, w, h)
-		end
 
-		local drawBtn = btn.DrawButton
-
-		function btn:DrawButton(...)
+		function btn:DrawButton(x, y, w, h)
 			local w, h = self:GetSize()
-			draw.BeginMask(self.Mask, self, ...)
-			draw.DeMask(self.Demask, self, ...)
-			draw.DrawOp()
-			drawBtn(self, ...)
+
+			draw.BeginMask()
+				self:Demask(x, y, w, h)
+			draw.DrawOp(1)
+				drawBtn(self, x, y, w, h)
 			draw.FinishMask()
 		end
 
@@ -462,7 +457,7 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 
 		function btn:PrePaint(w, h)
 			--b:Open()
-			
+
 			if BaseWars.SpawnMenu.Highlight[dat.ClassName] then
 				local fr = 1 - ((SysTime() / 1.3) % 1)
 				draw.LerpColor(fr, self.drawColor,
@@ -549,7 +544,7 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 
 		function btn:DoClick()
 			BaseWars.SpawnMenu.Highlight[dat.ClassName] = nil
-	
+
 			self:SetColor(color_white, true)
 			self.Shadow.MaxSpread = 1.7
 			self.Shadow.Alpha = 255
@@ -561,7 +556,6 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 			RunConsoleCommand("basewars_spawn", cat_name, dat.CatID)
 			--self:LerpColor(self.drawColor, Colors.Button, 0.3, 0.15, 0.3)
 		end
-
 	end
 
 	local perf_layout = ics.PerformLayout --BWERGH
