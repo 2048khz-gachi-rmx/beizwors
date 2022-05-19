@@ -12,7 +12,7 @@ end
 local function onBondRem(self, e)
 	if not IsEntity(e) or self.byebye then return self.byebye and true or nil end
 
-	self:MoveBy(self.OffX, 0, 0.1, 0, 4)
+	self:MoveBy(-self.OffX, 0, 0.1, 0, 4)
 	self:PopOut(0.1)
 	self.byebye = true
 
@@ -48,11 +48,11 @@ function ENT:CreateWindow()
 	local pad = 8
 	local total_w = f:GetWide() + inv:GetWide() + pad
 
-	inv.X = ScrW() / 2 - total_w / 2 - off
-	f.X = ScrW() / 2 + pad / 2 + off
+	f.X = ScrW() / 2 - total_w / 2 - off
+	inv.X = ScrW() / 2 + pad / 2 + off
 
-	inv:MoveBy(off, 0, 0.6, 0, 0.2)
-	f:MoveBy(-off, 0, 0.6, 0, 0.2)
+	f:MoveBy(off, 0, 0.6, 0, 0.2)
+	inv:MoveBy(-off, 0, 0.6, 0, 0.2)
 
 	f:GetInventoryPanel():On("Click", "Transfer", function(_, _, _, itm)
 		local sl = LocalPlayer():GetBackpack():GetFreeSlot()
