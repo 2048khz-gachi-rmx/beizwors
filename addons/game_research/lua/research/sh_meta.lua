@@ -52,9 +52,9 @@ function Research.ResearchLevel(what, lv)
 	local perk = lv:GetPerk():GetID()
 	assert(perk, "no perk?")
 
-	hook.Run("PlayerResearched", pin, lv:GetPerk(), lv)
-
 	if pin:GetPlayer() then
 		pin:GetPlayer():GetResearchedPerks()[perk] = lv:GetLevel()
 	end
+
+	hook.Run("PlayerResearched", pin, lv:GetPerk(), lv)
 end
