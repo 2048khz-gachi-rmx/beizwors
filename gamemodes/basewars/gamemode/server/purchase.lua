@@ -170,23 +170,21 @@ local function postSpawn(ply, class, ent, info)
 	ent.Bought = true
 end
 
-function BWSpawn(ply, cat, catID)
-	catID = tonumber(catID)
+local function deny(ply)
+	ply:EmitSound("buttons/button10.wav")
+end
+
+function BWSpawn(ply, cat, itemID)
+	itemID = tonumber(itemID)
 
 	if not ply:Alive() then ply:Notify(Language.DeadBuy, BASEWARS_NOTIFICATION_ERROR) return end
 
-	local l = BaseWars.SpawnList
-	if not l then return end
-
-	if not cat or not catID then return end
-
-	-- category -> subcategory -> item number
-
-	local i = l[cat]
+	local i = BaseWars.GetItem(cat, itemID)
 	if not i then return end
-
-	i = i.Items[catID]
-	if not i then return end
+	if not BaseWars.CanPurchase(ply, cat, itemID) then
+		deny(ply)
+		return
+	end
 
 	local item = i.Name
 	local model, price, class = i.Model, i.Price, i.ClassName
@@ -195,13 +193,12 @@ function BWSpawn(ply, cat, catID)
 	local gun = i.Gun
 
 	if class == "" or class == "soon" or item == "soon" then return end
-	if vip and not IsGroup(ply, "vip") then ply:EmitSound("buttons/button10.wav") return end
-	if trust and not IsGroup(ply, "trusted") then ply:EmitSound("buttons/button10.wav") return end
+	if vip and not IsGroup(ply, "vip") then deny(ply) return end
+	if trust and not IsGroup(ply, "trusted") then deny(ply) return end
 
 	local tr
 
 	if class then
-
 		tr = {}
 
 		tr.start = ply:EyePos()
@@ -209,13 +206,10 @@ function BWSpawn(ply, cat, catID)
 		tr.filter = ply
 
 		tr = util.TraceLine(tr)
-
 	else
-
 		tr = ply:GetEyeTraceNoCursor()
 
 		if not tr.Hit then return end
-
 	end
 
 	local SpawnPos = tr.HitPos + BaseWars.Config.SpawnOffset
@@ -371,7 +365,7 @@ end
 
 concommand.Add("basewars_spawn", function(ply,_,args)
 	if not IsValid(ply) then return end
-			    -- cat   | itemID (catID)
+			    -- cat   | itemID
 	BWSpawn(ply, args[1], args[2])
 end)
 
