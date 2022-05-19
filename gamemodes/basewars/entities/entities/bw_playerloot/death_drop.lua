@@ -33,4 +33,6 @@ hook.Add("PlayerDeath", "DropItems", function(ply)
 	for k,v in pairs(its) do
 		inv:CrossInventoryMove(v, loot.Storage, v:GetSlot())
 	end
+
+	Inventory.Networking.RequestUpdate(ply, inv)
 end)
