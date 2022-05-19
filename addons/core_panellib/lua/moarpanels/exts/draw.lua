@@ -847,6 +847,11 @@ function surface.DrawNewlined(tx, x, y, first_x, first_y)
 
 end
 
+function draw.Stripes(x, y, w, h, u, v, u1, v1)
+	return surface.DrawUVMaterial("https://i.imgur.com/y9uYf4Y.png", "whitestripes.png",
+		x, y, w, h, u or 0, v or 0, u1 or 1, v1 or 1)
+end
+
 function draw.SimpleText2( text, font, x, y, colour, xalign, yalign, addTw, addAl )
 
 	text	= tostring( text )

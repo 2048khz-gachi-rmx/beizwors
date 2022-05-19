@@ -159,6 +159,18 @@ function COLOR:IAlpha(a) --alpha into singleton copy
 	return st
 end
 
+local comps = {
+	r = "Red",
+	g = "Green",
+	b = "Blue",
+	a = "Alpha"
+}
+
+for k,v in pairs(comps) do
+	COLOR["Set" .. k:upper()] = function(c, n) c[k] = n return c end
+	COLOR["Set" .. v		] = function(c, n) c[k] = n return c end
+end
+
 function IsMaterial(m)
 	return type(m) == "IMaterial"	--we can't really compare m.MetaName because m might not even be a table
 end

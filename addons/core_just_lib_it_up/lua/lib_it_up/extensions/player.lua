@@ -375,6 +375,9 @@ function CachedLocalPlayer()
 	return lp
 end
 
+CLP = CachedLocalPlayer
+LP = LocalPlayerG
+
 if CLIENT then
 	hook.Add("Think", "CacheLP", function()
 		if CachedLocalPlayer():IsValid() then
