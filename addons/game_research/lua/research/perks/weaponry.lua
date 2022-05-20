@@ -12,6 +12,7 @@ base_att.Levels = {
 	{	Unlocks = {"optic", "optic_lp", "optic_sniper"},
 		Name = "Optics",
 		Description = "Unlocks the ability to install optics onto ArcCW guns.",
+		Icon = CLIENT and Icon(Material("entities/acwatt_optic_holo.png")):SetSize(0.8, 0.8),
 		Reqs = {
 			Items = {
 				iron_bar = 3,
@@ -24,6 +25,7 @@ base_att.Levels = {
 		Unlocks = {"tac", "foregrip"},
 		Name = "Tactical",
 		Description = "Unlocks the ability to install tactical and foregrip attachments onto ArcCW guns.",
+		Icon = CLIENT and Icon(Material("entities/acwatt_go_foregrip_project.png")):SetSize(0.9, 0.9),
 		Reqs = {
 			Items = {
 				weaponparts = 1,
@@ -34,6 +36,7 @@ base_att.Levels = {
 		Unlocks = "muzzle",
 		Name = "Muzzles",
 		Description = "Unlocks the ability to install muzzle attachments onto ArcCW guns.",
+		Icon = CLIENT and Icon(Material("entities/acwatt_go_supp_pbs4.png")):SetSize(0.9, 0.9),
 		Reqs = {
 			Items = {
 				weaponparts = 3,
@@ -45,6 +48,7 @@ base_att.Levels = {
 		Unlocks = {"grip", "stock", "go_stock", "go_stock_pistol_bt"},
 		Name = "Grips",
 		Description = "Unlocks the ability to install grip and stock attachments onto ArcCW guns.",
+		Icon = CLIENT and Icon(Material("entities/arccw_mifl_fas2_sg55x_s_762.png")):SetSize(0.8, 0.8),
 		Reqs = {
 			Items = {
 				weaponparts = 5,
@@ -54,7 +58,8 @@ base_att.Levels = {
 	}, {
 		Unlocks = {"magazine", "slide"},
 		Name = "Conversions",
-		Description = "Unlocks the ability to install slides and magazines onto ArcCW guns.",
+		Description = "Unlocks the ability to install slides, magazines and caliber conversions onto ArcCW guns.",
+		Icon = CLIENT and Icon(Material("entities/acwatt_go_perk_light.png")):SetSize(0.8, 0.8),
 		Reqs = {
 			Items = {
 				weaponparts = 10,
@@ -120,12 +125,14 @@ for k,v in pairs(base_att.Levels) do
 
 	local level = base_att:AddLevel(k)
 	level:SetPos(i * 2, 0)
-	level:SetIcon(CLIENT and Icons.Plus)
+	if CLIENT then level:SetIcon(CLIENT and Icons.Plus) end
 	level:SetDescription(v.Description)
 	if v.Reqs then
 		level:SetRequirements(v.Reqs)
 	end
 	level:SetNameFragments({base_att:GetName(), ": ", v.Name})
+
+	if v.Icon then level:SetIcon(v.Icon) end
 end
 
 function Research.AttAllowed(ply, attName)

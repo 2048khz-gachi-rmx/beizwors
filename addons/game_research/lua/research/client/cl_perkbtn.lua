@@ -52,7 +52,9 @@ function PERK:Paint(w, h)
 	draw.DrawMaterialCircle(w / 2, h / 2, h)
 
 	if self.Icon then
-		self.Icon:Paint(w / 2, h / 2, w * 0.65, h * 0.65)
+		local iw, ih = self.Icon:GetSize()
+
+		self.Icon:Paint(w / 2, h / 2, w * iw, h * ih)
 	end
 end
 

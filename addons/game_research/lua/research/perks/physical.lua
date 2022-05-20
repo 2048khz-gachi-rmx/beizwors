@@ -47,7 +47,7 @@ for i=1, 6 do
 	lv:AddRequirement( reqs[i] or reqs[#reqs] )
 
 	lv:SetPos((i - 1) * 1.5, 0)
-	lv:SetIcon(CLIENT and Icons.Plus)
+	lv:SetIcon(CLIENT and Icon("https://i.imgur.com/8rDmfy5.png", "hp_up.png"))
 
 	if i > 3 then
 		lv:AddRequirement( { Computer = 2 } )

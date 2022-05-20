@@ -109,6 +109,11 @@ function Icon:GetSize()
 	return w, h
 end
 
+function Icon:GetSizeSet()
+	if not self._SizeInitialized then return false end
+	return self:GetSize()
+end
+
 function Icon:GetWide()
 	return (self:GetSize())
 end
@@ -289,7 +294,10 @@ function Icon:Copy()
 	local new = Icon(self.Material or self.URL, self.Name)
 	new:SetColor(self.Color)
 	new:SetFilter(self:GetFilter())
-	new:SetSize(self:GetSize())
+
+	if self:GetSizeSet() then
+		new:SetSize(self:GetSize())
+	end
 
 	return new
 end
@@ -311,6 +319,7 @@ Icons.Electricity = Icon("https://i.imgur.com/poRxTau.png", "electricity.png")
 Icons.Clock64 = Icon("https://i.imgur.com/KW4Pbbd.png", "clk64.png")
 Icons.Clock = Icon("https://i.imgur.com/H455Xz3.png", "clk32_3.png")
 Icons.Coins = Icon("https://i.imgur.com/vzrqPxk.png", "coins_pound64.png")
+Icons.CoinAdd = Icon("https://i.imgur.com/cjrTOrv.png", "coin_add.png")
 Icons.Star = Icon("https://i.imgur.com/YYXglpb.png", "star.png")
 Icons.Reload = Icon("https://i.imgur.com/Kr2xpAj.png", "refresh.png")
 

@@ -34,7 +34,7 @@ for i=1, 2 do
 	})
 
 	lv:SetPos(0, -2 - n * 2)
-	lv:SetIcon(CLIENT and Icons.Plus)
+	lv:SetIcon(CLIENT and Icons.CoinAdd)
 
 	lv:SetDescription(function()
 		local ret = ("Unlocks Tier %d printers.\n"):format(i + 1)

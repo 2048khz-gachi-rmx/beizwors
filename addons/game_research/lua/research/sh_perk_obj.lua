@@ -6,6 +6,8 @@ local level = Research.PerkLevel or Object:callable()
 Research.PerkLevel = level
 level.IsResearchPerkLevel = true
 
+Research.Perks = Research.Perks or {} -- dump old perks
+
 function Research.IsPerk(w)
 	return istable(w) and w.IsResearchPerk
 end
@@ -25,7 +27,6 @@ ChainAccessor(perk, "_Levels", "Levels")
 ChainAccessor(perk, "_TreeName", "TreeName")
 ChainAccessor(perk, "_Color", "Color")
 
-Research.Perks = {} -- dump old perks
 
 function perk:Initialize(id)
 	self:SetID(id)
@@ -93,6 +94,18 @@ ChainAccessor(level, "_ResTime", "ResearchTime")
 
 ChainAccessor(level, "_Description", "Description")
 ChainAccessor(level, "_Color", "Color")
+
+function level:SetIcon(ic)
+	ic = ic:Copy()
+	ic:SetAutosize(false)
+
+	if not ic:GetSizeSet() then
+		ic:SetSize(math.sin(math.pi / 4), math.sin(math.pi / 4))
+	end
+
+	self._Icon = ic
+	return self
+end
 
 function level:Initialize(lv)
 	self:SetLevel(lv)
