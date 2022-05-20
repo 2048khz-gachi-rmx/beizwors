@@ -53,7 +53,7 @@ function ENT:GetTransferRate()
 	return self:GetLevelData().Rate
 end
 
-function ENT:CanFromBuf(inv, ply, itm, toInv)
+function ENT:CanFromBuf(ply, itm, toInv)
 	if toInv.IsBackpack then return true end
 	if toInv.IsVault and self.Status:Get(itm:GetSlot(), 0) >= itm:GetTotalTransferCost() then
 		return true
@@ -62,12 +62,27 @@ function ENT:CanFromBuf(inv, ply, itm, toInv)
 	return false
 end
 
-function ENT:CanToBuf(inv, ply, itm, toInv)
-	if toInv and not toInv.IsBackpack then return false end
-	if SERVER and not self._Allow then return false end
+function ENT:CanToBuf(ply, itm, fromInv)
+	if not fromInv then
+		errorNHf("something's wrong - no inv passed to ActionCanCrossInventoryTo(%s, %s, %s)", ply, itm, fromInv)
+		return
+	end
+
+	if fromInv and not fromInv.IsBackpack then return false end
+	-- if SERVER and not self._Allow then return false end
 
 	return true
 end
+
+function ENT:AllowInteract(inv, ply, act, ...)
+	if ply:Distance(self) > 192 then return false end
+	if not ply:Alive() then return false end
+
+	return true
+end
+
+-- for override
+function ENT:InVaultNewItem(slot, fromInv, itm, ply) end
 
 function ENT:CreateInventories()
 	self.Inventory = {
@@ -78,15 +93,21 @@ function ENT:CreateInventories()
 	self.InVault.MaxItems = self.MaxQueues
 	self.InVault.SupportsSplit = false
 
-	self.InVault.ActionCanCrossInventoryFrom = function(...)
-		return self:CanFromBuf(...)
+	self.InVault.ActionCanCrossInventoryFrom = function(inv, ply, ...)
+		return self:CanFromBuf(ply, ...)
 	end
 
 	self.InVault.ActionCanCrossInventoryTo = function(inv, ply, ...)
-		return self:CanToBuf(...)
+		return self:CanToBuf(ply, ...)
 	end
 
-	self.want = {}
+	self.InVault:On("AllowInteract", "Distance", function(...)
+		return self:AllowInteract(...)
+	end)
+
+	self.InVault:On("CrossInventoryMovedTo", "Hook", function(...)
+		self:InVaultNewItem(...)
+	end)
 
 	self.Status = Networkable("MDig:" .. self:EntIndex())
 	self.Status:Bind(self)

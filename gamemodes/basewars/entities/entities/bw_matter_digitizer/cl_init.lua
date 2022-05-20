@@ -10,7 +10,7 @@ function ENT:Draw()
 end
 
 function ENT:SendItem(slot, itm)
-	local ns = Inventory.Networking.Netstack()
+	--[[local ns = Inventory.Networking.Netstack()
 
 	net.Start("mdigitizer")
 		net.WriteEntity(self)
@@ -19,7 +19,10 @@ function ENT:SendItem(slot, itm)
 		ns:WriteItem(itm)
 		ns:WriteUInt(slot, 8)
 		ns()
-	net.SendToServer()
+	net.SendToServer()]]
+
+	local ok = itm:GetInventory()
+			:RequestCrossInventoryMove(itm, self.InVault, slot)
 end
 
 local overlap = 8
@@ -350,7 +353,7 @@ function ENT:MakeItemFrames(betweenW, vault, bp, inVt, outVt)
 				v.X + v:GetWide() / 2 - self.widths[k] / 2, v.Y + v:GetTall(),
 				has_active and Colors.Gray or Colors.LighterGray)
 
-			if fr < 1 then
+			if fr < 1 and fr > 0 then
 				has_active = true
 			end
 		end
@@ -386,6 +389,7 @@ function ENT:OpenMenu()
 	vt:PopIn()
 
 	inv:Bond(vt)
+	inv:Bond(self)
 	vt:Bond(inv)
 
 	local betweenW = (64 + 8) * 3 + 16 * 2
