@@ -4,20 +4,20 @@ local debuggingDownloads = false
 local Addons = {
 	"160250458", --wire
 	"922947756", --synths
-
 	"546392647", --media players
 
 	"897690679", -- particles - fa:s
-	"284266415", -- scifi prop pack
-	-- "1243825019", -- mil cases prop pack
 
-	-- stalker:
-	"430077474", -- 1/4
+	-- props:
+	"430077474", -- stalker 1/4
 	"430106735", -- 2/4
 	"430147227", -- 3/4
 	--"430453978", -- 4/4
+	"2243040341", -- caliber lootbox models
+	"284266415", -- scifi prop pack
+	"1243825019", -- mil cases prop pack
 
-
+	-- arccw:
 	"2131057232", -- arccw base(d on what)
 	-- "2710878169", -- arccw muzzleflashes
 	"2131058270", -- arccw cs+

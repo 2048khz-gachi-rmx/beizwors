@@ -1,5 +1,6 @@
 --[[
 	reference point: https://github.com/lua9520/source-engine-2018-hl2_src/blob/3bf9df6b2785fa6d951086978a3e66f49427166a/game/server/hl2/npc_combine.cpp
+	https://insurgencysandstorm.mod.io/improvedai
 
 	TODO:
 		- when running low on mag, start moving & shooting towards nearest cover
@@ -33,11 +34,8 @@ function ENT:TryMovePos(pos)
 	util.TraceHull(trIn)
 
 	if trOut.Hit then
-		--debugoverlay.SweptBox(trIn.start, trIn.endpos, trIn.mins, trIn.maxs, angle_zero, 4, Colors.Red)
 		return false
 	else
-		--debugoverlay.SweptBox(trIn.start, trIn.endpos, trIn.mins, trIn.maxs, angle_zero, 4, color_white)
-		--self:MoveToPos(pos)
 		self:MoveWhenCan(pos)
 		return true
 	end
