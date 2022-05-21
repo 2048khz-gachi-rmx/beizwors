@@ -11,13 +11,14 @@ net.Receive("aib_layout", function(len, ply)
 		if how == 15 then
 			how = nil
 		else
-			if ent.IsAIBaseBot then how = AIBases.BRICK_ENEMY end
-			if ent.IsAIWall then how = AIBases.BRICK_BOX end
-			if ent.IsMorphDoor then how = AIBases.BRICK_DOOR end
-			if ent.IsAIBaseSignal then how = AIBases.BRICK_SIGNAL end
+			if ent.IsAIBaseBot 		then how = AIBases.BRICK_ENEMY 	end
+			if ent.IsAIWall 		then how = AIBases.BRICK_BOX 	end
+			if ent.IsMorphDoor 		then how = AIBases.BRICK_DOOR 	end
+			if ent.IsAIBaseSignal 	then how = AIBases.BRICK_SIGNAL end
+			if ent.IsLootableBoks 	then how = AIBases.BRICK_LOOT 	end
 		end
 
-		setEnum(ply, ent, how)
+		AIBases.Builder.AddBrick(ply, ent, how)
 	elseif mode == 1 then
 		local where = net.ReadVector()
 
@@ -47,13 +48,18 @@ net.Receive("aib_layout", function(len, ply)
 		_G.bot = en
 	elseif mode == 2 then
 		local where = net.ReadVector()
-		local pool = net.ReadString()
 		local mdl = net.ReadString()
+		local pool = net.ReadString()
 
 		local en = ents.Create("lootable")
 		en:SetPos(where)
-		en:SetLootPool(pool)
 		en:SetModel(mdl)
+		en:SetLootPool(pool)
 		en:Spawn()
+
+		undo.Create("Lootable: " .. pool)
+			undo.SetPlayer(ply)
+			undo.AddEntity(en)
+		undo.Finish("Lootable: " .. pool)
 	end
 end)

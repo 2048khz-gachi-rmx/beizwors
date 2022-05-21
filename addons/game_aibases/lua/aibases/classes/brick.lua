@@ -78,6 +78,7 @@ AIBases.BRICK_BOX = 1
 AIBases.BRICK_ENEMY = 2
 AIBases.BRICK_DOOR = 3
 AIBases.BRICK_SIGNAL = 4
+AIBases.BRICK_LOOT = 5
 
 FInc.FromHere("bricks/*.lua", FInc.SHARED, FInc.RealmResolver()
 	:SetDefault(true)

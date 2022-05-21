@@ -1,9 +1,9 @@
 local TOOL = AIBases.LayoutTool
 
 local allOpts = {
-	 LibItUp.Selection({"scrap", "wepcrate"}, "scrap"),
-	 LibItUp.Selection({"low", "mid (NYI)"}, "low"),
-	 LibItUp.Selection({"small", "medium (NYI)"}, "small"),
+	LibItUp.Selection({"scrap", "wepcrate"}, "scrap"),
+	LibItUp.Selection({"low", "mid (NYI)"}, "low"),
+	LibItUp.Selection({"small", "medium (NYI)"}, "small"),
 }
 
 local curLootMdl = "models/props/CS_militia/footlocker01_closed.mdl"
@@ -17,11 +17,10 @@ function TOOL:Opt_LootLeftClick(tr)
 	end
 
 	net.Start("aib_layout")
-		net.WriteUInt(1, 4)
+		net.WriteUInt(2, 4)
 		net.WriteVector(tr.HitPos)
-		net.WriteBool(not not acOpts.NoTarget)
-		net.WriteString(curWep)
-		net.WriteUInt(ct, 8)
+		net.WriteString(curLootMdl)
+		net.WriteString(("%s_%s_%s"):format(allOpts[1]:Get(), allOpts[2]:Get(), allOpts[3]:Get()))
 	net.SendToServer()
 end
 
@@ -100,23 +99,30 @@ function TOOL:Opt_SelectLoot(f)
 	local focused = false
 
 	te:On("GetFocus", function()
-		f:SetKeyBoardInputEnabled(true)
+		f:SetKeyboardInputEnabled(true)
 		AIBases.Builder.LayoutBind:SetHeld(true)
 		focused = true
+		print("focus yes")
 	end)
 
 	te:On("LoseFocus", function()
-		f:SetKeyBoardInputEnabled(false)
+		f:SetKeyboardInputEnabled(false)
 		focused = false
+		print("no focus")
 	end)
 
+	function te:OnRemove() self:Emit("LoseFocus") end
+
+	local exCache = {}
 
 	function te:Think()
-
 		local blank = self:GetText() == ""
-		local wep = not blank and weapons.GetStored(self:GetText())
+		local tx = self:GetText()
+		local wep = not blank and weapons.GetStored(tx)
 
-		if not blank and not util.IsValidModel(self:GetText()) then
+		exCache[tx] = Either(exCache[tx] ~= nil, exCache[tx], file.Exists(tx, "GAME"))
+
+		if not blank and not exCache[tx] then
 			local bad = Colors.DarkerRed
 			te:LerpColor(te.TextColor, bad, 0.1, 0, 0.2)
 
@@ -134,7 +140,7 @@ function TOOL:Opt_SelectLoot(f)
 
 			regular = Colors.LighterGray
 			te:LerpColor(te.HTextColor, regular, 0.1, 0, 0.2)
-			curWep = blank and "random" or self:GetText()
+			curLootMdl = blank and self:GetPlaceholderText() or tx
 		end
 
 		if not focused then
