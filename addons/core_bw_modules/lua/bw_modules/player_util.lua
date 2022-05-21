@@ -34,12 +34,20 @@ end
 net.Receive(tag, MODULE.HandleNetMessage)
 
 function MODULE.Notification(ply, ...)
-	if isstring(select(1, ...)) and IsColor(select(2, ...)) then
-		BaseWars.Notify.ChatNotify({select(2, ...), select(1, ...)})
-		net.Send(ply)
+	if SERVER then
+		if isstring(select(1, ...)) and IsColor(select(2, ...)) then
+			BaseWars.Notify.ChatNotify({select(2, ...), select(1, ...)})
+			net.Send(ply)
+		else
+			BaseWars.Notify.ChatNotify(...)
+			net.Send(ply)
+		end
 	else
-		BaseWars.Notify.ChatNotify(...)
-		net.Send(ply)
+		if isstring(select(1, ...)) and IsColor(select(2, ...)) then
+			BaseWars.Notify.ChatNotify({select(2, ...), select(1, ...)})
+		else
+			BaseWars.Notify.ChatNotify(...)
+		end
 	end
 end
 
@@ -55,7 +63,7 @@ end
 
 function MODULE.PopupNotification(ply, typ, text, ...)
 	BaseWars.Notify.PopupNotify(isnumber(typ) and typ or NOTIFY_GENERIC, text, ...)
-	net.Send(ply)
+	if SERVER then net.Send(ply) end
 end
 
 PLAYER.PopupNotify = MODULE.PopupNotification
