@@ -1,12 +1,9 @@
 local debuggingDownloads = false
 
 
-local BWAddons = {
+local Addons = {
 	"160250458", --wire
 	"922947756", --synths
-
-	game.GetMap() == "rp_downtown_tits_v2" and "1590239460" or -- tits
-	game.GetMap():match("evocity") and "296828130" or "", --bw evocity
 
 	"546392647", --media players
 
@@ -53,7 +50,12 @@ local BWAddons = {
 					-- what are they gonna do, cope? seethe? mald, perhaps?
 }
 
+local ForcedAddons = {
+	game.GetMap() == "rp_downtown_tits_v2" and "1590239460" or -- tits
+	game.GetMap():match("evocity") and "296828130" or "", --bw evocity
 
+	"2785421663",
+}
 
 local function shouldAdd(fn, path)
 	if path:find("powerpole") then return false end
@@ -121,9 +123,13 @@ end
 timer.Simple(0, function()
 	local fn = WSMount and WSMount.RealAddWorkshop or resource.AddWorkshop
 
-	for k,v in ipairs(BWAddons) do
+	for k,v in ipairs(Addons) do
 		resource.AddWorkshop(tostring(v))
 		--fn(BWAddons[i])
+	end
+
+	for k,v in ipairs(ForcedAddons) do
+		fn(tostring(v))
 	end
 
 	-- DownloadFolder("materials/vgui/prestige")
