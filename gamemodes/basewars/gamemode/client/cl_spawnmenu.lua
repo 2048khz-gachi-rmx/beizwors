@@ -363,8 +363,8 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 	local wayEnoughColor = Color(75, 125, 235, 180)
 	local barelyEnoughColor = Color(200, 180, 110, 150)
 
-	local lockOuter = Colors.Yellowish:Copy():SetAlpha(150)
-	local lockInner = Colors.DarkGray:Copy():SetAlpha(150)
+	local lockOuter = Colors.Yellowish:Copy():MulHSV(1, 0.8, 0.6):SetAlpha(200)
+	local lockInner = Colors.Warning:Copy():MulHSV(1, 0.6, 0.75):SetAlpha(200)
 	--local notEvenCloseColor = Color(85, 85, 85)
 
 	local drawBtn = bclass.DrawButton
@@ -424,7 +424,7 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 			col:SetDraw()
 			local u = (-CurTime() / 90) % 1
 			local v = (-CurTime() / 90) % 1
-			local u1, v1 = u + 0.15, v - 0.15
+			local u1, v1 = u + 0.3, v - 0.15
 			draw.Stripes(x, y, w, h, u, v, u1, v1)
 		end
 
@@ -442,7 +442,7 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 			draw.DrawOp(1)
 			render.SetStencilCompareFunction(STENCIL_EQUAL)
 				drawBtn(self, x, y, w, h)
-				self:DrawLockedStripes(x, y, w, h, lockOuter)
+				--self:DrawLockedStripes(x, y, w, h, lockOuter)
 
 			-- only draw @ unmask (center)
 			render.SetStencilReferenceValue(2)
@@ -487,8 +487,10 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 				self.CanBuy = BaseWars.CanPurchase(CLP(), cat_name, dat.CatID)
 			end
 
-			if self:IsDown() then
+			if self:IsDown() and self.CanBuy then
 				self:SetColor(color_white, true)
+			else
+				self:LerpColor(self.Color, Colors.Button, 0.3, 0.07, 0.2, true)
 			end
 		end
 
@@ -532,6 +534,49 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 				shortNameCol, 1)
 
 			bclass.PaintOver(self, w, h)
+
+			if not self.CanBuy then
+				self.RaiseHeight = 0
+				self.Shadow.MaxSpread = 0
+				draw.RoundedBox(self.RBRadius, 0, 0, w, h, Colors.DarkGray:IAlpha(200))
+			else
+				self.RaiseHeight = 2
+				self.Shadow.MaxSpread = 1.1
+			end
+		end
+
+
+		function btn:ColorThink()
+			local enough = ply_money >= price
+			local way_enough = ply_money > price * 50
+			local barely_enough = ply_money < price * 3
+
+			local col, txcol
+
+			if enough then
+				txcol = Colors.Money
+
+				if way_enough then
+					col = wayEnoughColor
+				elseif barely_enough then
+					col = barelyEnoughColor
+					txcol = barelyEnoughColor
+				else
+					col = enoughColor
+				end
+
+			else
+				col = notEnoughColor
+				txcol = notEnoughColor
+			end
+
+			return col, txcol
+		end
+
+		do
+			local col, txcol = btn:ColorThink()
+			moneytxCol:Set(txcol or col)
+			curCol:Set(col)
 		end
 
 		function btn:PrePaint(w, h)
@@ -543,36 +588,9 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 					Colors.Purpleish, Colors.Button)
 			end
 
-			local enough, way_enough, barely_enough = ply_money >= price, ply_money > price * 50, ply_money < price * 3
-			--local enough_lv = ply_level >= lv
-
-			local col = curCol
-			local txcol = Colors.Money
-
-
-			if enough then
-				txcol = Colors.Money
-
-				--if enough_lv then
-					if way_enough then
-						col = wayEnoughColor
-					elseif barely_enough then
-						col = barelyEnoughColor
-						txcol = barelyEnoughColor
-					else
-						col = enoughColor
-					end
-				--[[else
-					col = notEnoughColor
-				end]]
-
-			else
-				col = notEnoughColor -- enough_lv and notEnoughColor or notEvenCloseColor
-				txcol = notEnoughColor
-			end
+			local col, txcol = self:ColorThink()
 
 			self:LerpColor(moneytxCol, txcol or col, 0.3, 0, 0.3)
-			self:LerpColor(leveltxCol, notEnoughColor, 0.3, 0, 0.3)
 			self:LerpColor(curCol, col, 0.3, 0, 0.3)
 
 			draw.RoundedBox(8, 2, 2, w - 4, h - 4, curCol)
@@ -586,12 +604,14 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 		function btn:DoClick()
 			BaseWars.SpawnMenu.Highlight[dat.ClassName] = nil
 
-			self.Shadow.MaxSpread = 1.7
-			self.Shadow.Alpha = 255
+			if self.CanBuy then
+				self.Shadow.MaxSpread = 1.7
+				self.Shadow.Alpha = 255
 
-			self:LerpColor(self.Color, Colors.Button, 0.3, 0.07, 0.2, true)
-			self:LerpColor(self.drawColor, Colors.Button, 0.3, 0.07, 0.2, true)
-			self:MemberLerp(self.Shadow, "MaxSpread", 1.1, 0.4, 0.13, 0.2, true)
+				self:LerpColor(self.Color, Colors.Button, 0.3, 0.07, 0.2, true)
+				self:LerpColor(self.drawColor, Colors.Button, 0.3, 0.07, 0.2, true)
+				self:MemberLerp(self.Shadow, "MaxSpread", 1.1, 0.4, 0.13, 0.2, true)
+			end
 
 			RunConsoleCommand("basewars_spawn", cat_name, dat.CatID)
 			--self:LerpColor(self.drawColor, Colors.Button, 0.3, 0.15, 0.3)
