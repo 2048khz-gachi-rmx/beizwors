@@ -26,275 +26,10 @@ if SERVER then
 	util.AddNetworkString("aib_navrecv")
 end
 
-bld.NavClass = bld.NavClass or Emitter:extend()
+include("sh_nav_ext.lua")
 
-local function hashVec(vec)
-	return ("%.f %.f %.f"):format(vec:Unpack())
-end
+if SERVER then include("sv_nav_tool_ext.lua") end
 
-local function unhashVec(hash)
-	return Vector(hash)
-end
-
-local function navHideSpots(nav)
-	local spots = {}
-	local bybits = {}
-
-	for i=0, 7 do
-		local bits = bit.lshift(1, i)
-		local sp = nav:GetHidingSpots(bits)
-		for _, vec in ipairs(sp) do
-			spots[hashVec(vec)] = bit.bor(spots[hashVec(vec)] or 0, bits)
-		end
-	end
-
-	for k,v in pairs(spots) do
-		bybits[v] = bybits[v] or {}
-		table.insert(bybits[v], unhashVec(k))
-	end
-
-	return bybits
-end
-
-bld.NavToLuaTbl = bld.NavToLuaTbl or {}
-bld.LuaNavs = bld.LuaNavs or {}
-
-local CNavArea = FindMetaTable("CNavArea")
-
-if SERVER then
-	function CNavArea:GetUID()
-		if bld.NavToLuaTbl[self] then
-			return bld.NavToLuaTbl.uid
-		end
-
-		return self:GetID()
-	end
-end
-
-function bld.NavToLua(nav)
-	if not isnumber(nav) then nav = nav:GetID() end
-	local lua = bld.NavToLuaTbl[nav]
-	local han = lua and IsValid(lua.handle)
-	return han and lua
-end
-
-function bld.NavClass:Initialize(cnav, ply)
-	if cnav then
-		self.handle = cnav
-		self.id = cnav:GetID() -- uniq.Seq("NavClass")
-
-		bld.NavToLuaTbl[cnav:GetID()] = self
-	end
-
-	self.uid = uniq.Random(16)
-	self.ply = ply
-end
-
-function bld.NavClass:CreateNew(min, max)
-	local cnav = navmesh.CreateNavArea(min, max)
-	self.handle = cnav
-	self.id = cnav:GetID()
-
-	bld.NavToLuaTbl[self.id] = self
-end
-
-function bld.NavClass:IsValid()
-	return IsValid(self.handle)
-end
-
-function bld.NavClass:NW()
-	if not IsValid(self) then return end
-
-	local dat = self.handle:GetExtentInfo()
-
-	bld.NWNav:SetTable(self.id, {
-		ply = self.ply,
-		uid = self.uid,
-		min = dat.lo, max = dat.hi,
-		spots = navHideSpots(self.handle),
-		--adj = self.handle:GetAdjacentAreas()
-	})
-end
-
-function bld.NavClass:Remove()
-	if IsValid(self.handle) then
-		bld.NavToLuaTbl[self.handle:GetID()] = nil
-		self.handle:Remove()
-	end
-	bld.NWNav:Set(self.id, nil)
-	bld.LuaNavs[self.uid] = nil
-	bld.Navs[self.id] = nil
-	-- this will break sequential removals
-	--[[if self.ply then
-		table.RemoveByValue(self.ply:GetWIPNavs(), self)
-	end]]
-end
-
-function bld.NavClass:UpdateID()
-	-- use only when re-serializing
-	self.id = self.handle:GetID()
-end
-
-function bld.NavClass:Serialize()
-	if not self.handle:IsValid() then
-		error("tard how is handle not valid")
-		return
-	end
-
-	local navext = self.handle:GetExtentInfo()
-	local adj = self.handle:GetAdjacentAreas()
-
-	for k,v in pairs(adj) do
-		local ln = bld.NavToLua(v)
-		if ln then
-			ln:UpdateID()
-		end
-
-		print("serialize: connecting to", ln and "luanav" or "cnav", ln and ln.uid or v:GetID(), v)
-		-- if we're connected to a luanav, use its' uid (string)
-		-- otherwise use the id (number)
-		adj[k] = ln and ln.uid or v:GetID()
-	end
-
-	local spots = navHideSpots(self.handle)
-
-	local dat = {
-		min = navext.lo, max = navext.hi,
-		adj = adj, -- e?
-		id = self.id,
-		spots = spots,
-		uid = self.uid,
-	}
-
-	return util.TableToJSON(dat)
-end
-
-function bld.NavClass:Load(dat)
-	local new = self:new()
-	new.dat = dat
-	new.id = dat.id
-	new.uid = dat.uid
-
-	return new
-	-- self.handle = navmesh.CreateNavArea(dat.min, dat.max)
-end
-
-function bld.NavClass:Spawn()
-	if not self.dat then error("no data to create from!") return end
-	if IsValid(self.handle) then self.handle:Remove() end
-
-	local dat = self.dat
-	self.handle = navmesh.CreateNavArea(dat.min, dat.max)
-	self.id = self.handle:GetID()
-
-	bld.NavToLuaTbl[self.id] = self
-end
-
-function bld.NavClass:PostSpawn(navs, lnavs)
-	if not self.dat then error("no data to create from!") return end
-	local dat = self.dat
-
-	for k,v in pairs(dat.adj) do
-		if isstring(v) then
-			-- uid: find luanav
-			if not lnavs[v] then
-				printf("!! failed to find lua nav with ID:`%s` to connect to %d !!", v, self.id)
-				continue
-			end
-
-			self.handle:ConnectTo(lnavs[v].handle)
-		else
-			if not navs[v] then
-				printf("!! failed to find Cnav with ID:`%s` to connect to %d !!", v, self.id)
-				continue
-			end
-
-			self.handle:ConnectTo(navs[v])
-		end
-	end
-
-	if dat.spots then
-		for bits, vecs in pairs(dat.spots) do
-			print("restoring spots", bits)
-			for k,v in pairs(vecs) do
-				self.handle:AddHidingSpot(v, bits)
-			end
-		end
-	end
-end
-
-function TOOL:StartNetwork()
-	local navs = navmesh.GetAllNavAreas()
-
-	function networkList(s, e)
-		net.Start("aib_navrecv", false)
-			net.WriteUInt(s, 32)
-			net.WriteUInt(e, 32)
-
-			for i=s, e do
-				local cn = navs[i]
-				net.WriteUInt(cn:GetID(), 18)
-				local dat = cn:GetExtentInfo()
-				net.WriteVector(dat.lo)
-				net.WriteVector(dat.hi)
-
-				local bybits = navHideSpots(cn)
-
-				local hasSpots = not table.IsEmpty(bybits)
-				net.WriteBool(hasSpots)
-
-				if hasSpots then
-					net.WriteUInt(table.Count(bybits), 8)
-					for bit, data in pairs(bybits) do
-						net.WriteUInt(bit, 8)
-						net.WriteUInt(#data, 8)
-						for bits, vec in pairs(data) do
-							net.WriteVector(vec)
-						end
-					end
-				end
-			end
-
-		net.Send(self:GetOwner())
-	end
-
-	if self:GetOwner():GetWIPNavs() then
-		for k,v in pairs(self:GetOwner():GetWIPNavs()) do
-			if not v:IsValid() then self:GetOwner():GetWIPNavs()[k] = nil continue end
-			v:NW()
-		end
-	end
-
-	local len = 0
-	local s = 1
-
-	for i=1, #navs do
-		s = s or i
-		len = len + 1
-
-		if i - s > 2000 then
-			local s2 = s
-			timer.Create("nw_nav" .. s, i / 5000, 1, function()
-				networkList(s2, i)
-				printf("2 sent %d - %d", s2, i)
-			end)
-
-			s = i
-		end
-	end
-
-	timer.Create("nw_nav_finale", #navs / 5000 + 0.2, 1, function()
-		networkList(s, #navs)
-		printf("3 sent %d - %d", s, #navs)
-	end)
-
-	--[[for i=1, #navs, 2000 do
-		timer.Create("nw_nav" .. i, i / 5000, 1, function()
-			networkList(i, math.min(#navs, i + 2000))
-			print("sent " .. i + 2000 .. "/" .. #navs)
-		end)
-	end]]
-end
 
 function TOOL:Reload()
 	--[[if not AIBases.Builder.Allowed(self:GetOwner()) or not IsFirstTimePredicted() then return end
@@ -387,21 +122,6 @@ function TOOL:RightClick(tr)
 
 		self["Opt_" .. name .. "RightClick"] (self, tr)
 	end
-
-	--[[if self.ConnectingNav then
-		self:UnselectNav()
-		sfx.CheckOut()
-		return
-	end
-
-	sfx.CheckIn()
-	local bNav = self:GrabNavAim(tr)
-
-	if bNav then
-		bNav.col = Colors.Golden
-		bNav.force = true
-		self.ConnectingNav = bNav
-	end]]
 end
 
 function TOOL:LeftClick(tr)
@@ -416,40 +136,6 @@ function TOOL:LeftClick(tr)
 
 		self["Opt_" .. name .. "LeftClick"] (self, tr)
 	end
-
-	--[[if self.ConnectingNav then
-		local nav = self.ConnectingNav
-		local nav2 = self:GrabNavAim(tr)
-		if not nav2 then sfx.Fail() return end
-
-		self:UnselectNav()
-		sfx.SetFinish()
-
-		print("IDs:", nav.id, nav2.id)
-
-		net.Start("aib_navrecv")
-			net.WriteUInt(1, 4)
-			net.WriteUInt(nav.id, 32)
-			net.WriteUInt(nav2.id, 32)
-		net.SendToServer()
-		return
-	end
-
-	local am = GetTool("AreaMark", LocalPlayer())
-
-	am:JustMark()
-
-	am:Once("ZoneConfirmed", "mark", function(_, _, a, b)
-		RunConsoleCommand("gmod_tool", "AINavTool")
-
-		net.Start("aib_navrecv")
-			net.WriteUInt(0, 4)
-			net.WriteVector(a)
-			net.WriteVector(b)
-		net.SendToServer()
-	end)
-
-	RunConsoleCommand("gmod_tool", "AreaMark")]]
 end
 
 
@@ -823,7 +509,7 @@ if CLIENT then
 	end
 
 	function TOOL:Opt_SpotRightClick(tr)
-		
+
 	end
 
 	function TOOL:ShowOptions(dat)
@@ -960,8 +646,3 @@ if CLIENT then
 end
 
 EndTool()
-
-local PLAYER = FindMetaTable("Player")
-function PLAYER:GetWIPNavs()
-	return bld.Navs[self] --bld.NWNav:GetNetworked()[self]
-end

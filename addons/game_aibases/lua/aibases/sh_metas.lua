@@ -74,3 +74,7 @@ end
 FInc.Recursive("aibases/classes/*.lua", FInc.SHARED, FInc.RealmResolver()
 	:SetDefault(true)
 )
+
+FInc.Recursive("aibases/tools/*", FInc.SHARED, FInc.RealmResolver()
+	:SetDefault(true)
+)

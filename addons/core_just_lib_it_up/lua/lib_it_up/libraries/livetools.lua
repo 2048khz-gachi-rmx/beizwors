@@ -145,6 +145,11 @@ function ToolObj:Finish()
 	LibItUp.OnInitEntity(register, self)
 end
 
+function ToolObj:Update()
+	LibItUp.OnInitEntity(register, self)
+end
+
+
 function IncludeTool(fn, name)
 	if not name then name = fn:match("([%w_]*)%.lua") end
 	TOOL = LiveToolObj:Create()
