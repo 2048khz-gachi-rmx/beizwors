@@ -28,7 +28,7 @@ for i=1, 3 do
 	--lv:AddRequirement( reqs[i] or reqs[#reqs] )
 
 	lv:SetPos(0, 2 + n * 1.5)
-	lv:SetIcon(Icon(Material("entities/acwatt_perk_fastreload.png")):SetSize(0.9, 0.9))
+	lv:SetIcon(CLIENT and Icon(Material("entities/acwatt_perk_fastreload.png")):SetSize(0.9, 0.9))
 
 	if i > 3 then
 		lv:AddRequirement( { Computer = 2 } )

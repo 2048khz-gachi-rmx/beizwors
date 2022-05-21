@@ -96,6 +96,8 @@ ChainAccessor(level, "_Description", "Description")
 ChainAccessor(level, "_Color", "Color")
 
 function level:SetIcon(ic)
+	if SERVER then return end
+
 	ic = ic:Copy()
 	ic:SetAutosize(false)
 
