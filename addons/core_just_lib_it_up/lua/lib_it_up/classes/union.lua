@@ -1,14 +1,5 @@
 LibItUp.SetIncluded()
 
---[[
-	A union table:
-		Calling methods on it will call the methods on its' children instead.
-
-		Can only have numbered keys.
-
-		Easylua, anyone?
-]]
-
 UnionTable = UnionTable or Object:callable()
 
 UnionTable.IsUnion = true
@@ -25,26 +16,22 @@ function UnionTable:__index(key)
 	]]
 
 	local func = function(...)
-
-		local args_orig = {...}
-		local args = {...}
-
 		local outs = {}
 
-
 		local useself = false
+		local idx = 1
 
-		if args_orig[1] == self then
+		-- cry about it
+		if (...) == self then
 			useself = true
-			table.remove(args, 1)
+			idx = 2
 		end
 
 		for k,v in pairs(self) do
-
 			local val = v[key]
 
 			if isfunction(val) then
-				outs[v] = val( useself and v or args_orig[1], unpack(args) )
+				outs[v] = val( useself and v or args_orig[1], select(..., idx) )
 			else
 				outs[v] = val
 			end

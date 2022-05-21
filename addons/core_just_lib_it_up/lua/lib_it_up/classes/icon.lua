@@ -1,5 +1,8 @@
 LibItUp.SetIncluded()
-if not CLIENT then return end
+if not CLIENT then
+	Icon = Icon or Object:callable()
+	return
+end
 
 --[[
 	Icon:
