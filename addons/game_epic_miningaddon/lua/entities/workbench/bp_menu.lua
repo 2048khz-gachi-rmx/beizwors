@@ -245,7 +245,7 @@ end
 
 function ENT:CreateBlueprintInfo(bp, info, old)
 	if old then
-		local hide = info:HideAutoCanvas("BlueprintInfo:" .. old:GetUID())
+		local hide = info:HideAutoCanvas("BlueprintInfo:" .. old:GetNWID())
 		if hide then
 			print("hide called")
 			hide:Dock(NODOCK)
@@ -253,7 +253,7 @@ function ENT:CreateBlueprintInfo(bp, info, old)
 		end
 	end
 
-	local cv, new = info:GetAutoCanvas("BlueprintInfo:" .. bp:GetUID(), "InvisPanel")
+	local cv, new = info:GetAutoCanvas("BlueprintInfo:" .. bp:GetNWID(), "InvisPanel")
 	if not new then
 		cv:Dock(NODOCK)
 		cv:PopInShow(0.2, 0.1)

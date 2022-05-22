@@ -173,28 +173,28 @@ function ENT:QueueRefine(ply, inv, item, slot, bulk)
 			if not ok then print("couldn't add input item to #" .. i) continue end
 
 			pr.slot = i
-			pr:Then(function()
+			--[[pr:Then(function()
 				if not IsValid(self) then return end
 
 				for k,v in ipairs(prs) do
 					self:TimeItem(i)
 				end
-			end)
-			prs[#prs + 1] = pr
+			end)]]
+
+			self:TimeItem(i)
+			--prs[#prs + 1] = pr
 
 			ins = ins + 1
 
 			item:SetAmount(item:GetAmount() - 1)
 		end
 
-		Promise.OnAll(prs):Then(function()
-			if not IsValid(self) then return end
-
+		--Promise.OnAll(prs):Then(function()
 			local plys = Filter(ents.FindInPVS(self), true):Filter(IsPlayer)
 			Inventory.Networking.NetworkInventory(plys, self.OreInput)
 			Inventory.Networking.UpdateInventory(ply, inv)
 			self.Status:Network()
-		end, GenerateErrorer("RefineryPromise"))
+		--end, GenerateErrorer("RefineryPromise"))
 	else
 
 		if slot > self.OreInput.MaxItems then print("slot higher than max", slot, self.OreInput.MaxItems) return end

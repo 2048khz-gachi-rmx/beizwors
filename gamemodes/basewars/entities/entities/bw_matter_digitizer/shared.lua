@@ -92,6 +92,7 @@ function ENT:CreateInventories()
 	self.InVault = self.Inventory[1]
 	self.InVault.MaxItems = self.MaxQueues
 	self.InVault.SupportsSplit = false
+	self.InVault.ActionCanMove = false
 
 	self.InVault.ActionCanCrossInventoryFrom = function(inv, ply, ...)
 		return self:CanFromBuf(ply, ...)
