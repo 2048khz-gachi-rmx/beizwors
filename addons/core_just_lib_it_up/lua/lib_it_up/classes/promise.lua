@@ -63,6 +63,8 @@ function Promise:Then(full, rej)
 		self:_run(self._Rejected)
 	end
 
+	self:Emit("ThenAdded", full, rej)
+
 	return nextPr
 end
 
@@ -97,6 +99,7 @@ function Promise:_run(...)
 	end
 
 	self._running = false
+	self:Emit(self._Rejected and "Rejected" or "Resolved", ...)
 end
 
 -- passed into the callbacks, intended to be ran for async

@@ -31,7 +31,7 @@ function UnionTable:__index(key)
 			local val = v[key]
 
 			if isfunction(val) then
-				outs[v] = val( useself and v or args_orig[1], select(..., idx) )
+				outs[v] = val( useself and v or args_orig[1], select(idx, ...) )
 			else
 				outs[v] = val
 			end
