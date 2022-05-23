@@ -488,9 +488,12 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 			end
 
 			if self:IsDown() and self.CanBuy then
+				self:RemoveLerp(self.Color)
+				self:RemoveLerp(self.drawColor)
 				self:SetColor(color_white, true)
 			else
-				self:LerpColor(self.Color, Colors.Button, 0.3, 0.07, 0.2, true)
+				self:LerpColor(self.Color, Colors.Button, 0.3, 0, 0.2)
+				self:LerpColor(self.drawColor, Colors.Button, 0.3, 0, 0.2)
 			end
 		end
 
@@ -608,8 +611,6 @@ local function createSubCategory(canv, cat_name, subcat_name, data)
 				self.Shadow.MaxSpread = 1.7
 				self.Shadow.Alpha = 255
 
-				self:LerpColor(self.Color, Colors.Button, 0.3, 0.07, 0.2, true)
-				self:LerpColor(self.drawColor, Colors.Button, 0.3, 0.07, 0.2, true)
 				self:MemberLerp(self.Shadow, "MaxSpread", 1.1, 0.4, 0.13, 0.2, true)
 			end
 
