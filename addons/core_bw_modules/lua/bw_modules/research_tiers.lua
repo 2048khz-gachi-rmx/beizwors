@@ -7,7 +7,11 @@ hook.Add("BW_CanPurchase", "ResearchTiers", function(ply, itm)
 
 		if not ply:HasPerkLevel("printer_tier", tier - 1) then return false end
 
-	elseif itm.RequiresResearch then
-		-- todo: accept a table of strings or a string (required research IDs)
+	elseif istable(itm.RequiresResearch) then
+		-- todo: accept a table of [resID] = lv,
+		local res = itm.RequiresResearch
+		for id, req in pairs(res) do
+			if not  ply:HasPerkLevel(id, req) then return false end
+		end
 	end
 end)

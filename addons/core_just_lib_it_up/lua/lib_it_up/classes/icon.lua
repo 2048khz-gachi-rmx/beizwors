@@ -190,7 +190,13 @@ function Icon:_WHPreseveRatio(w, h)
 	local info = draw.GetMaterialInfo(mat)
 
 	if info then
-		local mw, mh = info.w, info.h
+		local mw, mh
+		if self._ratioSize then
+			mw, mh = unpack(self._ratioSize)
+		else
+			mw, mh = info.w, info.h
+		end
+
 		local sc = 1
 
 		if w and not h then
@@ -217,6 +223,16 @@ function Icon:_WHPreseveRatio(w, h)
 
 		return mw * sc, mh * sc
 	end
+end
+
+function Icon:SetRatioSize(w, h)
+	self._ratioSize = {w, h}
+	return self
+end
+
+function Icon:GetRatioSize()
+	if not self._ratioSize then return false end
+	return unpack(self._ratioSize)
 end
 
 function Icon:RatioSize(w, h)
@@ -297,9 +313,16 @@ function Icon:Copy()
 	local new = Icon(self.Material or self.URL, self.Name)
 	new:SetColor(self.Color)
 	new:SetFilter(self:GetFilter())
+	new:SetPreserveRatio(self:GetPreserveRatio())
+	new:SetAlign(self:GetAlign())
+	new:SetAutoSize(self:GetAutoSize())
 
 	if self:GetSizeSet() then
 		new:SetSize(self:GetSize())
+	end
+
+	if self:GetRatioSize() then
+		new:SetRatioSize(self:GetRatioSize())
 	end
 
 	return new

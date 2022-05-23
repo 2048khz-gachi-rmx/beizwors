@@ -115,7 +115,7 @@ function ENT:UseCard(itm)
 	LocalPlayer():EmitSound("weapons/arccw_fml/universal/uni-draw.wav", 70)
 
 	net.Start("aib_keyreader")
-		net.WriteUInt(itm:GetUID(), 32)
+		net.WriteUInt(itm:GetNWID(), 32)
 		net.WriteEntity(self)
 	net.SendToServer()
 end

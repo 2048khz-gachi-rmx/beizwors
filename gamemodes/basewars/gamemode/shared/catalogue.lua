@@ -438,11 +438,14 @@ SetType("Consumables")
 SetCat("Defense")
 	SetType("Turrets - TESTING")
 		ReuseCat("bw_turret_ballistic", "Rifle Turret", m * 5, nil, 3)
+			.RequiresResearch = {turrets_tier = 1}
+
+		ReuseCat("bw_turret_sniper", "Sniper Turret", m * 50, "models/Combine_turrets/Floor_turret.mdl")
+			.RequiresResearch = {turrets_tier = 2}
 
 -- todo: "soon" items increment itemID fucking up networking
 	SetType("Turrets")
 		ReuseCat("", "soon", m * 25, "models/Combine_turrets/Floor_turret.mdl")
-		ReuseCat("", "Sniper Turret", m * 50, "models/Combine_turrets/Floor_turret.mdl")
 		ReuseCat("", "Rapid Rifle Turret", m * 250, "models/Combine_turrets/Floor_turret.mdl")
 		ReuseCat("", "Rapid Sniper Turret", b * 2, "models/Combine_turrets/Floor_turret.mdl")
 

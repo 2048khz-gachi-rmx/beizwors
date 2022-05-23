@@ -207,6 +207,7 @@ function MAP:SetTree(tree)
 			btn:SetSize(PerkSize, PerkSize)
 			btn:SetPos(cx + x - PerkSize / 2, cy + y - PerkSize / 2)
 			btn.OrigSize = { PerkSize, PerkSize }
+
 			btn.Anchor = {
 				btn.X / CanvasSize,
 				btn.Y / CanvasSize
@@ -214,10 +215,7 @@ function MAP:SetTree(tree)
 
 			btn.SizeAnchor = PerkSize / CanvasSize / 2
 
-			btn.OrigAnchor = {
-				btn.X / CanvasSize,
-				btn.Y / CanvasSize
-			}
+			btn.OrigAnchor = table.Copy(btn.Anchor)
 
 			btn:SetLevel(lv)
 			table.insert(self.TreeButtons[tree], btn)
@@ -233,6 +231,15 @@ function MAP:SetTree(tree)
 
 	local function move(an, fr)
 		local mvX, mvY = an.Parent.MvX, an.Parent.MvY
+
+		-- egh
+		an.Parent.Anchor[1] = Lerp(fr,
+			an.Parent.OrigAnchor[1] - (mvX / CanvasSize / self.Canvas.Zoom),
+			an.Parent.OrigAnchor[1])
+
+		an.Parent.Anchor[2] = Lerp(fr,
+			an.Parent.OrigAnchor[2] - (mvY / CanvasSize / self.Canvas.Zoom),
+			an.Parent.OrigAnchor[2])
 
 		an.pool = an.pool or mvY
 		an.lx = an.lx or 0
@@ -250,19 +257,10 @@ function MAP:SetTree(tree)
 		local addx, storex = math.modf(an.storex + mvBx)
 		an.storex = storex
 
-		if addy < 1 and addx < 1 then return end
+		if math.abs(addy) < 1 and math.abs(addx) < 1 then return end
 
 		an.Parent.X = an.Parent.X + addx
 		an.Parent.Y = an.Parent.Y + addy
-
-		-- egh
-		an.Parent.Anchor[1] = Lerp(fr,
-			an.Parent.OrigAnchor[1] - (mvX / CanvasSize / self.Canvas.Zoom),
-			an.Parent.OrigAnchor[1])
-
-		an.Parent.Anchor[2] = Lerp(fr,
-			an.Parent.OrigAnchor[2] - (mvY / CanvasSize / self.Canvas.Zoom),
-			an.Parent.OrigAnchor[2])
 	end
 
 	local function off(an)

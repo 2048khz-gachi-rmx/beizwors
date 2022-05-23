@@ -5,11 +5,6 @@ perk:SetName("Printer Tier Unlock")
 perk:SetTreeName("Machines")
 perk:SetColor(Color(90, 230, 180))
 
-local also = {
-	"Automatically *refills *your #ammo using the ammo dispenser on respawn.",
-	"Automatically *refills *your ^armor *and $stims using your dispensers on respawn."
-}
-
 local reqs = {
 	{ Items = {
 		capacitor = 25,

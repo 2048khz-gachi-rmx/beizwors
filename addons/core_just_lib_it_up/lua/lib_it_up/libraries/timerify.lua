@@ -27,7 +27,7 @@ function META:Timer(name, sec, reps, func, ...)
 	local id = (name and "__Timerified:" .. hex(self) .. ":" .. tostring(name))
 
 	if reps == 0 then
-		errorNHf("created a 0 rep timer (use a string '0' to stop this) @ %s" .. debug.traceback())
+		errorNHf("created a 0 rep timer (use a string '0' to stop this) @ %s", debug.traceback())
 	end
 
 	reps = tonumber(reps)
