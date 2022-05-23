@@ -325,13 +325,20 @@ function ENT:Draw()
 end
 
 net.Receive("ResearchComputer", function()
-	local is_rep = net.ReadBool()
-	if is_rep then
+	local why = net.ReadUInt(4)
+	if why == 0 then
 		net.ReadPromise()
 		return
 	end
 
-	local comp = net.ReadEntity()
-	if not IsValid(comp) or not comp.ResearchComputer then return end
-	comp:OpenMenu()
+	if why == 1 then
+		local comp = net.ReadEntity()
+		if not IsValid(comp) or not comp.ResearchComputer then return end
+		comp:OpenMenu()
+		return
+	end
+
+	if why == 2 then
+		-- play sfx
+	end
 end)

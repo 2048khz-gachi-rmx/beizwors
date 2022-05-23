@@ -163,7 +163,7 @@ function PANEL:PaintRequirements(items, y, level)
 			itCol:ModHSV(1, -0.15, 0.1)
 			itCol.a = fr * 255
 
-			col:Set(cnt >= amt and color_white or Colors.Reddish)
+			col:Set(cnt >= amt and Colors.Money or Colors.Reddish)
 			col.a = fr * 255
 
 			local tw, th = Inventory.Draw.DrawItemAmount(id, amt,
