@@ -142,6 +142,21 @@ function ENTITY:IsSubscribed(ply)
 	return false
 end
 
+local function bgToChar(n)
+	if n < 10 then return string.char(48 + n) end -- '0'
+	return string.char(97 - 10 + n) -- 'a' - 10 + n
+end
+
+function ENTITY:GetBodygroupsSet()
+	local bgs = {}
+
+	for i=1, self:GetNumBodyGroups() do
+		bgs[i] = bgToChar(self:GetBodygroup(i - 1))
+	end
+
+	return table.concat(bgs)
+end
+
 function ENTITY:Unsubscribe(ply)
 	local my_subs = ent_subs[self]
 

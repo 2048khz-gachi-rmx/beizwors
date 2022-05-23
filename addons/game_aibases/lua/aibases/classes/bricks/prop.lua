@@ -63,11 +63,6 @@ function AIBases.PropBrick:Remove()
 	if IsValid(self.Ent) then self.Ent:Remove() end
 end
 
-local function bgToChar(n)
-	if n < 10 then return string.char(48 + n) end -- '0'
-	return string.char(97 - 10 + n) -- 'a' - 10 + n
-end
-
 function AIBases.PropBrick:Build(ent)
 	local new = AIBases.PropBrick:new()
 	local data = new.Data
@@ -86,19 +81,7 @@ function AIBases.PropBrick:Build(ent)
 		data.skin = ent:GetSkin()
 	end
 
-	local bgs = {}
-
-	for i=1, ent:GetNumBodyGroups() do
-		bgs[i] = ent:GetBodygroup(i - 1)
-	end
-
-	--[[for k,v in pairs(ent:GetBodyGroups()) do
-		bgs[v.id + 1] = bgToChar(v.num - 1)
-		print(v.id, v.num)
-		nonzero = nonzero or v.num ~= 1
-	end]]
-
-	local bgStr = table.concat(bgs)
+	local bgStr = ent:GetBodygroupsSet()
 	if bgStr:match("[^0]") then
 		data.bgs = bgStr
 	end

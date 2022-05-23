@@ -70,13 +70,7 @@ function AIBases.LootBrick:Build(ent)
 		data.skin = ent:GetSkin()
 	end
 
-	local bgs = {}
-
-	for i=1, ent:GetNumBodyGroups() do
-		bgs[i] = ent:GetBodygroup(i - 1)
-	end
-
-	local bgStr = table.concat(bgs)
+	local bgStr = ent:GetBodygroupsSet()
 	if bgStr:match("[^0]") then
 		data.bgs = bgStr
 	end
