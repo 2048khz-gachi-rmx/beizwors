@@ -7,7 +7,7 @@ hp:SetTreeName("Physical")
 hp:SetColor(Color(250, 130, 130))
 
 local hps = {
-	5, 10, 15, 20, 25, 25
+	115, 130, 145, 165, 185, 200
 }
 
 local totalHP = 100
@@ -42,18 +42,20 @@ local reqs = {
 	} },
 }
 
-for i=1, 6 do
+for i=1, #hps do
 	local lv = hp:AddLevel(i)
+	local n = i - 1
 	lv:AddRequirement( reqs[i] or reqs[#reqs] )
 
-	lv:SetPos((i - 1) * 1.5, 0)
+	local tier = math.floor(n / 3)
+	lv:SetPos(1 + (n * 1 + tier), 0)
 	lv:SetIcon(CLIENT and Icon("https://i.imgur.com/8rDmfy5.png", "hp_up.png"))
 
-	if i > 3 then
+	if n >= 3 then
 		lv:AddRequirement( { Computer = 2 } )
 	end
 
-	local add = hps[i]
+	local add = hps[i] - (hps[i - 1] or 100)
 	totalHP = totalHP + add
 
 	lv:SetDescription( ("Increase your maximum HP by $%d (total: *%d)"):format(
@@ -69,13 +71,14 @@ cap:SetName("Capacity Up")
 cap:SetTreeName("Physical")
 cap:SetColor( Colors.Sky:Copy():MulHSV(1, 0.6, 2) )
 
-for i=1, 3 do
+for i=1, 2 do
 	local lv = cap:AddLevel(i)
 	lv:AddRequirement( { Items = { iron_bar = i * 5, gold_bar = i * 3 } } )
 	lv:AddRequirement( { Items = { zased = i } } )
 
-	lv:SetPos(i * 3, 1)
+	lv:SetPos(hp:GetLevel(i * 3):GetPos(), 1)
 	lv:SetIcon(CLIENT and Icons.Plus)
+	lv:AddPrerequisite(hp:GetLevel(i * 3))
 end
 
 
