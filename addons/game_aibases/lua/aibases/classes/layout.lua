@@ -3,6 +3,8 @@
 local layout = AIBases.BaseLayout or Emitter:callable()
 AIBases.BaseLayout = layout
 
+ChainAccessor(layout, "Name", "Name")
+
 function layout:Initialize(name)
 	name = tostring(name)
 	assert(isstring(name))

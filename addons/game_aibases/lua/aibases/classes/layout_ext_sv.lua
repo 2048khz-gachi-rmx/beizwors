@@ -56,6 +56,8 @@ function layout:SlowSpawn(msTimeout)
 
 	if self.LuaNavs then
 		AIBases.ConstructNavs(self.LuaNavs)
+	else
+		printf("!!! Layout `%s` has no lua navs !!!", self.Name)
 	end
 
 	self:Timer("SlowSpawn", 0, "0", function()
@@ -117,8 +119,10 @@ function layout:Despawn()
 		v:Remove()
 	end
 
-	for k,v in pairs(self.LuaNavs) do
-		v:Remove()
+	if self.LuaNavs then
+		for k,v in pairs(self.LuaNavs) do
+			v:Remove()
+		end
 	end
 end
 

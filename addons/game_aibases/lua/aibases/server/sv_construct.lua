@@ -127,7 +127,7 @@ function AIBases.SpawnBase(base)
 
 			genned = true
 
-			base.ActiveLayout = AIBases.BaseLayout:new()
+			base.ActiveLayout = AIBases.BaseLayout:new(layName)
 			base.ActiveLayout:ReadFrom(layName)
 			base.ActiveLayout:SlowSpawn(1)
 			base.ActiveLayout:BindToBase(base)
