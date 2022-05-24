@@ -154,4 +154,21 @@ if CLIENT then
 
 		Log(LibItUp.LogIDs[id], LibItUp.LogIDs[id].FormatStr, ...)
 	end
+
+	local function add(hkName)
+		return function(name, fn)
+			assert(not isfunction(name), "1st arg should be hook id")
+			assert(fn == nil or isfunction(fn), "2nd arg should be fn or nil")
+
+			if fn then
+				hook.Add(hkName, name, fn)
+			else
+				hook.Remove(hkName, name)
+			end
+		end
+	end
+
+	HUDPaint = add("HUDPaint")
+	PostDrawTrans = add("PostDrawTranslucentRenderables")
 end
+
