@@ -7,8 +7,6 @@ local emotes = {
 local bsTimesOpened = 0
 
 function ulx.showMotdMenu( steamid )
-	bsTimesOpened = bsTimesOpened + 1
-
 	local window = vgui.Create( "FFrame" )
 	window:SetSize(450, 200)
 	window:Center()
@@ -44,9 +42,9 @@ function ulx.showMotdMenu( steamid )
 	local mup = vgui.Create("MarkupText", window)
 	mup:DockMargin(0, 16, 0, 0)
 	mup:Dock(TOP)
-	mup:InvalidateParent(true)
 
-	local bullshit = BaseWars.Tutorial.CurrentStep == "Complete" and math.random() < (2 + bsTimesOpened * 5) / 100
+	local bullshit = BaseWars.Tutorial.CurrentStep == "Complete" and math.random() < (1 + bsTimesOpened * 5) / 100
+	bsTimesOpened = bsTimesOpened + 1
 
 	local n = 0
 
@@ -57,13 +55,25 @@ function ulx.showMotdMenu( steamid )
 		bsTimesOpened = 0
 		window:SetWide(600)
 
+		local disclaimer = vgui.Create("DLabel", window)
+		disclaimer:SetText("*this is a joke")
+		disclaimer:Dock(TOP)
+		disclaimer:SetFont("EX20")
+		disclaimer:SetContentAlignment(5)
+		disclaimer:DockMargin(0, 4, 0, 0)
+		disclaimer:SetTextColor(Color(255, 255, 255, 50))
+
 		mup:DockMargin(0, 0, 0, 0)
+		mup:Dock(NODOCK)
+		mup:InvalidateParent(true)
+
 		local par = vgui.Create("FScrollPanel", window)
 		par:SetSize(window:GetWide() - 16, 400)
-		par:Center()
-		par.Y = lbl.Y + lbl:GetTall() + 8
+		par:CenterHorizontal()
+		par.Y = disclaimer.Y + disclaimer:GetTall() + 4
 
 		sizer = par
+		mup:Dock(TOP)
 		mup:SetParent(par)
 
 		rules = {
@@ -103,6 +113,8 @@ function ulx.showMotdMenu( steamid )
 			"Don't cheat.",
 			"Don't try to crash the server.",
 		}
+
+		mup:InvalidateParent(true)
 	end
 
 	for k,v in ipairs(rules) do
