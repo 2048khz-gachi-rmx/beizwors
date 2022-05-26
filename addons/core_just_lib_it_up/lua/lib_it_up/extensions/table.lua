@@ -250,6 +250,14 @@ function table.ShallowCopy(t)
 	return out
 end
 
+function table.ArrayCopy(t)
+	local out = {}
+	for i=1, #t do out[i] = t[i] end
+
+	return out
+end
+table.CopyArray = table.ArrayCopy
+
 function eval(var, ...)
 
 	if isfunction(var) then

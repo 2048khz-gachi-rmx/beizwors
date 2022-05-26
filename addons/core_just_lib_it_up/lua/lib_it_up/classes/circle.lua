@@ -35,8 +35,8 @@ function circ:Initialize()
 	self.__parent.Initialize(self, false)
 end
 
-function circ:_GenerateSubPoly(ang, x, y, rad, frac)
-	local s, c = cos( mrad(ang) - math.pi / 2 ), sin( mrad(ang) - math.pi / 2 )
+function circ:_GenerateSubPoly(ang, x, y, rad)
+	local s, c = sin(ang), -cos(ang)
 
 	local ret = {
 		x = x + s * rad,
@@ -50,8 +50,8 @@ end
 
 
 function circ:_GenerateTemplate()
-	local circ = {}
-	self._Template = circ
+	local poly = {}
+	self._Template = poly
 
 	local seg = self._SegmentCount
 
@@ -70,27 +70,17 @@ function circ:_GenerateTemplate()
 			v = c/2 + 0.5
 		}
 
-		circ[i] = p
+		poly[i] = p
 	end
 
 end
 
 function circ:_RegeneratePolies(x, y, startAngle, endAngle, rad, reusePolies)
-
-	--[[
-
-	local startAngle = self.StartAngle
-	local endAngle = self.EndAngle
-
-	local rad = self.Radius
-
-	]]
-
 	local seg = self._SegmentCount
-	local segAngle = 360 / seg
+	local segAngle = 2 * math.pi / seg
 
-	local sa = math.min(endAngle, startAngle)
-	local ea = math.max(endAngle, startAngle)
+	local sa = mrad(math.min(endAngle, startAngle))
+	local ea = mrad(math.max(endAngle, startAngle))
 
 	local poly = reusePolies or {}
 
@@ -111,7 +101,6 @@ function circ:_RegeneratePolies(x, y, startAngle, endAngle, rad, reusePolies)
 		curPoly = curPoly + 1
 		useSegs = math.floor(useSegs)
 	end
-	
 
 	for i=0, useSegs-1 do
 		local t = self._Template[(skipFirst + i) % seg + 1]
@@ -122,9 +111,8 @@ function circ:_RegeneratePolies(x, y, startAngle, endAngle, rad, reusePolies)
 			u = t.u,
 			v = t.v
 		}
-
 	end
-	
+
 	poly[curPoly + useSegs] = self:_GenerateSubPoly(ea, x, y, rad)
 	poly[curPoly + useSegs + 1] = nil
 

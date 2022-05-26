@@ -332,9 +332,7 @@ function ENT:MineOut(orename, ply)
 	end
 
 	ore.amt = ore.amt - 1
-	pr:Then(function()
-		Inventory.Networking.NotifyItemChange(ply, INV_NOTIF_PICKEDUP, orename, 1)
-	end)
+	Inventory.Networking.NotifyItemChange(ply, INV_NOTIF_PICKEDUP, orename, 1)
 
 	if ore.amt <= 0 then
 		self.Ores[orename] = nil

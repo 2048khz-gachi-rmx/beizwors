@@ -152,14 +152,18 @@ function Icon:PaintIcon(x, y, w, h, rot, xA, yA)
 	else
 		surface.SetMaterial(self.Material)
 
+		local dx, dy = x, y
+
 		if rot then
 			surface.DrawTexturedRectRotated(x, y, w, h, rot)
+			dx = x - w / 2
+			dy = y - h / 2
 		else
 			surface.DrawTexturedRect(x, y, w, h)
 		end
 
 		if self:GetDebug() then
-			surface.DrawOutlinedRect(x, y, w, h)
+			surface.DrawOutlinedRect(dx, dy, w, h)
 		end
 
 		if self:GetAutosize() and not self._SizeInitialized then

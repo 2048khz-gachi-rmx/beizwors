@@ -300,6 +300,7 @@ function nw:GetNumID()
 end
 nw.GetNumberID = nw.GetNumID
 
+-- self:Alias("__ct", 255, "Float")
 function nw:Alias(k, k2, typ)
 	if self.__Aliases[k] then
 		self.__AliasesBack[k2] = nil
