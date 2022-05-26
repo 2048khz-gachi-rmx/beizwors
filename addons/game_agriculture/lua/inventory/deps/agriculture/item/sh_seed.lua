@@ -20,12 +20,16 @@ function seed:Initialize(uid, iid)
 end
 
 function seed:InitializeNew()
-	print("new:")
-	PrintTable(self:GetData())
 
-	self:SetHealth(100)
 	self:SetStats({})
-	self:SetResult("coal")
+
+	if not self:GetResult() then
+		self:SetResult("coal")
+	end
+
+	if not self:GetHealth() then
+		self:SetHealth(100)
+	end
 end
 
 function seed:GetResultName()
@@ -44,12 +48,16 @@ function seed:GetName()
 	return ("%s Seed"):format(base:GetName())
 end
 
+function seed:GetGrowTime()
+	return 5
+end
+
 function seed:GetRarityText()
 	return self:GetRarity():GetName() .. " Seed"
 end
 
 function seed:GetTransferCost()
-	return self:GetBaseTransferCost() * (2 ^ (self:GetTier() - 1))
+	return 10e12--self:GetBaseTransferCost() * (2 ^ (self:GetTier() - 1))
 end
 
 seed:Register()

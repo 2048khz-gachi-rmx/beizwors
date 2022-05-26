@@ -13,3 +13,21 @@ Agriculture.Seed:NetworkVar("NetStack", function(it, write)
 
 	return ns
 end, "EncodeSeed")
+
+
+function seed:CreateResult()
+	local smIt = Inventory.NewItem(self:GetResult())
+	if not smIt then return end
+
+	smIt:SetAmount(1) -- ?
+
+	return smIt
+end
+
+function seed:DrainHealth()
+	self:SetHealth(self:GetHealth() - 1)
+
+	if self:GetHealth() <= 0 then
+		self:Delete()
+	end
+end

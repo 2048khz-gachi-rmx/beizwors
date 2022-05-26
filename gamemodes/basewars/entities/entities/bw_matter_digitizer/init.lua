@@ -95,7 +95,7 @@ function ENT:RequestInVault(ply)
 	end)
 end]=]
 
-function ENT:InVaultNewItem(myInv, itm, fromInv, slot, ply)
+function ENT:InVaultNewItem(myInv, itm, fromInv, slot, fromSlot, ply)
 	self.Status:Set(slot, 0)
 	self.Status:Network()
 	if IsValid(ply) then
@@ -182,7 +182,7 @@ local function wth(ply, ent)
 	errorNHf("MDig managed to allow transfer but not take power...!? %s, %s", ply, ent)
 end
 
-hook.Add("Vault_CrossInventoryMovedFrom", "Digitizer", function(inv, itm, ...)
+hook.Add("Vault_CrossInventoryMovedFrom", "Digitizer", function(inv, itm)
 	local found = findMDig(inv:GetOwner())
 	if not found then return end -- moved not via mdig perhaps
 
