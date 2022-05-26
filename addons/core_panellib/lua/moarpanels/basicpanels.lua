@@ -112,6 +112,24 @@ function vgui.GetActiveTextEntry()
 	return active
 end
 
+function vgui.Position(marg, ...)
+	local pnls = {...}
+
+	if ispanel(marg) then
+		marg = 0
+		table.insert(pnls, 1, marg)
+	end
+
+	local out = {}
+	local x = 0
+	for k,v in ipairs(pnls) do
+		out[v] = x
+		x = x + marg + v:GetWide()
+	end
+
+	return out, x
+end
+
 hook.Add("OnTextEntryGetFocus", "vgui_GetActiveTextEntry", function(pnl)
 	active = pnl
 end)
