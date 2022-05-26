@@ -150,33 +150,55 @@ function circ:Paint(x, y)
 
 		if self["Outline" .. v] ~= self["_LastOutline" .. v] then
 			self._OutlineSettingsChanged = true
-			self["_LastOutline" .. v] = self[v]
+			self["_LastOutline" .. v] = self["Outline" .. v]
 		end
 	end
 
 	if not self._Template then self:_GenerateTemplate() end
 
-	local startAngle = self.StartAngle
-	local endAngle = self.EndAngle
-	local rad = self.Radius
-
-	if self._Outlined then
-
-		if not self._OutlinePolies or self._LastX ~= x or self._LastY ~= y then
-			self._OutlinePolies = self._OutlinePolies or {}
-			local poly = self:_RegeneratePolies(x, y, startAngle, endAngle, rad, self._OutlinePolies)
-		end
-
-	end
-
-	if self._LastX ~= x or self._LastY ~= y or self._SettingsChanged then
-		self:_RegeneratePolies(x, y, startAngle, endAngle, rad, self._Polies)
+	-- updating settings
+	do
+		local posChanged = self._LastX ~= x or self._LastY ~= y
 		self._LastX = x
 		self._LastY = y
-		self._SettingsChanged = false
+
+		if self._Outlined then
+			local startAngle = self.OutlineStartAngle or self.StartAngle
+			local endAngle = self.OutlineEndAngle or self.EndAngle
+			local rad = self.OutlineRadius or self.Radius
+
+			if not self._OutlinePolies or posChanged or self._OutlineSettingsChanged then
+				self._OutlinePolies = self._OutlinePolies or {}
+				self:_RegeneratePolies(x, y, startAngle, endAngle, rad, self._OutlinePolies)
+				self._OutlineSettingsChanged = nil
+			end
+		end
+
+		if posChanged or self._SettingsChanged then
+			local startAngle = self.StartAngle
+			local endAngle = self.EndAngle
+			local rad = self.Radius
+
+			self:_RegeneratePolies(x, y, startAngle, endAngle, rad, self._Polies)
+			self._LastX = x
+			self._LastY = y
+			self._SettingsChanged = false
+		end
 	end
 
-	surface.DrawPoly(self._Polies)
+	-- actual draw op
+	if not self._Outlined then
+		-- no special effects, just draw
+		surface.DrawPoly(self._Polies)
+		return
+	end
+
+	draw.BeginMask()
+	draw.Mask()
+		surface.DrawPoly(self._OutlinePolies)
+	draw.DrawOp(1)
+		surface.DrawPoly(self._Polies)
+	draw.FinishMask()
 end
 
 local function ChangeAccessor(k)
