@@ -638,13 +638,6 @@ function NavPanel:AddCustomElement(fr)
 	nb:Add(fr)
 end
 
-function NavPanel:PositionPanel(pnl)
-	local pos, sz = self:GetPositioned()
-
-	pnl:SetPos(unpack(pos))
-	pnl:SetSize(unpack(sz))
-end
-
 function NavPanel:GetPositioned(pnl)
 	return {self.RetractedSize, self.HeaderSize}, 	-- pos
 		{self:GetWide() - self.RetractedSize, 		-- size
