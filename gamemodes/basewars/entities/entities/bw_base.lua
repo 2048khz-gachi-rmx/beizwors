@@ -13,25 +13,16 @@ ENT.IsBaseWars = true
 ENT.Level = 1
 ENT.WantBlink = true
 
-function ENT:Init()
+function ENT:SVInit() end
+function ENT:CLInit() end
+function ENT:SHInit() end
+function ENT:Init() end
 
-end
+function ENT:ThinkFunc() end
+function ENT:UseFunc() end
 
-function ENT:ThinkFunc()
 
-end
-
-function ENT:UseFunc()
-
-end
-
-function ENT:CLInit()
-
-end
-
-function ENT:DerivedDataTables()
-
-end
+function ENT:DerivedDataTables() end
 
 function ENT:ForceUpdate()
 	self.TransmitTime = CurTime()
@@ -63,14 +54,6 @@ function ENT:SetupDataTables()
 	self:DerivedDataTables()
 end
 
-function ENT:IsRebooting()
-	return self:GetRebootTime() ~= 0, self.RebootTime - (CurTime() - self:GetRebootTime())
-end
-
-function ENT:OnChangeGridID(new)
-
-end
-
 function ENT:SHInit()
 
 end
@@ -99,6 +82,7 @@ if SERVER then
 
 		self:Init(me)
 		self:SHInit()
+		self:SVInit()
 
 		self:SetMaxHealth(self:Health())
 
@@ -227,13 +211,9 @@ if SERVER then
 
 else
 
-	function ENT:CLInit()
-
-	end
-
 	function ENT:Initialize()
-		self:CLInit()
 		self:Init()
 		self:SHInit()
+		self:CLInit()
 	end
 end

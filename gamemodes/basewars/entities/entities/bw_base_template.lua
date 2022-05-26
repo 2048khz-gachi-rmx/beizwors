@@ -18,7 +18,7 @@ function ENT:UseFunc() end
 
 function ENT:PreInit() end
 
-function ENT:Init() end
+function ENT:SVInit() end
 function ENT:SHInit() end
 function ENT:CLInit() end
 
@@ -44,7 +44,7 @@ if SERVER then
 		self:PhysWake()
 		self:Activate()
 
-		self:Init(me)
+		self:SVInit(me)
 		self:SHInit()
 	end
 
