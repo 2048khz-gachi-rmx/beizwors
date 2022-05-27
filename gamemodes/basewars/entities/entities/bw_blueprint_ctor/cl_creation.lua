@@ -2,123 +2,6 @@
 Colors.DarkWhite = Color(220, 220, 220) --yes, dark white
 Colors.Blue = Color(60, 140, 200)
 
-local bpmat = Material("__error")
-
-local caches = {}
-local t3c1, t3c2 = Color(4, 12, 8), Color(0.3, 2, 1)
-local t4c1, t4c2 = Color(12, 4, 0), Color(12, 4, 0)
-
-local BlueprintPaints = {
-
-	--[[
-		Tier 1 paint
-	]]
-
-	[1] = function(self, w, h)
-			surface.SetDrawColor(Colors.DarkWhite)
-			surface.DrawMaterial("https://i.imgur.com/zhejG17.png", "bp128.png", w/2 - 36, h/2 - 36, 72, 72)
-	end,
-
-	--[[
-		Tier 2 paint
-	]]
-
-	[2] = function(self, w, h)
-		local x, y = math.floor(w * 0.1), math.floor(h * 0.1)
-		local dw, dh = math.ceil(w - x * 2), math.ceil(h - y * 2)
-		local id = 2
-
-		if caches[id] then
-			surface.SetDrawColor(255, 255, 255)
-			caches[id]:Paint(x, y, dw, dh, true)
-			surface.SetMaterial(bpmat)
-			surface.DrawTexturedRect(x, y, dw, dh)
-		else
-			local hand = BSHADOWS.GenerateCache("bp_tier" .. id, w, h)
-			hand:SetGenerator(function(hand, w, h)
-				surface.SetDrawColor(255, 255, 255)
-				surface.SetMaterial(bpmat)
-				surface.DrawTexturedRect(0, 0, w, h)
-			end)
-
-			caches[id] = hand
-			hand:CacheShadow(1, 6, 8, Colors.DarkGray, Colors.DarkGray)
-		end
-	end,
-
-	--[[
-		Tier 3 paint
-	]]
-
-	[3] = function(self, w, h)
-		local x, y = math.floor(w * 0.1), math.floor(h * 0.1)
-		local dw, dh = math.ceil(w - x * 2), math.ceil(h - y * 2)
-		local id = 3
-
-		if caches[id] then
-			surface.SetDrawColor(255, 255, 255, 110)
-			caches[id]:Paint(x, y, dw, dh, true)
-			surface.SetMaterial(bpmat)
-			surface.SetDrawColor(255, 255, 255)
-			surface.DrawTexturedRect(x, y, dw, dh)
-		else
-			local hand = BSHADOWS.GenerateCache("bp_tier" .. id, w, h)
-			hand:SetGenerator(function(hand, w, h)
-				surface.SetDrawColor(255, 255, 255)
-				surface.SetMaterial(bpmat)
-				surface.DrawTexturedRect(0, 0, w, h)
-			end)
-
-			caches[id] = hand
-			hand:CacheShadow(3, {14, 8}, 8, t3c1, t3c2)
-		end
-	end,
-
-	--[[
-		Tier 4 paint
-	]]
-
-	[4] = function(self, w, h)
-		local x, y = math.floor(w * 0.1), math.floor(h * 0.1)
-		local dw, dh = math.ceil(w - x * 2), math.ceil(h - y * 2)
-		local id = 4
-
-		if caches[id] then
-			surface.SetDrawColor(255, 255, 255)
-			caches[id]:Paint(x, y, dw, dh, true)
-			surface.SetMaterial(bpmat)
-			surface.DrawTexturedRect(x, y, dw, dh)
-		else
-			local hand = BSHADOWS.GenerateCache("bp_tier" .. id, w, h)
-			hand:SetGenerator(function(hand, w, h)
-				surface.SetDrawColor(255, 255, 255)
-				surface.SetMaterial(bpmat)
-				surface.DrawTexturedRect(0, 0, w, h)
-			end)
-
-			caches[id] = hand
-			hand:CacheShadow(3, {18, 12}, 8, t4c1, t4c2)
-		end
-	end,
-
-	--[[
-		Tier 5 paint (no)
-	]]
-
-	[5] = function(self, w, h)
-		local x, y = self:LocalToScreen(0, 0)
-
-		BSHADOWS.BeginShadow(x, y, w, h)
-
-			surface.SetDrawColor(color_white)
-			surface.SetMaterial(bpmat)
-			surface.DrawTexturedRect(w/2 - 40, h/2 - 40, 80, 80)
-
-		BSHADOWS.EndShadow(2, 45, 1, 205, 60, 2, nil, Color(230, 5, 5), Color(170, 1, 1))
-	end,
-}
-
-
 local mats = {	-- "random" will be rendered from an RT as soon as the menu opens
 	random = nil,
 	pistol = nil,
@@ -150,7 +33,7 @@ function ENT:CreateCreationCanvas(menu, inv) -- hm
 	local delta = canv.Delta
 
 	local dtext = delta:AddText("")
-	dtext:SetColor(Colors.DarkWhite)
+	dtext:SetColor(Colors.DarkWhite:Copy())
 	local ptype = dtext:AddFragment("Random")
 	dtext:AddFragment(" Tier ")
 	local ptier = dtext:AddFragment("?")
@@ -179,10 +62,6 @@ function ENT:CreateCreationCanvas(menu, inv) -- hm
 		curcost = newcost
 	end
 
-	local dled = draw.GetMaterial("https://i.imgur.com/zhejG17.png", "bp128.png", nil, function(mat)
-		bpmat = mat
-	end)
-
 	--[[
 		Tier selection
 	]]
@@ -210,7 +89,7 @@ function ENT:CreateCreationCanvas(menu, inv) -- hm
 			local a = self.BPAlpha or 0
 			bp_col.a = a
 
-			surface.SetDrawColor(bp_col)
+			surface.SetDrawColor(bp_col:IAlpha(self.CostPiece.Alpha))
 			surface.DrawMaterial("https://i.imgur.com/zhejG17.png", "bp128.png", w/2 - 72, h - 158, 64, 64)
 			self.Cost:Paint(w/2, h - 150)
 		end
@@ -240,14 +119,15 @@ function ENT:CreateCreationCanvas(menu, inv) -- hm
 		local tier = icons:Add("FButton")
 
 		tier:SetSize(96, 120 - 16)
+
 		if not Inventory.Blueprints.GetCost(i) then
 			tier:SetEnabled(false)
 			tier:SetAlpha(60)
 		end
 
 		function tier:PostPaint(w, h)
-			if BlueprintPaints[i] then
-				BlueprintPaints[i] (self, w, h)
+			if Inventory.BlueprintPaints[i] then
+				Inventory.BlueprintPaints[i] (self, 0, 0, w, h)
 			end
 		end
 
@@ -271,9 +151,9 @@ function ENT:CreateCreationCanvas(menu, inv) -- hm
 
 	function canv:GenerateDetails()
 		cType = vgui.Create("FComboBox", canv)
+		cType:PopIn(0.2, 0.25)
 		cType:SetSortItems(false)
 		cType:CenterHorizontal()
-		cType:PopIn()
 
 		cType.Y = icons.Y + icons:GetTall() + 16 + draw.GetFontHeight(delta:GetFont()) + 16
 		cType:SetSize(160, 40)
@@ -371,7 +251,8 @@ function ENT:CreateCreationCanvas(menu, inv) -- hm
 
 		canv.CostPiece = canv.Cost:AddText("x"):SetColor(Colors.Blue)
 
-		canv.CostPiece.Animation.Length = 0.3
+		canv.CostPiece.Animation.Length = 0.4
+		canv.CostPiece.Animation.Delay = 0.3
 
 		canv.CostFragmentInd, canv.CostFragment = canv.CostPiece:AddFragment(curcost, nil, false)
 
@@ -390,18 +271,23 @@ function ENT:CreateCreationCanvas(menu, inv) -- hm
 		havefrag.Color = have_col
 
 		canv.Cost:CycleNext()
-
+		canv.CostPiece.Animation.Delay = 0
 
 		canv.Begin = vgui.Create("FButton", canv)
 		local btn = canv.Begin
-		btn:SetSize(192, 56)
+		btn:SetSize(256, 48)
 		btn:Center()
+		btn:PopIn(0.2, 0.6)
 		btn.Y = canv:GetTall() - 72
 
-		btn.Font = "OSB36"
+		btn.Font = "EX28"
 		btn.Label = "Begin!"
+		btn.DisableFontHack = true
 
 		function btn:Think()
+			local can = LocalPlayer():HasPerkLevel("blueprints", SelectedTier - 1)
+
+			self.Label = "Begin!"
 			canv.HasBlueprintsAmt = Inventory.Util.GetItemCount(LocalPlayer().Inventory.Backpack, "blank_bp")
 
 			local _, frag = canv.CostPiece:ReplaceText(haveind, format:format(canv.HasBlueprintsAmt))
@@ -414,17 +300,21 @@ function ENT:CreateCreationCanvas(menu, inv) -- hm
 
 			canv.HasEnough = canv.HasBlueprintsAmt >= curcost
 
-			if canv.HasEnough then
+			if can and canv.HasEnough then
 				self:SetColor(50, 150, 250)
-				LC(canv.CostFragment.Color, Colors.Blue, 15)
-
 				self:SetEnabled(true)
+				LC(canv.CostFragment.Color, Colors.Blue, 15)
 			else
-				local grey = Colors.Button
 				self:SetColor()
-				LC(canv.CostFragment.Color, Colors.DarkerRed, 15)
-
 				self:SetEnabled(false)
+
+				LC(canv.CostFragment.Color, canv.HasEnough and Colors.Blue or Colors.DarkerRed, 15)
+
+				if not can then
+					self.Label = "Research required!"
+				elseif not canv.HasEnough then
+					-- ?
+				end
 			end
 		end
 
@@ -442,6 +332,8 @@ function ENT:CreateCreationCanvas(menu, inv) -- hm
 		if not cycled then
 			delta:CycleNext()
 			dtext.Fragments[ptier].Text = tier
+			dtext.Alpha = 0
+			self:MemberLerp(dtext, "Alpha", 255, 0.6, 0, 0.3)
 			cycled = true
 		else
 

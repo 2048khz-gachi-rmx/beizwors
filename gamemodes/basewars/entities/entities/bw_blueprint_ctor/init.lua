@@ -112,6 +112,12 @@ net.Receive("BlueprintConstructor", function(_, ply)
 	local tier = net.ReadUInt(4)
 	local type = net.ReadString()
 
+	local can = ply:HasPerkLevel("blueprints", tier - 1)
+	if not can then
+		print("player has no research for tier ", tier)
+		return
+	end
+
 	print("attempting to create tier, type:", tier, type)
 
 	local base_cost = Inventory.Blueprints.Costs[tier]

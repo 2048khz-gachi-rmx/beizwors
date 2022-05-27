@@ -18,6 +18,7 @@ function MAP:Init()
 	map:Dock(FILL)
 
 	map.Paint = MAP.PaintMap
+	map.PaintOver = MAP.PaintOverMap
 	--map.OnMouseReleased = MAP.OnMapReleased
 	map.Think = MAP.MapThink
 
@@ -28,6 +29,7 @@ function MAP:Init()
 	canv:Center()
 
 	canv.Paint = MAP.PaintCanvas
+
 	canv.OnMousePressed = MAP.OnCanvasPressed
 	canv.OnMouseWheeled = MAP.OnCanvasWheeled
 
@@ -415,6 +417,14 @@ function MAP:PaintMap(w, h)
 
 	surface.SetDrawColor(0, 0, 0)
 	self:DrawGradientBorder(w, h, 3, 3, nil, false)
+
+	local sx, sy = self:LocalToScreen(0, 0)
+
+	render.PushScissorRect(sx, sy, sx + w, sy + h)
+end
+
+function MAP:PaintOverMap()
+	render.PopScissorRect()
 end
 
 local col = {}

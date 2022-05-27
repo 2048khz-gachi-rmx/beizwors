@@ -56,6 +56,8 @@ function PERK:Paint(w, h)
 
 		self.Icon:Paint(w / 2, h / 2, w * iw, h * ih)
 	end
+
+	self.Level:Emit("PostPaint", self, w, h)
 end
 
 function PERK:SetLevel(level)

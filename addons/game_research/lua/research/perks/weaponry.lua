@@ -191,3 +191,5 @@ end)
 if CLIENT then
 	include("weaponry_cl_ext.lua")
 end
+
+file.ForEveryFile("research/perks/weaponry_ext/*", "LUA", IncludeCS)

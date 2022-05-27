@@ -1,8 +1,8 @@
-local perk = Research.Perk or Object:callable()
+local perk = Research.Perk or Emitter:callable()
 Research.Perk = perk
 perk.IsResearchPerk = true
 
-local level = Research.PerkLevel or Object:callable()
+local level = Research.PerkLevel or Emitter:callable()
 Research.PerkLevel = level
 level.IsResearchPerkLevel = true
 
