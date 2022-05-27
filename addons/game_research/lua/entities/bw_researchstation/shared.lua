@@ -38,3 +38,16 @@ function ENT:DerivedDataTables()
 	self:NetworkVar("Float", 1, "RSTime")
 	self:NetworkVar("Float", 2, "RSProgress")
 end
+
+function ENT:IsResearching()
+	if self:GetRSPerk() == "" then return false end
+	return not self:FinishedResearching()
+end
+
+function ENT:FinishedResearching()
+	if CLIENT then
+		return self:GetResearchFrac() == 1
+	end
+
+	return self.Finished
+end

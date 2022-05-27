@@ -67,6 +67,24 @@ function ENT:RequestFinish(ply)
 	return true
 end
 
+function ENT:PlayBegin()
+	if self.PlayedBegin then return end
+	self.PlayedBegin = true
+
+	self:EmitSound("grp/research/begin.mp3", 75)
+
+	-- actually should begin at 3.05 but lets be safe
+	self:Timer("LoopBegin", 2.8, 1, function()
+
+		self.LoopSound = CreateSound(self, "grp/research/loop.mp3")
+		self:Timer("IHateSource", 28, "0", function()
+			self.LoopSound:Stop()
+			self.LoopSound:Play()
+		end)
+		self.LoopSound:Play()
+	end)
+end
+
 function ENT:StartResearch(perk, level)
 	self:SetRSPerk(perk:GetID())
 	self:SetRSLevel(level:GetLevel())
@@ -78,32 +96,45 @@ function ENT:StartResearch(perk, level)
 	self.TimeResearching = 0
 	self.NeedTime = level:GetResearchTime()
 
-	-- actually should begin at 3.05 but lets be safe
-
-	self:EmitSound("grp/research/begin.mp3", 75)
-
-	timer.Simple(2.8, function()
-		-- HOLY CHRIST BRO IF ITS "PARENTED" TO THE ENTITY THEN WHY DOES REMOVING IT
-		-- NOT STOP THE SOUND I HATE GMOD I HATE GMOD
-		self.LoopSound = CreateSound(self, "grp/research/loop.mp3")
-		self:Timer("IHateSource", 28, "0", function()
-			self.LoopSound:Stop()
-			self.LoopSound:Play()
-		end)
-		self.LoopSound:Play()
-	end)
+	if self:IsPowered() then
+		self:PlayBegin()
+	end
 end
 
-function ENT:OnCompletedResearch()
+function ENT:KillSound()
 	if self.LoopSound then
 		self.LoopSound:Stop()
 		self:RemoveTimer("IHateSource")
 	end
 
-	self:EmitSound("grp/research/die.mp3", 75)
+	self:RemoveTimer("LoopBegin")
+	self:EmitSound("grp/research/rdie.mp3", 75)
+end
+
+function ENT:OnCompletedResearch()
+	self:KillSound()
+end
+
+function ENT:OnPower()
+	if not self.PlayedBegin and self:IsResearching() then
+		self:PlayBegin()
+	end
+
+	self:Think()
+end
+
+function ENT:OnUnpower()
+	if self:IsResearching() then
+		self:KillSound()
+		self.PlayedBegin = false
+	end
+
+	self:Think()
 end
 
 function ENT:OnRemove()
+	-- HOLY CHRIST BRO IF ITS "PARENTED" TO THE ENTITY THEN
+	-- WHY DOES REMOVING IT NOT STOP THE SOUND I HATE GMOD I HATE GMOD
 	if self.LoopSound then self.LoopSound:Stop() end
 end
 

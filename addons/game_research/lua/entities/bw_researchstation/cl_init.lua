@@ -19,13 +19,11 @@ function ENT:DrawDisplay(aMult)
 	local dots
 	tempCol:Set(color_white)
 
-
-	if self:GetRSPerk() ~= "" then
+	if self:IsResearching() then
 		local perk = Research.GetPerk(self:GetRSPerk())
+
 		if not perk then
 			tx = "WTF? " .. self:GetRSPerk()
-		elseif self:GetResearchFrac() == 1 then
-			tx = "Research complete!"
 		else
 			if self:IsPowered() then
 				tx = "Researching " .. perk:GetName()
@@ -36,6 +34,13 @@ function ENT:DrawDisplay(aMult)
 				tempCol.a = 40 + math.random() * 30
 			end
 		end
+
+	elseif self:FinishedResearching() then
+		tx = "Research complete!"
+		tempCol:Set(Colors.Sky)
+		tempCol:MulHSV(1, 0.3, 1.5)
+	elseif not self:IsPowered() then
+		tempCol.a = 40 + math.random() * 30
 	end
 
 	tempCol.a = tempCol.a * aMult
