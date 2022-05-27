@@ -506,7 +506,7 @@ function button:Draw(w, h)
 
 		self:PreLabelPaint(w, h)
 
-		local THIS_IS_SUCH_A_SHITTY_HACK = t.Font:sub(1, 2) == "EX" and 0.125 * (ay / 2) or 0
+		local THIS_IS_SUCH_A_SHITTY_HACK = not t.DisableFontHack and t.Font:sub(1, 2) == "EX" and 0.125 * (ay / 2) or 0
 
 		if newlines > 0 then
 			surface.SetFont(t.Font)
