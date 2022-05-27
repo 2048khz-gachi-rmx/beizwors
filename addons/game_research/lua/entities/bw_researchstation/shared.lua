@@ -14,6 +14,9 @@ ENT.Model = "models/grp/computers/supercomputer_01.mdl"
 ENT.Skin = 0
 ENT.ResearchComputer = true
 
+ENT.IdleConsumption = 10
+ENT.BusyConsumption = 100
+
 function ENT:DerivedDataTables()
 	self:NetworkVar("String", 0, "RSPerk")
 	self:NetworkVar("Int", 2, "RSLevel")

@@ -21,6 +21,8 @@ function ENT:Init()
 	self.LastPwThink = CurTime()
 	self.TimeResearching = 0
 	self.NeedTime = 0
+
+	self:SetConsumption(self.IdleConsumption)
 end
 
 function ENT:Use(ply, a, b, c)
@@ -57,6 +59,8 @@ function ENT:FinishResearch()
 	self:SetRSPerk("")
 	self:SetRSLevel(0)
 	self:SetRSProgress(0)
+
+	self:EmitSound("grp/research/complete_oops.mp3", 85)
 end
 
 function ENT:RequestFinish(ply)
@@ -95,10 +99,13 @@ function ENT:StartResearch(perk, level)
 	self.Finished = false
 	self.TimeResearching = 0
 	self.NeedTime = level:GetResearchTime()
+	self.PlayedBegin = false
 
 	if self:IsPowered() then
 		self:PlayBegin()
 	end
+
+	self:SetConsumption(self.BusyConsumption)
 end
 
 function ENT:KillSound()
@@ -107,12 +114,15 @@ function ENT:KillSound()
 		self:RemoveTimer("IHateSource")
 	end
 
+	self:StopSound("grp/research/begin.mp3")
+
 	self:RemoveTimer("LoopBegin")
-	self:EmitSound("grp/research/rdie.mp3", 75)
+	self:EmitSound("grp/research/die_oops.mp3", 75)
 end
 
 function ENT:OnCompletedResearch()
 	self:KillSound()
+	self:SetConsumption(self.IdleConsumption)
 end
 
 function ENT:OnPower()
