@@ -37,7 +37,8 @@ hook.Add("PlayerAuthed", "Research", function(ply)
 	ply:FetchResearch()
 end)
 
-hook.Add("PlayerResearched", "Store", function(pin, perk, lv)
+function Research.SaveResearch(what)
+	local pin = GetPlayerInfoGuarantee(what)
 	local json = util.TableToJSON(pin:GetResearchedPerks())
 
 	local q = "REPLACE INTO `research` (puid, perks) VALUES(%s, %s)"
@@ -45,6 +46,10 @@ hook.Add("PlayerResearched", "Store", function(pin, perk, lv)
 
 	MySQLQuery(db:query(q), true)
 		:Catch(mysqloo.CatchError)
+end
+
+hook.Add("PlayerResearched", "Store", function(pin, perk, lv)
+	Research.SaveResearch(pin)
 end)
 
 mysql.OnConnect(function()

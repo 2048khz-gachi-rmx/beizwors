@@ -58,3 +58,23 @@ function Research.ResearchLevel(what, lv)
 
 	hook.Run("PlayerResearched", pin, lv:GetPerk(), lv)
 end
+
+function Research.Unresearch(ply, lv)
+	assert(Research.IsPerkLevel(lv))
+
+	local pin = GetPlayerInfoGuarantee(ply)
+	local perk = lv:GetPerk():GetID()
+
+	assert(perk, "no perk?")
+
+	if pin:GetPlayer() then
+		pin:GetPlayer():GetResearchedPerks()[perk] = lv:GetLevel() - 1
+
+		if lv:GetLevel() - 1 == 0 then
+			pin:GetPlayer():GetResearchedPerks()[perk] = 0
+		end
+	end
+
+	Research.SaveResearch(pin)
+	pin:NetworkResearch()
+end

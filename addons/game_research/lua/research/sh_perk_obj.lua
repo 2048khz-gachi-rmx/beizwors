@@ -114,7 +114,7 @@ function level:Initialize(lv)
 	self:SetReqs({ Items = {} })
 	self:SetPrereqs({})
 	self:SetNameFragments({})
-	self:SetResearchTime(6)
+	self:SetResearchTime(15)
 
 	self._pos = {0, 0}
 end
