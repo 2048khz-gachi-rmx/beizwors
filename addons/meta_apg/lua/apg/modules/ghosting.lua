@@ -304,7 +304,7 @@ APG.hookAdd( mod, "OnEntityCreated", "APG_noCollideOnCreate", function( ent )
 	ent.APG_spawnedCollisionGroup = ent:GetCollisionGroup() -- have to set it before it's ghosted
 
 	timer.Simple( 0, function()
-		if not ent then return end
+		if not ent:IsValid() then return end
 		if not ent:IsSolid() then return end -- Don't ghost ghosts.
 
 		local spawnedEnt = tostring(ent)
@@ -319,7 +319,7 @@ APG.hookAdd( mod, "OnEntityCreated", "APG_noCollideOnCreate", function( ent )
 	end)
 
 	timer.Simple( 0, function()
-		if not ent then return end
+		if not ent:IsValid() then return end
 		if not ent:IsSolid() then return end -- Don't ghost ghosts.
 
 		local owner = APG.getOwner( ent )
