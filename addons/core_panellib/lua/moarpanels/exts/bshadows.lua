@@ -147,7 +147,8 @@ end
 
 function handle:CacheRet(...) -- cache only if generator never returned true before
 	if self._retOk then return end
-	self._retOk = self:CacheShadow(...)
+	local ret = self:CacheShadow(...)
+	self._retOk = ret == nil or ret
 end
 
 local amult
@@ -247,8 +248,14 @@ local function unscissor()
 	render.SetScissorRect(0, 0, 0, 0, false)
 end
 
+local radar = false
 
 BSHADOWS.CacheShadow = function(intensity, spread, blur, opacity, direction, distance, color, color2)
+
+	if radar then
+		print("cached shadow:", debug.Trace())
+	end
+
 	opacity = opacity or 255
 	direction = direction or 0
 	distance = distance or 0
@@ -319,8 +326,6 @@ BSHADOWS.CacheShadow = function(intensity, spread, blur, opacity, direction, dis
 	started = started - 1
 	cam.End2D()
 end
-
-local radar = false
 
 --This will draw the shadow, and mirror any other draw calls the happened during drawing the shadow
 BSHADOWS.EndShadow = function(intensity, spread, blur, opacity, direction, distance, _shadowOnly, color, color2)
