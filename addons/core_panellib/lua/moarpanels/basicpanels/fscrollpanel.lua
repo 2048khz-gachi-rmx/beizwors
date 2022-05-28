@@ -69,6 +69,17 @@ function FScrollPanel:Init()
 	self.NoDraw = false
 end
 
+ChainAccessor(FScrollPanel, "NoDraw", "NoDraw")
+local function inv(f)
+	return function(self, b, ...) f(self, not b, ...) end
+end
+
+
+ChainAccessor(FScrollPanel, "NoDraw", "ShouldPaint")
+ChainAccessor(FScrollPanel, "NoDraw", "ShouldDraw")
+
+FScrollPanel.SetShouldPaint = inv(FScrollPanel.SetNoDraw)
+FScrollPanel.SetShouldDraw = inv(FScrollPanel.SetNoDraw)
 
 function FScrollPanel:Draw(w, h)
 	local sx, sy = self:LocalToScreen(0, 0)

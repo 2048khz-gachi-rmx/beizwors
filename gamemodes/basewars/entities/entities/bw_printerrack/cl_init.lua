@@ -28,9 +28,14 @@ function ENT:GetMiscPos()
 
 end
 
-local scaleH = { --bool = scaled down or not
-	[false] = 72,
-	[true] = 60
+-- bool = scaled down or not
+-- there's a pretty big issue where if the panel is too tall
+-- it'll just get clipped by screen bounds because source engine
+-- try to avoid making the thing very tall
+
+local scaleH = {
+	[false] = 64,
+	[true] = 56
 }
 
 -- autorefresh
@@ -56,6 +61,7 @@ local function CreateFrame(ent)
 	f:DockPadding(16, 64, 16, 16)
 	f.ScaleDown = ScrH() < 800
 	f.Shadow = false
+	f:Bind(ent)
 
 	local holding = vgui.Create("DLabel", f)
 	holding:SetFont("EXSB48")
@@ -64,9 +70,7 @@ local function CreateFrame(ent)
 	holding:Dock(TOP)
 	holding:SetContentAlignment(5)
 
-
-	local col = vgui.Create("FButton", f)
-	col.UseSFX = true
+	local btns
 
 	f:On("Think", function(self)
 		if not IsValid(ent) then
@@ -88,9 +92,14 @@ local function CreateFrame(ent)
 		if not clip then DisableClipping(false) end
 	end
 
+	local function isScaleDown()
+		return ScrH() < 800
+	end
+
+
 	function f:PostPaint(w,h)
 		draw.SimpleText("Printer Rack", "EXSB48", w/2, 24, color_white, 1, 1)
-		self.ScaleDown = ScrH() < 800
+		self.ScaleDown = isScaleDown()
 
 		local desH = scaleH[self.ScaleDown]
 		local money = 0
@@ -103,10 +112,10 @@ local function CreateFrame(ent)
 			end
 		end
 
-		col:SetTall(desH * 1.25)
+		btns:SetTall(desH)
 
 		local nt = "Holding: " .. Language("Price", money)
-		
+
 		if nt ~= holding:GetText() then
 			holding:SetText(nt)
 			holding:InvalidateLayout(true)
@@ -114,17 +123,25 @@ local function CreateFrame(ent)
 	end
 	ent.Frame = f
 
-	col:SetSize(450, 120)
-	col:DockMargin(150, 24, 150, 0)
-	col:Dock(TOP)
-	col:SetZPos(32766)
+	btns = vgui.Create("InvisPanel", f)
+	btns:Dock(TOP)
+	btns:SetZPos(32766)
+	btns:SetSize(0, scaleH[isScaleDown()])
+	btns:DockMargin(64, 28, 64, 0)
+	btns:InvalidateParent(true)
+
+	local col = vgui.Create("FButton", btns)
+	col.UseSFX = true
+	col:SetSize(btns:GetWide() * 0.5 - 24, 120)
+	col:Dock(LEFT)
 	col.RaiseHeight = 4
 
 	local color = Color(90, 180, 90)
 
 	function col:Think()
 		if not IsValid(ent) then return end
-		if ent:BW_GetOwner() ~= LocalPlayer():GetPInfo() then
+
+		if not ent:BW_IsOwner(CachedLocalPlayer()) then
 			self:SetColor(Colors.Button)
 		else
 			self:SetColor(color)
@@ -139,8 +156,34 @@ local function CreateFrame(ent)
 	end
 
 	col.Label = "Collect"
-	col.Font = "EXSB64"
+	col.Font = "EX48"
 	col.DrawShadow = false
+
+	local mods = vgui.Create("FButton", btns)
+	mods.UseSFX = true
+	mods:SetSize(col:GetWide(), 120)
+	mods:Dock(RIGHT)
+	mods.RaiseHeight = 4
+
+	local color = Color(90, 180, 90)
+
+	function mods:Think()
+		if not IsValid(ent) then return end
+		if not ent:BW_IsOwner(CachedLocalPlayer()) then
+			self:SetColor(Colors.Button)
+		else
+			self:SetColor(Colors.Sky)
+		end
+	end
+
+	function mods:DoClick()
+		ent:Mod_OpenMenu()
+	end
+
+	mods.Label = "Modules"
+	mods.Font = "EX48"
+	mods.DrawShadow = false
+
 	return f
 end
 
@@ -387,6 +430,38 @@ function ENT:Draw()
 	vgui.Start3D2D( pos, ang, scale )
 		self.Frame:Paint3D2D()
 	vgui.End3D2D()
+end
+
+local mods = {
+	{
+		"Overclocker",
+		"Increases yield for every printer in this rack.",
+	}, {
+		"Thing",
+		"Something else"
+	}
+}
+function ENT:Mod_GenerateCompatible(f, scr, ipnl)
+
+	for _, dat in ipairs(mods) do
+		local hd = scr:Add("DLabel")
+			hd:SetText(dat[1])
+			hd:Dock(TOP)
+			hd:SetFont("EXSB28")
+			hd:SetTextColor(color_white)
+			hd:SizeToContentsY()
+			hd:SetContentAlignment(5)
+
+		local desc = scr:Add("DLabel")
+			desc:SetMultiline(true)
+			desc:Dock(TOP)
+			desc:SetFont("EX20")
+			desc:SetText(dat[2])
+			desc:SetTextColor(Colors.DarkerWhite)
+			desc:SetWrap(true)
+			desc:SetAutoStretchVertical(true)
+			desc:DockMargin(0, 0, 0, 16)
+	end
 end
 
 --easylua.EndEntity("bw_printerrack")

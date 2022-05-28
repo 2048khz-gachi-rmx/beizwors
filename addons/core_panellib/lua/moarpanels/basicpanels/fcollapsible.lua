@@ -8,6 +8,7 @@ CAT.ButtonHeight = 24
 ChainAccessor(CAT, "ExpandEase", "ExpandEase")
 ChainAccessor(CAT, "ExpandTime", "ExpandTime")
 ChainAccessor(CAT, "Expanded", "Expanded")
+ChainAccessor(CAT, "ExpandHeight", "ExpandHeight")
 
 ChainAccessor(CAT, "_btn", "Button")
 ChainAccessor(CAT, "_canv", "Canvas")
@@ -37,11 +38,15 @@ function CAT:PerformLayout()
 	local ch = self._canv:GetChildren()
 	local my = 0
 
-	for k,v in ipairs(ch) do
-		my = math.max(my, v.Y + v:GetTall())
-	end
+	local dp = self._canv:GetDockPadding()
 
-	my = my + self._canv:GetDockPadding()
+	if not self:GetExpandHeight() then
+		for k,v in ipairs(ch) do
+			my = math.max(my, v.Y + v:GetTall() + dp)
+		end
+	else
+		my = self:GetExpandHeight()
+	end
 
 	self._canv:SetSize(self:GetWide(), my)
 end
