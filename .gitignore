@@ -12,7 +12,9 @@
 !lua/autorun/**
 !lua/useful/**
 
+
 !cfg/**
+cfg/autoexec_gitignore.cfg
 
 # modified core files
 !lua/includes/**
