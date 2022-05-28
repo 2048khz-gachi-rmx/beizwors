@@ -124,7 +124,7 @@ for k,v in pairs(base_att.Levels) do
 	local i = k - 1
 
 	local level = base_att:AddLevel(k)
-	level:SetPos(i * 2, 0)
+	level:SetPos(1 + i * 1.5, 0)
 	if CLIENT then level:SetIcon(CLIENT and Icons.Plus) end
 	level:SetDescription(v.Description)
 	if v.Reqs then

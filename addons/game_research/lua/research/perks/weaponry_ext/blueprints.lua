@@ -30,7 +30,7 @@ for i=1, #reqs do
 		"Tier " .. t .. " Blueprint Unlock"
 	})
 
-	lv:SetPos(0, -2 - n * 2)
+	lv:SetPos(0, -1 - n * 2)
 	lv:SetRequirements(reqs[i])
 
 	lv:SetDescription(function()
