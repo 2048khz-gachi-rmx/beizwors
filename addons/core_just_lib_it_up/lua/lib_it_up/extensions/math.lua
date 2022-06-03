@@ -59,6 +59,58 @@ function math.Sort(...)
 	return unpack(temp)
 end
 
+local st = 0
+
+local stepIter = function(dat, cur)
+	cur = cur + dat[2]
+	if cur > dat[1] then return end
+
+	st = math.floor(cur / dat[2])
+
+	return cur, math.min(dat[1], cur + dat[2] - 1)
+end
+
+function getStep()
+	return st
+end
+
+function steps(n, step, start, safe)
+	if safe then
+		if step == 0 then
+			errorf("bad step (=0)")
+			return
+		end
+
+		if start < n and step <= 0 then
+			errorf("bad step (start (%s) < n (%s) but step isn't positive (%s))", start, n, step)
+			return
+		end
+
+		if start > n and step >= 0 then
+			errorf("bad step (start (%s) > n (%s) but step isn't negative (%s))", start, n, step)
+			return
+		end
+	else
+		if start < n and step <= 0 then return BlankFunc end
+		if start > n and step >= 0 then return BlankFunc end
+	end
+
+	return stepIter, {n, step}, (start and start - step) or -step
+end
+
+function math.ToSteps(n, step)
+	local t = {}
+	for i=1, math.floor(n / step) do
+		t[i] = step
+	end
+
+	if n % step > 0 then
+		t[#t + 1] = n % step
+	end
+
+	return t
+end
+
 local funcs = { math.ceil, math.floor, math.Round }
 
 function math.Multiple(num, of, up, down)

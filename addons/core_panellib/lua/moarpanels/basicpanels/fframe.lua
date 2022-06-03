@@ -22,9 +22,15 @@ PANEL.HeaderSize = 32
 
 
 function PANEL:GetPositioned(pnl)
-	return {self.RBRadius, self.HeaderSize + self.RBRadius}, 	-- pos
-		{self:GetWide() - self.RBRadius * 2, 		-- size
-		self:GetTall() - self.HeaderSize - self.RBRadius * 2}
+	local l, t, r, b = self:GetDockPadding()
+
+	return { -- pos
+		l,
+		t,
+	}, { -- size
+		self:GetWide() - l - r,
+		self:GetTall() - t - b,
+	}
 end
 
 function PANEL:PositionPanel(pnl)

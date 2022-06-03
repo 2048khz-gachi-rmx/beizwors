@@ -127,6 +127,10 @@ function vgui.Position(marg, ...)
 		x = x + marg + v:GetWide()
 	end
 
+	if #pnls > 0 then
+		x = x - marg
+	end
+
 	return out, x
 end
 
