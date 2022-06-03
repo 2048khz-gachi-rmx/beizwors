@@ -156,3 +156,17 @@ function hook.NHRun(ev, ...)
 		return true, a, b, c, d, e, f
 	end
 end
+
+
+function hook.NHAllRun(ev, ...)
+	local evs = hook.GetTable()[ev]
+	if not evs then return end
+
+	for id, fn in pairs(evs) do
+		local ok, a, b, c, d, e, f = xpcall(fn, errNH, ...)
+
+		if ok and a ~= nil then
+			return a, b, c, d, e, f
+		end
+	end
+end

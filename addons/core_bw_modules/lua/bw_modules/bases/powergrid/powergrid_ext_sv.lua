@@ -199,7 +199,7 @@ function pg:PowerEnt(ent)
 	ent:SetPowered(true)
 
 	if ent.OnPower then
-		ent:OnPower()
+		xpcall(ent.OnPower, GenerateErrorer("PGrid.Power"), ent)
 	end
 end
 
@@ -210,7 +210,7 @@ function pg:UnpowerEnt(ent)
 	ent:SetPowered(false)
 
 	if ent.OnUnpower then
-		ent:OnUnpower()
+		xpcall(ent.OnUnpower, GenerateErrorer("PGrid.Unpower"), ent)
 	end
 end
 
