@@ -75,6 +75,7 @@ function ENT:CanToBuf(ply, itm, fromInv)
 end
 
 function ENT:AllowInteract(inv, ply, act, ...)
+	if not self:BW_IsOwner(ply) then return false end
 	if ply:Distance(self) > 192 then return false end
 	if not ply:Alive() then return false end
 
