@@ -106,7 +106,7 @@ function ENT:FillReqsPanel(reqs, itm)
 			surface.DrawText(": ")
 
 			surface.SetTextColor(self.Color)
-			surface.DrawText("x" .. reqAmt)
+			surface.DrawText(eval(base.GetAmountString or "x" .. reqAmt, reqAmt))
 		end
 		--[[local dt = DeltaText():SetFont(dtFont)
 		local base = Inventory.Util.GetBase(reqID)

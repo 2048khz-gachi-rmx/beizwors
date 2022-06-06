@@ -152,8 +152,6 @@ function OrePanel:PaintOreText(w, h, vein, ores)
 	local y = self.OriginalHeight + 4
 
 	for k,v in pairs(ores) do
-
-
 		local ore, amt = v.ore, v.amt
 		local tx = tx_template:format(ore:GetName(), amt)
 
@@ -162,7 +160,7 @@ function OrePanel:PaintOreText(w, h, vein, ores)
 		surface.SetTextPos(w/2 - tw/2, y)
 		surface.DrawText(ore:GetName() .. ":  ")
 		surface.SetTextColor(color_white)
-		surface.DrawText("x" .. amt)
+		surface.DrawText(ore:GetAmountString(amt))
 		y = y + th
 	end
 
