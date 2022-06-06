@@ -75,6 +75,8 @@ function getStep()
 end
 
 function steps(n, step, start, safe)
+	start = start or 0
+
 	if safe then
 		if step == 0 then
 			errorf("bad step (=0)")

@@ -157,6 +157,28 @@ function ENTITY:GetBodygroupsSet()
 	return table.concat(bgs)
 end
 
+local lookup = {}
+
+function ENTITY:SetBGName(name, val)
+	local bglk = lookup[self:GetModel()]
+	if not bglk then
+		local t = {}
+		lookup[self:GetModel()] = t
+		bglk = t
+
+		for k,v in ipairs(self:GetBodyGroups()) do
+			t[v.name] = v
+		end
+	end
+
+	local dat = bglk[name]
+	if dat then
+		self:SetBodygroup(dat.id, val)
+	else
+		errorNHf("unknown bodygroup: %s", name)
+	end
+end
+
 function ENTITY:Unsubscribe(ply)
 	local my_subs = ent_subs[self]
 

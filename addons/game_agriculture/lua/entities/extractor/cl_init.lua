@@ -14,55 +14,61 @@ function ENT:DrawInit()
 	self.DrawInitialized = true
 end
 
+-- dear god.
+function ENT:Bucket()
+	if IsValid(self._bukkit) then return self._bukkit end
+
+	local b = ClientsideModel("models/craphead_scripts/the_cocaine_factory/utility/bucket.mdl",
+		RENDERGROUP_OPAQUE)
+	b:SetNoDraw(true)
+	b:SetBodygroup(1, 1)
+	b:SetParent(self)
+	self._bukkit = b
+
+	return b
+end
+
 local scale3d = 0.03
 
 function ENT:GetDisplaySize()
 	return math.floor(286 * (0.05 / scale3d)), math.floor(323 * (0.05 / scale3d))
 end
 
-
-function ENT:DrawDisplay(a, dist)
-	local w, h = self:GetDisplaySize()
-
-	--[[surface.SetDrawColor(0, 0, 0, 255)
-	surface.DrawRect(0, 0, w, h)
-
-	surface.SetDrawColor(30, 30, 30, 150)
-	surface.DrawRect(2, 2, w - 4, h - 4)]]
-
-	if a == 0 then return end
-
-end
-
 local pt = Vector(19.82, -7.100080, 51.3)
+local bucketPos = Vector(11, 17.4, 27.003067016602)
+
 local ptFuck = Vector(pt)
 local ptAng = Angle("0.000 90.000 59.310")
 
 local axis = Vector()
 
 function ENT:Draw()
+	self:FrameAdvance()
+
+	local bk = self:Bucket()
+	local fr = self:GetCocainerFr() + self:GetProgress() * 10
+
+	bk:SetPos(self:LocalToWorld(bucketPos))
+	bk:SetAngles(self:GetAngles())
+	bk:SetNoDraw(false)
+	bk:DrawModel()
+	bk:SetNoDraw(true)
+	bk:SetPoseParameter("cocaine", fr)
+
+	local pp = self:GetPoseParameter("gauge") * 100
+	self:SetPoseParameter("gauge", fr)
+
+	local from = self:GetWorking() and 0 or 1
+	local to = 1 - from
+	local switchFr = Ease(math.RemapClamp(CurTime(), self:GetWorkChanged(), self:GetWorkChanged() + 0.2, from, to) or 0, 3)
+	self:SetPoseParameter("switch", switchFr * 100)
+
+	if fr - pp > 5 then -- server/client diff because server doesnt handle poseparams
+		self:InvalidateBoneCache()
+	end
+
 	self:DrawModel()
 	self:DrawInit()
-
-	if halo.RenderedEntity() == self then return end
-
-	local pos, ang = self:LocalToWorld(pt), self:LocalToWorldAngles(ptAng)
-	local dist = EyePos():DistToSqr(pos)
-	local a = self._a or 1
-
-	if dist > 0x5000 then
-		an:MemberLerp(self, "_a", 0, 0.3, 0, 3)
-	else
-		an:MemberLerp(self, "_a", 1, 0.2, 0, 0.5)
-	end
-
-	if dist > 0x1000 then
-		pos:Add(ang:ToUp(axis):CMul(0.2))
-	end
-
-	cam.Start3D2D(pos, ang, scale3d)
-		xpcall(self.DrawDisplay, GenerateErrorer("AgricultureGrower"), self, a, dist)
-	cam.End3D2D()
 end
 
 function ENT:CreateSlot(invIn, invOut, i)
@@ -113,13 +119,13 @@ function ENT:DoGrowMenu(open, nav, inv)
 	local invIn = vgui.Create("InventoryPanel", canv)
 	invIn.NoPaint = true
 	invIn:EnableName(false)
-	--invIn:SetShouldPaint(false)
+	invIn:SetShouldPaint(false)
 	invIn:SetInventory(self.In)
 
 	local invOut = vgui.Create("InventoryPanel", canv)
 	invOut.NoPaint = true
 	invOut:EnableName(false)
-	--invOut:SetShouldPaint(false)
+	invOut:SetShouldPaint(false)
 	invOut:SetInventory(self.Out)
 
 
@@ -160,10 +166,10 @@ function ENT:DoGrowMenu(open, nav, inv)
 
 	poses, tW = vgui.Position(slotPad, unpack(sOuts))
 	invOut:SetSize(tW + slotPad * 2, slotSize)
-	invOut:SetPos(0, invOut:GetParent():GetTall() - invOut:GetTall() - slotPad)
+	invOut:SetPos(invIn:GetWide() / 2 - invOut:GetWide() / 2, invOut:GetParent():GetTall() - invOut:GetTall() - slotPad)
 
 	for k,v in pairs(poses) do
-		k:SetPos(v, 0)
+		k:Center()
 	end
 
 	local arr = Icons.Arrow:Copy()
@@ -207,6 +213,85 @@ function ENT:DoGrowMenu(open, nav, inv)
 			arr:Paint(x + w / 2, yConv + h - iSz / 2, iSz, iSz, -90)
 		render.PopScissorRect()
 	end)
+
+	for k,v in pairs(sIns) do
+		v:On("FastAction", "Send", function(self, why)
+			local itm = self:GetItem(true)
+			if not itm or not itm:GetBase() then return end
+
+			LocalPlayer():GetBackpack()
+				:RequestPickup(itm)
+		end)
+	end
+
+	for k,v in pairs(sOuts) do
+		v:On("FastAction", "Send", function(self, why)
+			local itm = self:GetItem(true)
+			if not itm or not itm:GetBase() then return end
+
+			LocalPlayer():GetBackpack()
+				:RequestPickup(itm)
+		end)
+	end
+
+	for k,v in pairs(inv:GetSlots()) do
+		v:On("FastAction", "Send", function(self, why)
+			local itm = self:GetItem(true)
+			if not itm or not itm:GetBase() or itm:GetBase():GetItemName() ~= ent.IngredientTakes then return end
+
+			local amt = itm:GetAmount()
+			local mx = itm:GetMaxStack()
+			local slots = 4
+
+			local toStk = {}
+			local its = {}
+
+			for i=1, 4 do
+				its[i] = sIns[i]:GetItem()
+			end
+
+			for i=1, amt do -- THIS SUCKS
+				local min, sel = math.huge, 0
+				for s=1, slots do
+					local cur = (its[s] and its[s]:GetAmount() or 0) + (toStk[s] or 0)
+					if cur < min then
+						min = cur
+						sel = s
+					end
+				end
+
+				if min >= mx then break end
+
+				local cItm = its[sel]
+				local can
+
+				if not cItm then
+					toStk[sel] = (toStk[sel] or 0) + 1
+					continue
+				end
+
+				can = cItm:CanStack(itm, 1)
+				if not can then return end -- if we can't stack into min then we cant stack into any; its just that simple,,,
+
+				toStk[sel] = (toStk[sel] or 0) + 1
+			end
+
+			for i=1, 4 do
+				if not toStk[i] then continue end
+
+				if not its[i] then
+					inv:GetInventoryPanel():SplitItem(sIns[i], self, itm,
+						toStk[i])
+				else
+					inv:GetInventoryPanel():GetInventory():RequestStack(itm, its[i], toStk[i])
+				end
+			end
+		end)
+	end
+end
+
+function ENT:Think()
+	
 end
 
 function ENT:Used()

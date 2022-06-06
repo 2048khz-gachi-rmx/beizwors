@@ -131,7 +131,8 @@ local ptAng = Angle("0.000 90.000 59.310")
 local axis = Vector()
 
 function ENT:Draw()
-
+	self:FrameAdvance(0.001)
+	self:SetAutomaticFrameAdvance(false)
 	self:DrawModel()
 	self:DrawInit()
 
@@ -267,6 +268,8 @@ function ENT:DoGrowMenu(open, nav, inv)
 			render.PopScissorRect()
 		end
 	end)
+
+	
 end
 
 function ENT:Used()

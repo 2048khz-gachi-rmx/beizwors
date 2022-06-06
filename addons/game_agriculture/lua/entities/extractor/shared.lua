@@ -13,7 +13,7 @@ ENT.NoHUD = false
 ENT.WantBlink = false
 
 ENT.IngredientsRequired = 4
-ENT.ResultCreates = "coca"
+ENT.ResultCreates = "raw_cocaine"
 ENT.IngredientTakes = "coca"
 local networkablePfx = "cex"
 
@@ -21,20 +21,24 @@ ENT.Levels = {
 	{
 		Cost = 0,
 		SlotsOut = 1,
-		ExtractionTime = 10,
+		ExtractionTime = 3,
 	}, {
 		Cost = 25e6,
 		SlotsOut = 1,
-		ExtractionTime = 5,
+		ExtractionTime = 2,
 	}, {
 		Cost = 250e6,
-		SlotsOut = 2,
-		ExtractionTime = 2,
+		SlotsOut = 1,
+		ExtractionTime = 1,
 	}
 }
 
 function ENT:DerivedDataTables()
-
+	self:NetworkVar("Int", 2, "CocainerFr")
+	self:NetworkVar("Bool", 2, "Working")
+	self:NetworkVar("Float", 2, "Time1")
+	self:NetworkVar("Float", 3, "Time2")
+	self:NetworkVar("Float", 4, "WorkChanged")
 end
 
 function ENT:CanFromIn(ply, itm, toInv)
@@ -59,6 +63,7 @@ end
 
 function ENT:InNewItem(inv, itm, fromInv, slot, fromSlot, ply) end
 function ENT:InChanged(inv) end
+function ENT:OutChanged(inv) end
 function ENT:InTakeItem(inv, itm, toInv, slot, fromSlot, ply) end
 function ENT:InMovedItem(inv, it, slot, it2, b4slot, ply) end
 
@@ -134,33 +139,69 @@ function ENT:CreateInventories()
 	self.Out:On("AllowInteract", "Distance", function(...)
 		return self:AllowInteract(...)
 	end)
+
+	self.Out:On("Change", "Hook", function(...)
+		self:OutChanged(...)
+	end)
 end
 
 function ENT:SHInit()
 	self:CreateInventories()
-
-	self.Status = Networkable(networkablePfx .. ":" .. self:EntIndex())
-	self.Status:Bind(self)
-
-	self.Status:Alias("Powered", -1, "Bool")
-	self.Status:Alias("TimeStart", 0, "Float")
-	self.Status:Alias("TimeEnd", 1, "Float")
 end
 
-function ENT:IsWorking()
-	if not self.Status:Get("Powered") then return false, false end
+function ENT:SyncVis()
+	local seq = self:GetSequence()
+	local on, off = self:LookupSequence("on"), self:LookupSequence("off")
 
-	for i=1, self.In.MaxItems do
-		local prog, work = self:GetProgress(i)
-		if not work then continue end
-		if prog == 0 or prog == 1 then continue end
+	local work = self:GetWorking() and not self.Choked
+	local seq_on = work and on or off
 
-		return true
+	if seq ~= seq_on then
+		self:ResetSequence(seq_on)
+		self:SetCycle(0)
+		self:SetPlaybackRate(1)
+	end
+
+	self:SetSkin(work and 1 or 0)
+
+	self:SetBGName("light_extractor", self:GetWorking() and 1 or 0)
+	if self:GetWorking() then
+		self:SetBGName("light_bucket_green", self.Choked and 0 or 1)
+		self:SetBGName("light_bucket_red", self.Choked and 1 or 0)
+	else
+		self:SetBGName("light_bucket_green", 0)
+		self:SetBGName("light_bucket_red", 0)
+	end
+
+	if SERVER then
+		local total = 0
+		local max = Inventory.Util.GetBase(self.IngredientTakes):GetMaxStack() * self.In.MaxItems
+		local miss = false
+		for i=1, self.In.MaxItems do
+			local itm = self.In:GetItemInSlot(i)
+
+			if itm then
+				total = total + self.In:GetItemInSlot(i):GetAmount()
+			else
+				miss = true
+			end
+		end
+		self:SetPoseParameter("arrow_1", total / max * 100)
+
+		self:SetBGName("light_arrow_1", (miss or total / max * 100 < 25) and 1 or 0)
+
+		self.steam = self.steam or CreateSound(self, "ambient/machines/gas_loop_1.wav")
+
+		if work then
+			self.steam:PlayEx(0.45, 80)
+		else
+			self.steam:FadeOut(1.5)
+		end
 	end
 end
 
 function ENT:GetTime()
-	return self.Status:Get("TimeStart", 0), self.Status:Get("TimeEnd", 0)
+	return self:GetTime1(), self:GetTime2()
 end
 
 function ENT:GetProgress()
@@ -168,23 +209,10 @@ function ENT:GetProgress()
 
 	if st == 0 or endt == 0 then return 0, false end
 
-	if not self.Status:Get("Powered") then
+	if not self:IsPowered() then
 		-- unpowered: startTime becomes % at which progress stopped
 		return st, true
 	end
 
 	return math.RemapClamp(CurTime(), st, endt, 0, 1), true
 end
-
-local REQ = ENT.IngredientsRequired
-
-hook.Add("NetworkableAttemptCreate", "Extractor", function(nwid)
-	if not nwid:match("^" .. networkablePfx .. ":%d+") then return end
-
-	local nw = Networkable(nwid)
-	nw:Alias("Powered", -1, "Bool")
-	nw:Alias("TimeStart", 0, "Float")
-	nw:Alias("TimeEnd", 1, "Float")
-
-	return true
-end)

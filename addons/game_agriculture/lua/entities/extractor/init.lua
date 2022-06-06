@@ -33,8 +33,22 @@ function ENT:CheckCompletion()
 	-- stack failed?
 	if left or not its then
 		self.Choked = true
+		self:SyncVis()
 		return
 	end
+
+	local fr = 0
+	local itm = self.Out.Slots[1]
+	if itm then
+		fr = math.Remap(itm:GetAmount(), 0, itm:GetMaxStack(), 0, 100)
+	end
+
+	self:SetCocainerFr(fr)
+
+	self.Choked = false
+
+	local total = 0
+	local max = Inventory.Util.GetBase(self.IngredientTakes):GetMaxStack() * self.In.MaxItems
 
 	for i=1, self.In.MaxItems do
 		local itm = self.In:GetItemInSlot(i)
@@ -49,27 +63,21 @@ function ENT:CheckCompletion()
 		end
 
 		self:TimeSlot(i, true) -- time before drain because if the seed dies it'll be fucked
+
+		total = total + itm:GetAmount()
 	end
 
 	Inventory.Networking.UpdateInventory(self:GetSubscribers(), self.Inventory)
+
+	self:SetPoseParameter("arrow_1", total / max * 100)
 end
 
 function ENT:Think()
-	local lowestNext = 3
+	local sT, eT = self:GetTime()
+	local left = eT == 0 and 3 or eT - CurTime()
+	local lowestNext = math.min(3, left)
 
-	for i=1, self.In.MaxItems do
-		local _, et = self:GetTime(i)
-		if et == 0 then continue end
-
-		local left = et - CurTime()
-		if self.Choked then -- already choked; reduce update rate for it
-			left = math.max(left, 0.5)
-		end
-
-		lowestNext = math.min(left, lowestNext)
-	end
-
-	lowestNext = math.max(lowestNext, 0.05)
+	lowestNext = math.max(lowestNext, self.Choked and 0.5 or 0.05)
 
 	self:CheckCompletion()
 	self:NextThink(CurTime() + lowestNext)
@@ -86,35 +94,61 @@ function ENT:Use(ply)
 end
 
 function ENT:InChanged(inv)
-	print("timing!")
 	-- no missing items; start
 	self:TimeSlot()
-
-	self.Status:Network()
+	self:SyncVis()
+	print("in changed")
 end
 
 function ENT:InTakeItem(inv, itm, toInv, slot, fromSlot, ply)
 	-- taken something out = stop production, no questions asked
 	self:SetTime(0, 0)
 	self:TimeSlot(fromSlot)
+end
 
-	self.Status:Network()
+function ENT:SetWork(b)
+	if b ~= self:GetWorking() then
+		self:SetWorkChanged(CurTime())
+	end
+
+	self:SetWorking(b)
+	self:SyncVis()
+end
+
+function ENT:OutChanged()
+	local itm = self.Out.Slots[1]
+	local fr = 0
+	if itm then
+		fr = math.Remap(itm:GetAmount(), 0, itm:GetMaxStack(), 0, 100)
+	end
+
+	self:SetCocainerFr(fr)
+	self:SyncVis()
 end
 
 function ENT:InMovedItem(inv, it, slot, it2, b4slot, ply)
-	print("movedd item... should we handel somehow?")
 	--self:SetTime(0, 0)
 	--self:SetTime(0, 0)
 
 	--self:TimeSlot(slot)
 	--self:TimeSlot(b4slot)
-
-	self.Status:Network()
 end
 
 function ENT:SetTime(sT, eT)
-	if sT then self.Status:Set("TimeStart", sT) end
-	if eT then self.Status:Set("TimeEnd", eT) end
+	--if sT then self.Status:Set("TimeStart", sT) end
+	--if eT then self.Status:Set("TimeEnd", eT) end
+
+	if sT then self:SetTime1(sT) end
+	if eT then self:SetTime2(eT) end
+
+	local st, et = self:GetTime()
+	if st > 0 and et > 0
+		and self:IsPowered() and not self.Choked then
+
+		self:SetWork(true)
+	else
+		self:SetWork(false)
+	end
 end
 
 function ENT:TimeSlot(restart)
@@ -190,19 +224,9 @@ function ENT:OnRemove()
 end
 
 function ENT:OnPower()
-	for i=1, self.In.MaxItems do
-		self:TimeSlot(i)
-	end
-
-	self.Status:Set("Powered", self:GetPowered())
-	self.Status:Network()
+	self:TimeSlot()
 end
 
 function ENT:OnUnpower()
-	for i=1, self.In.MaxItems do
-		self:TimeSlot(i)
-	end
-
-	self.Status:Set("Powered", self:GetPowered())
-	self.Status:Network()
+	self:TimeSlot()
 end
