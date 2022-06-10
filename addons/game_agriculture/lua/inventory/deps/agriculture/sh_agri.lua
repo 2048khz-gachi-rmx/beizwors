@@ -1,43 +1,197 @@
 Agriculture = Agriculture or {}
 
-local leaves = Inventory.BaseItemObjects.Generic("coca")
-	:SetName("Coca Leaves")
-	:SetModel("models/craphead_scripts/the_cocaine_factory/utility/leaves.mdl")
-	:SetColor(Color(125, 170, 90))
 
-	:SetCamPos( Vector(-55.1, 43.1, 58) )
-	:SetLookAng( Angle(38.0, -38, 0.0) )
-	:SetFOV( 26 )
 
-	:SetCountable(true)
-	:SetMaxStack(25)
-	:SetShouldSpin(false)
+-- this is not the best way to do this stuff...
+-- keep in mind numIDs are used in storage; changing them will change all stored items too
 
-	:SetRarity("uncommon")
-	:SetAmountFormat(function(base, n)
-		return ("%dg"):format(n * 10)
-	end)
+Agriculture.CocaineTypes = {}
+local coc = Agriculture.CocaineTypes
 
-local cocainer = Inventory.BaseItemObjects.Generic("raw_cocaine")
-	:SetName("Unprocessed Cocaine")
-	:SetModel("models/craphead_scripts/the_cocaine_factory/utility/bucket.mdl")
-	:SetColor(Color(255, 250, 175))
+coc[1] = {
+	Name = "Thorny", -- rage
+	Result = "Roid Rage",
+	Description = "Increases damage. Beebis pebis bebis benib bibbababab. Bebibab.",
+	Color = Color(255, 160, 160),
+	TextColor = Color(210, 80, 80),
+}
 
-	:SetCamPos( Vector(37.9, 48.7, 60.5) )
-	:SetLookAng( Angle(41.7, -127.8, 0.0) )
-	:SetFOV( 15.9 )
+coc[2] = {
+	Name = "Remedial", -- regen
+	Result = "Mending",
+	Color = Color(200, 255, 200)
+}
 
-	:SetCountable(true)
-	:SetMaxStack(10)
-	:SetShouldSpin(true)
+coc[3] = {
+	Name = "Vigorous", -- steroid
+	Result = "Steroid",
+	Color = Color(190, 240, 255),
+}
 
-	:SetRarity("uncommon")
+coc[4] = {
+	Name = "Stout", -- adrenaline
+	Result = "Adrenaline",
+	Color = Color(250, 250, 215),
+	TextColor = Color(255, 255, 120),
+}
 
-	:On("UpdateModel", "ResourceSkin", function(base, item, ent)
-		local amt = item:GetAmount()
+coc[5] = {
+	Name = "Numbing", -- painkiller
+	Result = "Methadone",
+	Color = Color(120, 180, 215),
+}
 
-		local fr = math.RemapClamp(amt, 0, base:GetMaxStack(), 0, 100)
+for k,v in ipairs(coc) do
+	coc[v.Name] = v
+end
 
-		ent:SetPoseParameter("cocaine", fr)
-		ent:SetBodygroup(1, 1)
-    end)
+
+
+-- Thorny (=> Roid Rage)
+do
+	local key = "Thorny"
+	local DRUG = coc[key]
+
+	function DRUG.GetStrength(n)
+		return 0.3 * n
+	end
+
+	function DRUG.Markup(mup, desc, str)
+		local numCol, notNumCol, textCol = unpack(Inventory.Modifiers.DescColors)
+
+		desc.Font = "OS18"
+		desc:SetColor(textCol)
+
+		local tx = desc:AddText("Increases your damage dealt by ")
+
+		local tx2 = desc:AddText(math.Round(DRUG.GetStrength(str) * 100, 1))
+		tx2.color = DRUG.TextColor or DRUG.Color
+		desc.pt = tx2
+
+		desc:AddText("%.")
+	end
+
+	function DRUG.UpdateMarkup(mup, desc, str)
+		desc.pt.text = tostring(math.Round(DRUG.GetStrength(str) * 100, 1))
+		desc:Recalculate()
+	end
+end
+
+-- Remedial (=> Mending)
+do
+	local key = "Remedial"
+	local DRUG = coc[key]
+
+	function DRUG.GetStrength()
+
+	end
+
+	function DRUG.Markup(mup, desc, str)
+
+	end
+
+	function DRUG.UpdateMarkup(mup, desc, str)
+
+	end
+end
+
+-- Vigorous (=> Steroid)
+do
+	local key = "Vigorous"
+	local DRUG = coc[key]
+
+	function DRUG.GetStrength()
+
+	end
+
+	function DRUG.Markup(mup, desc, str)
+
+	end
+
+	function DRUG.UpdateMarkup(mup, desc, str)
+
+	end
+end
+
+-- Stout (=> Adrenaline)
+do
+	local key = "Stout"
+	local DRUG = coc[key]
+
+	function DRUG.GetStrength(n)
+		return math.Round(50 * n)
+	end
+
+	function DRUG.Markup(mup, desc, str)
+		local numCol, notNumCol, textCol = unpack(Inventory.Modifiers.DescColors)
+
+		desc.Font = "OS18"
+		desc:SetColor(textCol)
+
+		local tx = desc:AddText("Increases maximum health by ")
+
+		local tx2 = desc:AddText(DRUG.GetStrength(str))
+		tx2.color = DRUG.TextColor or DRUG.Color
+		desc.pt = tx2
+
+		desc:AddText(".")
+	end
+
+	function DRUG.UpdateMarkup(mup, desc, str)
+		desc.pt.text = tostring(DRUG.GetStrength(str))
+		desc:Recalculate()
+	end
+end
+
+-- Numbing (=> Methadone)
+do
+	local key = "Numbing"
+	local DRUG = coc[key]
+
+	function DRUG.GetStrength(n)
+		return 0.333 * n
+	end
+
+	function DRUG.Markup(mup, desc, str)
+		local numCol, notNumCol, textCol = unpack(Inventory.Modifiers.DescColors)
+
+		desc.Font = "OS18"
+		desc:SetColor(textCol)
+
+		local tx = desc:AddText("Decreases damage taken by ")
+
+		local tx2 = desc:AddText(math.Round(DRUG.GetStrength(str) * 100, 1))
+		tx2.color = DRUG.TextColor or DRUG.Color
+		desc.pt = tx2
+
+		desc:AddText("%.")
+	end
+
+	function DRUG.UpdateMarkup(mup, desc, str)
+		desc.pt.text = tostring(math.Round(DRUG.GetStrength(str) * 100, 1))
+		desc:Recalculate()
+	end
+end
+
+
+do return end
+
+local s = [[
+-- %s (=> %s)
+do
+	local key = "%s"
+	local DRUG = coc[key]
+
+	function DRUG:GetStrength()
+
+	end
+
+	function DRUG:Markup(mup, desc, str)
+
+	end
+end
+]]
+
+for k,v in ipairs(coc) do
+	print(s:format(v.Name, v.Result, v.Name))
+end

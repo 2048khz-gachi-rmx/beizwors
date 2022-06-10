@@ -288,6 +288,131 @@ function ENT:DoGrowMenu(open, nav, inv)
 			end
 		end)
 	end
+
+	local resCanv = vgui.Create("InvisPanel", canv)
+	resCanv:SetPos(invIn:GetWide(), invIn.Y)
+	resCanv:SetSize(canv:GetWide() - resCanv.X, canv:GetTall() - resCanv.Y)
+
+	local txt = "Put 4 coca leaves in the slots to the left."
+	local wrap = string.WrapCache()
+
+	local font = "EX24"
+	local col = Colors.DarkerWhite:Copy()
+
+	function resCanv:Paint(w, h)
+		local a = self._a or 255
+		local tx, tw = wrap:Wrap(txt, w * 0.66, font)
+		for s, l in eachNewline(tx) do
+			draw.SimpleText(s, font, w / 2, 4 + l * 20, col:IAlpha(a), 1)
+		end
+	end
+
+	local show = false
+
+	for k,v in pairs(sIns) do
+		if not v:GetItem() or not v:GetItem():GetTypeID() then continue end
+		show = true
+		break
+	end
+
+	resCanv._a = show and 0 or 255
+
+	local mups = {}
+
+	local dontRecalc = function(self, buf, h)
+		self:SetTall(h + 1)
+		return true
+	end
+
+	local ints
+	local first = not show
+
+	function resCanv:Think()
+		local its = {}
+		for k,v in pairs(sIns) do
+			if not v:GetItem() or not v:GetItem():GetTypeID() then continue end
+			its[#its + 1] = v
+		end
+
+		resCanv:To("_a", table.IsEmpty(its) and 255 or 0, 0.2, first and 0 or 0.15, 0.3)
+
+		local cints = ent:GetResult(its, true)
+		ints = cints
+
+		for k,v in pairs(mups) do
+			if not ints[k] then
+				v:SizeTo(v:GetWide(), 0, 0.2, 0, 0.3)
+				v:PopOut()
+				mups[k] = nil
+			else
+				v:Upd()
+			end
+		end
+
+		for k,v in pairs(ints) do
+			if mups[k] then continue end
+
+			local mup = vgui.Create("MarkupText", resCanv)
+			mup:Dock(TOP)
+			mup:DockMargin(12, 0, 12, 0)
+			if not show then
+				mup:PopIn(nil, first and 0.15 or 0)
+			end
+			mups[k] = mup
+
+			local dat = Agriculture.CocaineTypes[k]
+			-- name piece
+			local dpc
+			local pc = mup:AddPiece()
+				pc:SetAlignment(0)
+				pc:SetFont("BSSB22")
+				pc:AddText(([["%s": ]]):format(dat.Result, v * 100))
+				local perc = pc:AddText(([[%.1f%%]]):format(v * 100))
+				pc:On("RecaclulateHeight", dontRecalc)
+				pc:SetColor(dat.TextColor or dat.Color)
+
+			if dat.Description or dat.Markup then
+				dpc = mup:AddPiece()
+					dpc:SetAlignment(0)
+					dpc:SetFont("BS18")
+
+					dpc:On("RecaclulateHeight", dontRecalc)
+					dpc:DockMargin(16, -2, 0, 0)
+					dpc:SetColor(Colors.LighterGray)
+
+					if dat.Markup then
+						dat.Markup(mup, dpc, v)
+					else
+						dpc:AddText(dat.Description)
+					end
+
+					function dpc:UpdateTyp()
+						if dat.UpdateMarkup then
+							dat.UpdateMarkup(mup, self, v)
+						end
+					end
+
+					dpc:UpdateTyp()
+			end
+
+			mup.perc = v
+			function mup:Upd()
+				self:To("perc", ints[k], 0.6, 0, 0.3)
+
+				if self.perc ~= v then
+					v = self.perc
+					perc.text = ([[%.1f%%]]):format(v * 100)
+					pc:Recalculate()
+					if dpc then dpc:UpdateTyp() end
+				end
+			end
+		end
+
+		first = table.IsEmpty(its)
+	end
+
+	resCanv:Think()
+	show = false
 end
 
 function ENT:Think()
@@ -316,7 +441,7 @@ function ENT:Used()
 	menu:Bond(inv)
 	inv:Bond(menu)
 	menu:Bond(self)
-
+	menu:CacheShadow(2, 3, 4)
 	local poses, tW = vgui.Position(8, menu, inv)
 	inv:CenterVertical()
 

@@ -27,7 +27,7 @@ function ENT:CheckCompletion()
 			continue
 		end
 
-		local res = itm:CreateResult()
+		local res = self.choke[i] or itm:CreateResult()
 
 		local left, its = self.Out:PickupItem(res, {
 			Slots = {i},
@@ -35,7 +35,7 @@ function ENT:CheckCompletion()
 
 		-- stack failed?
 		if left or not its then
-			self.choke[i] = true
+			self.choke[i] = res
 			continue
 		end
 
@@ -125,9 +125,11 @@ function ENT:TimeSlot(i, restart)
 			if pw then
 				self:SetTime(i, CurTime(), CurTime() + itm:GetGrowTime())
 			else
+				self.choke[i] = nil
 				self:SetTime(i, 0)
 			end
 		else
+			self.choke[i] = nil
 			self:SetTime(i, 0)
 		end
 

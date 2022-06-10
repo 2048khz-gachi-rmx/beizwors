@@ -1,4 +1,4 @@
-local bgen = Inventory.BaseItemObjects.Generic
+local bgen = Inventory.BaseItemObjects.Typed
 local bseed = bgen:ExtendItemClass("Seed", "Seed")
 
 bseed:Register()
@@ -6,7 +6,9 @@ bseed.BaseTransferCost = 150000
 
 Agriculture.BaseSeed = bseed
 
-local gen = Inventory.GetClass("item_meta", "generic_item")
+
+
+local gen = Inventory.GetClass("item_meta", "typed")
 local seed = Inventory.ItemObjects.Seed or gen:Extend("Seed")
 
 seed.IsSeed = true
@@ -24,7 +26,8 @@ function seed:InitializeNew()
 	self:SetStats({})
 
 	if not self:GetResult() then
-		self:SetResult("coal")
+		self:SetResult("coca")
+		Agriculture.AssignType(self)
 	end
 
 	if not self:GetHealth() then
@@ -44,6 +47,10 @@ end
 function seed:GetName()
 	local base = Inventory.Util.GetBase(self:GetResult())
 	if not base then return ("[No-Base: %d]"):format(self:GetResult()) end
+
+	if base.ItemName == "coca" then
+		return "Coca Seed"
+	end
 
 	return ("%s Seed"):format(base:GetName())
 end
@@ -69,7 +76,7 @@ end
 
 Agriculture.MetaSeed = seed
 
-local sneed = Inventory.BaseItemObjects.Seed("seed")
+local sneed = Inventory.BaseItemObjects.Seed("cocaseed")
 	:SetName("Base seed -- youre not supposed to see this")
 	:SetModel("models/props_junk/garbage_takeoutcarton001a.mdl")
 	:SetModelColor(Color(125, 170, 90))
@@ -85,5 +92,3 @@ local sneed = Inventory.BaseItemObjects.Seed("seed")
 	:SetRarity("uncommon")
 
 Agriculture.Seed = sneed
-
-include(Rlm(true) .. "_seed_ext.lua")

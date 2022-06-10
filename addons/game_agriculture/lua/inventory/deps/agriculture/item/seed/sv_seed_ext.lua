@@ -2,11 +2,16 @@ local seed = Inventory.ItemObjects.Seed
 local bseed = Inventory.BaseItemObjects.Seed
 
 Agriculture.Seed:NetworkVar("NetStack", function(it, write)
-	print("encoding seed")
 	local ns = netstack:new()
 
-	-- result
-	ns:WriteUInt(it:GetResultBase() and it:GetResultBase():GetItemID() or 0, 32)
+	local res = it:GetResultBase() and it:GetResultBase():GetItemID() or 0
+
+	if Inventory.Util.GetBase(res).ItemName == "coca" then
+		ns:WriteBool(true)
+	else
+		ns:WriteBool(false)
+		ns:WriteUInt(res, 15)
+	end
 
 	-- hp
 	ns:WriteUInt(it:GetHealth(), 8)
@@ -20,6 +25,7 @@ function seed:CreateResult()
 	if not smIt then return end
 
 	smIt:SetAmount(1) -- ?
+	smIt:SetTypeID(self:GetTypeID())
 
 	return smIt
 end

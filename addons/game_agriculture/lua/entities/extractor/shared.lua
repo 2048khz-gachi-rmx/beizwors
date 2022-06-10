@@ -200,6 +200,23 @@ function ENT:SyncVis()
 	end
 end
 
+function ENT:GetResult(its, temp)
+	local ints, cnts = {}, {}
+
+	for k,v in ipairs(its) do
+		if not v:GetItem() or not v:GetItem():GetTypeID() then continue end
+		local id = v:GetItem():GetTypeID()
+		ints[id] = (ints[id] or 0) + 1
+		cnts[id] = (cnts[id] or 0) + 1 -- TODO: different intensities
+	end
+
+	for k,v in pairs(ints) do
+		ints[k] = v / #its
+	end
+
+	return ints
+end
+
 function ENT:GetTime()
 	return self:GetTime1(), self:GetTime2()
 end
