@@ -97,7 +97,7 @@ end
 Emitter.make = Emitter.Make
 
 function Emitter:On(event, name, cb, ...)
-	self.__Events = rawevent(self) or muldim:new()
+	self.__Events = self.__Events or muldim:new()
 	local events = self.__Events
 
 	local vararg
@@ -138,7 +138,7 @@ function Emitter:Once(event, name, cb, ...)
 end
 
 function Emitter:Emit(event, ...)
-	self.__Events = rawevent(self) or muldim:new()
+	self.__Events = self.__Events or muldim:new()
 
 	local events = self.__Events
 	if not events then return end
