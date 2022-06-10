@@ -65,6 +65,17 @@ function PANEL:AddPiece()
 	return piece
 end
 
+function PANEL:RemovePiece(pc)
+	if ispanel(pc) then
+		table.RemoveByValue(self.Pieces, pc)
+		pc:Remove()
+	else
+		errorNHf("unrecognized value to remove by: %s", piece)
+	end
+
+	self:Recalculate()
+end
+
 vgui.Register("MarkupText", PANEL, "Panel")
 
 

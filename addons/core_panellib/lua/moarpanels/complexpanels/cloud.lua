@@ -563,6 +563,7 @@ function Cloud:Think()
 	end
 
 	self:SetAlpha(self.Frac * 255)
+	self:Emit("Think")
 end
 
 function Cloud:FullInit()

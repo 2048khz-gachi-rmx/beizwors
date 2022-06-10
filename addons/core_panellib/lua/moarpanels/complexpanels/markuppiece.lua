@@ -184,23 +184,22 @@ function PANEL:Recalculate()
 			local curX, curY = buf.x, buf.y
 			local wrapped, tw, th, times = self:CalculateTextSize(v)
 
-			local t = table.Copy(v)
+			local t = table.ShallowCopy(v)
 			t.text = wrapped
+			t.segments = {}
 
 			local wm = v.WrapData and v.WrapData.ScaleW or 1
 
 			t.x, t.y = curX, curY
 			t.endX, t.endY = buf.x, buf.y
 
-			maxX = math.max(maxX, t.x + tw)
+			maxX = math.max(maxX, curX + tw)
 
 			t.w, t.h = tw, th
 			t.line = curLine
 
 			local segs = t.segments
 			v.drawInfo = t
-
-			table.Empty(segs)
 
 			local iter = 0
 
@@ -298,7 +297,13 @@ function PANEL:Recalculate()
 	end
 
 	local res = self:Emit("RecalculateHeight", buf, maxH)
-	if res ~= nil and not isnumber(res) then return end
+	if res ~= nil and not isnumber(res) then
+		if res == false then
+			self:GetParent():SetTall(math.max(self:GetParent():GetTall(), (res or maxH) + 1))
+		end
+
+		return
+	end
 
 	res = res or maxH
 
