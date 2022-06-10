@@ -124,22 +124,13 @@ function ENT:Think()
 		end
 	end
 
-	local prs = {}
-
 	for name, amt in pairs(fin_amt) do
-		local pr, what = self.OreOutput:NewItem(name, nil, {Amount = amt})
+		local new, stk, unstk = self.OreOutput:NewItem(name, nil, {Amount = amt})
 
-		if pr then
-			table.insert(prs, pr)
-		end
+		changed = changed or #new > 0 or #stk > 0
 	end
 
-	if #prs > 0 then
-		Promise.OnAll(prs):Then(function()
-			if IsValid(self) then self:SendInfo() end
-		end)
-
-	elseif changed then
+	if changed then
 		self:SendInfo()
 	end
 

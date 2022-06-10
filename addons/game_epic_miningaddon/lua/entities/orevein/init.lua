@@ -325,7 +325,7 @@ end
 function ENT:MineOut(orename, ply)
 	local ore = self.Ores[orename]
 
-	local pr, unstack = ply.Inventory.Backpack:NewItemNetwork(orename)
+	local _, _, unstack = ply.Inventory.Backpack:NewItemNetwork(orename)
 
 	if unstack ~= 0 then
 		return
