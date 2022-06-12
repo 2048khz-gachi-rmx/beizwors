@@ -17,7 +17,7 @@ if not ENABLE then
 
 else
 	-- don't profile these at all
-	local defaultDisable = false
+	local defaultDisable = true
 	local disable = table.KeysToValues({
 		--"Think",	-- ~40kb
 		--"PostDrawTranslucentRenderables",	-- ~30kb
@@ -32,13 +32,17 @@ else
 		-- "HUDPaint",
 		-- "PreDrawViewModel",
 		-- "PostDrawViewModel",
+		"CreateMove",
+		"SetupMove",
+		"Move",
+		"FinishMove",
 	})
 
 	_NHCALL = _NHCALL or _HCALL
 
 	local Hooks = hook.GetULibTable()
 	local ceil = .3 / 1000
-	local inspCeil = .1 / 1000
+	local inspCeil = .2 / 1000
 
 	local st = SysTime
 

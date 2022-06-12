@@ -32,12 +32,11 @@ function ENT:Think()
 end
 
 util.AddNetworkString("GiveMeMyTitle")
+
 net.Receive("GiveMeMyTitle", function(len, ply)
-	--if not ply:GetTitleAccess() then return end 
+	if not ply:GetTitleAccess() then return end
 	local tit = net.ReadString()
-	if #tit > 128 then return end 
-	
-	ply:SetTitle(tit)
+	if #tit > 128 then return end
 
-
+	ply:SetTitle(tit, true)
 end)

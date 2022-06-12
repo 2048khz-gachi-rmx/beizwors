@@ -22,10 +22,13 @@ local function getNw(ply)
 end
 
 function Dash.OnGround(ply)
+	local rdy = ply:GetNW2Bool("DashReady")
+	if rdy then return end
+
 	if Offhand.GetCooldown("Dash", ply) == math.huge then
 		Offhand.SetCooldown("Dash", ply, CurTime() + Dash.DashCooldown)
 		return true
-	elseif not ply:GetNW2Bool("DashReady") and Offhand.GetCooldown("Dash", ply) == 0 then
+	elseif not rdy and Offhand.GetCooldown("Dash", ply) == 0 then
 		ply:SetNW2Bool("DashReady", true)
 		if Dash.OnReady then Dash.OnReady(ply) end
 	end
@@ -152,8 +155,16 @@ hook.Add("FinishMove", "Dash_DoMove", function(ply, mv, cmd)
 		return
 	end
 
-	if not (SERVER and DashTable[ply] or IsDashing(ply)) and ply:OnGround() then
+	local in_dash
+	if SERVER then
+		in_dash = DashTable[ply]
+	else
+		in_dash = IsDashing(ply)
+	end
+
+	if not in_dash and ply:OnGround() then
 		Dash.OnGround(ply)
+		return
 	end
 
 	if not DashTable[ply] then return end

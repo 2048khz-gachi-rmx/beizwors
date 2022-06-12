@@ -1,59 +1,59 @@
-local PLAYER = debug.getregistry().Player 
-print('hello title')
+local PLAYER = debug.getregistry().Player
 
-function PLAYER:SetTitle(txt, fromdb)
+function PLAYER:SetTitle(title, db)
+	title = title or ""
 
-	if not txt and not fromdb then 
-		self:SetPData("Title", "")
-		self:SetNWString("Title", "")
+	self:SetNWString("Title", title)
 
-	elseif fromdb and not txt then 	--i forgot what this was for tbh
+	if db then
+		self:SetPData("Title", title)
+	end
+end
 
-		local txt = self:GetPData("Title", nil)
+function PLAYER:FetchTitle()
+	local title = self:GetPData("Title", nil)
+	local pr = Promise()
 
-		if not txt then return end
-		self:SetPData("Title", txt)
-		self:SetNWString("Title", txt)
+	if not title then pr:Resolve() end
+	pr:Resolve(title)
 
-	elseif isstring(txt) then 
-		self:SetPData("Title", txt)
-		self:SetNWString("Title", txt)
-
-	else return end
-
+	return pr
 end
 
 function PLAYER:GrantTitleAccess()
 	self:SetPData("TitleAccess", true)
-	self.HasTitleAccess=true
+	self.HasTitleAccess = true
 	self:SetNWBool("TitleAccess", true)
 end
 
 function PLAYER:RevokeTitleAccess()
 	self:SetPData("TitleAccess", false)
-	self.HasTitleAccess=false
+	self.HasTitleAccess = false
 	self:SetNWBool("TitleAccess", false)
 end
 
 function PLAYER:SetTitleAccess(bool)
 	self:SetPData("TitleAccess", tobool(bool))
-	self.HasTitleAccess=tobool(bool)
+	self.HasTitleAccess = tobool(bool)
 	self:SetNWBool("TitleAccess", tobool(bool))
 end
 
 function PLAYER:GetTitleAccess()
-	if self.HasTitleAccess==nil then self.HasTitleAccess = self:GetPData("TitleAccess", false) end
+	if self.HasTitleAccess == nil then
+		self.HasTitleAccess = self:GetPData("TitleAccess", false)
+			or self:IsAdmin()
+	end
 
 	return self.HasTitleAccess
 end
 
 function PLAYER:ReadTitle()
-
 	return self:GetPData("Title", nil)
 end
 
 hook.Add("PlayerInitialSpawn", "ApplyTitle", function(ply)
-
-	timer.Simple(0, function() if ply:IsValid() then ply:SetTitle(nil, true) end end)
+	ply:FetchTitle():Then(function(_, t)
+		ply:SetTitle(t)
+	end)
 	ply:SetNWBool("TitleAccess", ply:GetTitleAccess())
 end)

@@ -128,8 +128,6 @@ function IsPred()
 	return CLIENT and (CurTime() ~= UnPredictedCurTime() or GetPredictionPlayer():IsValid())
 end
 
-
-
 if SERVER then
 	PredTime = CurTime
 else

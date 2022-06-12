@@ -310,9 +310,9 @@ function SWEP:PrimaryAttack()
 	end
 end
 
+--[[
 hook.Add("FinishMove", "Dash", function(ply, mv, cmd)
 	local dash = ply:GetActiveWeapon()
-
 	if not dash or not dash:IsValid() or not dash.IsDash then return end
 
 	if dash.EndSuperMove and SERVER then
@@ -375,6 +375,7 @@ hook.Add("FinishMove", "Dash", function(ply, mv, cmd)
 	end
 
 end)
+]]
 
 local trails = {}
 local dashDur = 0.3
