@@ -6,13 +6,11 @@ AddCSLuaFile("cl_init.lua")
 util.AddNetworkString("growything")
 
 function ENT:SVInit(me)
-
+	self.choke = self.choke or {} -- cba to respawn the entity lol
 end
 
 function ENT:OutTakeItem(inv, itm, toInv, slot, fromSlot, ply)
-	if self.choke then
-		self.choke[fromSlot] = nil
-	end
+	self.choke[fromSlot] = nil
 	self:Think()
 end
 
@@ -53,8 +51,6 @@ end
 
 function ENT:Think()
 	local lowestNext = 3
-
-	self.choke = self.choke or {} -- cba to respawn the entity lol
 
 	for i=1, self.In.MaxItems do
 		local _, et = self:GetTime(i)

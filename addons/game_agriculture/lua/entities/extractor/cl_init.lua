@@ -331,7 +331,7 @@ function ENT:DoGrowMenu(open, nav, inv)
 		local its = {}
 		for k,v in pairs(sIns) do
 			if not v:GetItem() or not v:GetItem():GetTypeID() then continue end
-			its[#its + 1] = v
+			its[#its + 1] = v:GetItem()
 		end
 
 		resCanv:To("_a", table.IsEmpty(its) and 255 or 0, 0.2, first and 0 or 0.15, 0.3)
@@ -426,7 +426,7 @@ function ENT:Used()
 	local inv = Inventory.Panels.CreateInventory(
 		Inventory.GetTemporaryInventory(LocalPlayer()),
 		nil, {
-			SlotSize = scaleW(64)
+			SlotSize = scaleW(72)
 		}
 	)
 

@@ -14,11 +14,15 @@ function ENT:OutTakeItem(inv, itm, toInv, slot, fromSlot, ply)
 	self:Think()
 end
 
-function ENT:CreateResult(itm)
+function ENT:CreateResult()
 	local smIt = Inventory.NewItem(self.ResultCreates)
 	if not smIt then return end
 
 	smIt:SetAmount(1)
+	local from = self.In.Slots
+	local typ = self:GetResult(from)
+
+	smIt:SetEffects(typ)
 
 	return smIt
 end

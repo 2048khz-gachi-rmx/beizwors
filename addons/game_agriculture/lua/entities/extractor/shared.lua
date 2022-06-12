@@ -13,9 +13,8 @@ ENT.NoHUD = false
 ENT.WantBlink = false
 
 ENT.IngredientsRequired = 4
-ENT.ResultCreates = "raw_cocaine"
+ENT.ResultCreates = "cocaine"
 ENT.IngredientTakes = "coca"
-local networkablePfx = "cex"
 
 ENT.Levels = {
 	{
@@ -204,8 +203,8 @@ function ENT:GetResult(its, temp)
 	local ints, cnts = {}, {}
 
 	for k,v in ipairs(its) do
-		if not v:GetItem() or not v:GetItem():GetTypeID() then continue end
-		local id = v:GetItem():GetTypeID()
+		if not v:GetTypeID() then continue end
+		local id = v:GetTypeID()
 		ints[id] = (ints[id] or 0) + 1
 		cnts[id] = (cnts[id] or 0) + 1 -- TODO: different intensities
 	end

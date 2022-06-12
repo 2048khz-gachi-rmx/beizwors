@@ -81,14 +81,15 @@ end
 do
 	local key = "Remedial"
 	local DRUG = coc[key]
+	DRUG.Description = "regens hp (add desc later)"
 
 	function DRUG.GetStrength()
 
 	end
 
-	function DRUG.Markup(mup, desc, str)
+	--[[function DRUG.Markup(mup, desc, str)
 
-	end
+	end]]
 
 	function DRUG.UpdateMarkup(mup, desc, str)
 
