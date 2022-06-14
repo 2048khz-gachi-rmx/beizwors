@@ -525,6 +525,11 @@ local sv_allowcslua = GetConVar 'sv_allowcslua'
 
 function CanLuaDev(ply,script,command,target,target_ply,extra)
 	--return true
+
+	if SERVER and not ply:IsFullyAuthenticated() then
+		return false, "Your SteamID wasn't fully authenticated, try restarting Steam."
+	end
+
 	local ret,x = hook.Run("CanLuaDev",ply,script,command,target,target_ply,extra)
 	if ret~=nil then return ret,x end
 	local ret,x = hook.Run("LuaDevIsPlayerAllowed", ply, script or "")
