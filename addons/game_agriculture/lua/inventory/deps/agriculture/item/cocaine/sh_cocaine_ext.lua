@@ -86,6 +86,4 @@ local cocainer = Inventory.BaseItemObjects.Cocaine("cocaine")
 		ent:SetBodygroup(1, 1)
     end)
 
-    :OverrideItemClass()
-
 Agriculture.Cocaine = cocainer
