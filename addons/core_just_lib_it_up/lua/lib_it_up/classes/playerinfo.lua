@@ -40,11 +40,24 @@ function PI:Initialize(id, is_sid64) -- we can't know that the id is a steamID64
 	local sid64
 
 	if IsPlayer(id) then
+		-- getting sid(64) from a player is unsafe if they're not actually authed
+		-- if they aren't, put ourselves in auth queue
 		ply = id
-		sid = ply:SteamID()
-		sid64 = ply:SteamID64()
+
+		local authed = ply:IsFullyAuthenticated()
+		if not authed then
+			self:AwaitAuth(ply)
+			sid = util.SteamIDFrom64("0")
+			sid64 = "0"
+		else
+			sid = ply:SteamID()
+			sid64 = ply:SteamID64()
+		end
+
 	elseif not is_sid64 and string.IsSteamID(id) then
 		ply = player.GetBySteamID(id)
+		ply = ply and ply:IsFullyAuthenticated() or nil
+
 		sid = id
 		sid64 = util.SteamIDTo64(sid)
 	else
@@ -53,6 +66,8 @@ function PI:Initialize(id, is_sid64) -- we can't know that the id is a steamID64
 		end
 
 		ply = player.GetBySteamID64(id)
+		ply = ply and ply:IsFullyAuthenticated() or nil
+
 		sid = util.SteamIDFrom64(id)
 		sid64 = id
 	end
@@ -125,6 +140,22 @@ function PI:SetSteamID64(id)
 	end
 end
 
+local authQueue = {}
+
+function PI:AwaitAuth(ply)
+	ply = ply or self:GetPlayer()
+
+	if not ply then errorNHf("failed to await auth from %s", ply) return end
+	if not ply:IsFullyAuthenticated() then authQueue[ply] = self return end
+	self:SetSteamID64(ply:SteamID64())
+end
+
+hook.Add("PlayerAuthed", "PlayerInfoConfirm", function(ply, sid)
+	if authQueue[ply] then
+		authQueue[ply]:SetSteamID64(ply:SteamID64())
+		authQueue[ply] = nil
+	end
+end)
 
 function PI:SetPlayer(ply)
 	if ply and not IsPlayer(ply) then return end
@@ -132,6 +163,10 @@ function PI:SetPlayer(ply)
 	PIT.Player[ply] = self
 	if ply then
 		self._Nick = ply:Nick()
+	end
+
+	if not ply:IsFullyAuthenticated() then
+		self:AwaitAuth(ply)
 	end
 end
 
