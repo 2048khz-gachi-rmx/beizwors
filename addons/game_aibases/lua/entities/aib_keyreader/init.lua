@@ -42,7 +42,7 @@ function ENT:SwipeCard(ply, itm, inv)
 			self:Emit("UsedInvalidCard", ply, itm)
 		end
 
-		sound.Play(("grp/keycards/%s.wav"):format(ok and "yes" or "no"), self:GetSwipePos(), 70, 100, 1)
+		sound.Play(("grp/keycards/%s.mp3"):format(ok and "yes" or "no"), self:GetSwipePos(), 70, 100, 1)
 		self.LockedUse = false
 
 		if ok then
@@ -83,7 +83,7 @@ function ENT:UseCard(ply, itm, inv)
 			self:SwipeCard(ply, itm, inv)
 		end)
 
-		sound.Play("grp/keycards/swipe.wav", self:GetSwipePos(), 65, 100, 1)
+		sound.Play("grp/keycards/swipe.mp3", self:GetSwipePos(), 65, 100, 1)
 	end)
 end
 
