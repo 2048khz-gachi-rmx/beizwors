@@ -44,7 +44,7 @@ function PI:Initialize(id, is_sid64) -- we can't know that the id is a steamID64
 		-- if they aren't, put ourselves in auth queue
 		ply = id
 
-		local authed = ply:IsFullyAuthenticated()
+		local authed = CLIENT or ply:IsFullyAuthenticated()
 		if not authed then
 			self:AwaitAuth(ply)
 			sid = util.SteamIDFrom64("0")
@@ -56,7 +56,7 @@ function PI:Initialize(id, is_sid64) -- we can't know that the id is a steamID64
 
 	elseif not is_sid64 and string.IsSteamID(id) then
 		ply = player.GetBySteamID(id)
-		ply = ply and ply:IsFullyAuthenticated() or nil
+		ply = ply and (CLIENT or ply:IsFullyAuthenticated()) and ply or nil
 
 		sid = id
 		sid64 = util.SteamIDTo64(sid)
@@ -66,7 +66,7 @@ function PI:Initialize(id, is_sid64) -- we can't know that the id is a steamID64
 		end
 
 		ply = player.GetBySteamID64(id)
-		ply = ply and ply:IsFullyAuthenticated() or nil
+		ply = ply and (CLIENT or ply:IsFullyAuthenticated()) and ply or nil
 
 		sid = util.SteamIDFrom64(id)
 		sid64 = id
@@ -146,7 +146,7 @@ function PI:AwaitAuth(ply)
 	ply = ply or self:GetPlayer()
 
 	if not ply then errorNHf("failed to await auth from %s", ply) return end
-	if not ply:IsFullyAuthenticated() then authQueue[ply] = self return end
+	if SERVER and not ply:IsFullyAuthenticated() then authQueue[ply] = self return end
 	self:SetSteamID64(ply:SteamID64())
 end
 
@@ -165,7 +165,7 @@ function PI:SetPlayer(ply)
 		self._Nick = ply:Nick()
 	end
 
-	if not ply:IsFullyAuthenticated() then
+	if SERVER and not ply:IsFullyAuthenticated() then
 		self:AwaitAuth(ply)
 	end
 end
