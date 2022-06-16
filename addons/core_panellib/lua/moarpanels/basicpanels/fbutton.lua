@@ -562,7 +562,7 @@ function button:Draw(w, h)
 		return
 	end
 
-	t.PaintIcon(self, w/2 - iW / 2, h/2 - iH / 2)
+	t.PaintIcon(self, w/2 - iW / 2, self:GetDrawableHeight() / 2 - iH / 2)
 end
 
 function button:PostPaint(w, h)
