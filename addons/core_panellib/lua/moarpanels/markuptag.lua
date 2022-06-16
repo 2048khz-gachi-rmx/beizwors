@@ -333,7 +333,7 @@ function buf:WrapText(tx, width, font, wrapDat)
 	if not self:GetTextHeight() then
 		error("please :SetFont() on the buffer before wrapping text")
 	end
-
+	tx = tostring(tx)
 	font = font or self:GetFont()
 
 	local fontcache = self._wrapCache[font] or WeakTable("kv")
@@ -343,6 +343,9 @@ function buf:WrapText(tx, width, font, wrapDat)
 
 	local scaleUID = wrapDat and ("%s"):format(wrapDat.ScaleW) or ""
 	local key = ("%s:%d:%d:%d:%p"):format(scaleUID, self.x, width, self.Alignment, tx)
+	-- lets not think about what happens if luajit clears out the string from memory
+	-- and pointer collisions happen LMAO
+
 	local txcache = fontcache[key]
 
 	if do_cache and txcache then

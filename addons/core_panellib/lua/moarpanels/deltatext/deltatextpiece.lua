@@ -315,6 +315,7 @@ function pmeta:Paint(x, y)
 
 			local alignX = v.AlignX or parent.AlignX or 0
 			alignX = alignX / 2
+
 			if (not v.Font and curfont ~= self.Font) or (v.Font and v.Font ~= curfont) then
 				surface.SetFont(font)
 				curfont = v.Font
