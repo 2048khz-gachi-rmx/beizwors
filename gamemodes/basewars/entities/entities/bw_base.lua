@@ -58,10 +58,6 @@ function ENT:SetupDataTables()
 	self:DerivedDataTables()
 end
 
-function ENT:SHInit()
-
-end
-
 if SERVER then
 
 	function ENT:Initialize()
@@ -83,10 +79,6 @@ if SERVER then
 		end
 
 		self:SetHealth(self.PresetMaxHealth or self.MaxHealth)
-
-		self:Init(me)
-		self:SHInit()
-		self:SVInit()
 
 		self:SetMaxHealth(self:Health())
 
@@ -115,6 +107,7 @@ if SERVER then
 
 		self:Init(me)
 		self:SHInit()
+		self:SVInit()
 	end
 
 	function FillSubModelData(ent)

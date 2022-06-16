@@ -86,4 +86,5 @@ local cocainer = Inventory.BaseItemObjects.Cocaine("cocaine")
 		ent:SetBodygroup(1, 1)
     end)
 
+
 Agriculture.Cocaine = cocainer

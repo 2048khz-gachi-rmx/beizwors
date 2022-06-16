@@ -1,6 +1,8 @@
 include("shared.lua")
 AddCSLuaFile("shared.lua")
 
+local thxSource
+
 function ENT:CLInit()
 end
 
@@ -9,7 +11,7 @@ local an
 
 function ENT:DrawInit()
 	if self.DrawInitialized then return end
-	an = an or Animatable("growy")
+	an = an or Animatable("drier")
 
 	self.DrawInitialized = true
 end
@@ -65,32 +67,59 @@ function ENT:Draw()
 	cam.End3D2D()
 end
 
-function ENT:CreateSlot(invIn, invOut, i)
-	local slotIn = vgui.Create("ItemFrame", invIn, "ItemFrame: InGrow")
-	invIn:TrackItemSlot(slotIn, i)
-	slotIn:BindInventory(self.In, i)
 
-	local slotOut = vgui.Create("ItemFrame", invOut, "ItemFrame: OutGrow")
-	invOut:TrackItemSlot(slotOut, i)
-	slotOut:BindInventory(self.Out, i)
+local tex = GetRenderTargetEx( "cocfallRT", 512, 256, RT_SIZE_OFFSCREEN,
+		 MATERIAL_RT_DEPTH_SHARED, 0, 0, IMAGE_FORMAT_RGBA8888 )
 
-	return slotIn, slotOut
+local rtMat = CreateMaterial("cocfallRTMat", "UnlitGeneric", {
+	["$basetexture"] = tex:GetName(),
+	["$translucent"] = "1"
+})
+
+
+
+-- nice name
+local cocaine = CreateMaterial("cocaineReglir1rMat", "UnlitGeneric", {
+	["$basetexture"] 			= "models/craphead_scripts/the_cocaine_factory/utility/pot_soda",
+	["$detail"] 				= "detail/dt_smooth1.vtf",
+	["$detailscale"] 			= "1",
+	["$detailblendmode"] 		= "8",
+})
+
+local mask2 = Material( "gui/gradient_up" )
+
+local function doRTMask(fr, w, h)
+	local gradH = 192
+	local midY = Lerp(fr, h, -gradH)
+
+	render.SetWriteDepthToDestAlpha( false )
+		render.OverrideBlend( true, BLEND_SRC_COLOR, BLEND_SRC_ALPHA, BLENDFUNC_MIN )
+			surface.SetMaterial( mask2 )
+			surface.DrawTexturedRect(0, midY, 512, gradH)
+			surface.SetDrawColor(0, 0, 0, 3)
+			surface.DrawRect(0, midY - h, 512, h)
+		render.OverrideBlend( false )
+	render.SetWriteDepthToDestAlpha( true )
 end
 
-function ENT:DoGrowMenu(open, nav, inv)
-	local scale, scaleW = Scaler(1600, 900, true)
-	local ent = self
+--[[hook.Add( "HUDPaint", "DrawExampleMaskMat", function()
+	render.PushRenderTarget( tex )
+	cam.Start2D()
+		render.Clear( 0, 0, 0, 0 )
+		RenderMaskedRT()
+	cam.End2D()
+	render.PopRenderTarget()
 
-	if not open then
-		local canv = nav:HideAutoCanvas("grow")
+	-- This is just for debugging, to see what it looks like without the mask
+	-- RenderMaskedRT()
 
-		for k, slot in ipairs(inv:GetSlots()) do
-			slot:Highlight()
-		end
+	-- Actually draw the Render Target to see the final result.
+	surface.SetDrawColor( color_white )
+	surface.SetMaterial( myMat )
+	surface.DrawTexturedRect( 520, 0, TEX_SIZE, TEX_SIZE )
+end )]]
 
-		return
-	end
-
+function ENT:DoDryMenu(open, nav, inv)
 	local canv, new = nav:ShowAutoCanvas("grow", nil, 0.1, 0.2)
 	nav:PositionPanel(canv)
 
@@ -98,84 +127,166 @@ function ENT:DoGrowMenu(open, nav, inv)
 		return
 	end
 
-	local maxSlots = ent.Levels[#ent.Levels].Slots
+	local iPnl = vgui.Create("InventoryPanel", canv)
+	iPnl.NoPaint = true
+	iPnl:EnableName(false)
+	iPnl:SetShouldPaint(false)
+	iPnl:SetInventory(self.Buf)
+	iPnl:SetSize(canv:GetWide() * 0.9, canv:GetTall() * 0.35)
+	iPnl:SetPos(0, canv:GetTall() - iPnl:GetTall())
+	iPnl:CenterHorizontal()
 
-	local sIns, sOuts = {}, {}
-	local slotSize, slotPad = scaleW(80), scaleW(16)
+	local slot = vgui.Create("ItemFrame", iPnl)
+	slot:Dock(FILL)
 
-	local invIn = vgui.Create("InventoryPanel", canv)
-	invIn.NoPaint = true
-	invIn:EnableName(false)
-	invIn:SetShouldPaint(false)
-	invIn:SetInventory(self.In)
+	iPnl:TrackItemSlot(slot, 1)
+	slot:BindInventory(self.Buf, 1)
 
-	local invOut = vgui.Create("InventoryPanel", canv)
-	invOut.NoPaint = true
-	invOut:EnableName(false)
-	invOut:SetShouldPaint(false)
-	invOut:SetInventory(self.Out)
+	slot.amt = slot:GetItem() and slot:GetItem():GetAmount() or 0
 
-	for i=1, maxSlots do
-		local sin, sout = ent:CreateSlot(invIn, invOut, i)
-		sin:SetSize(slotSize, slotSize)
-		sout:SetSize(slotSize, slotSize)
-
-		table.insert(sIns, sin)
-		table.insert(sOuts, sout)
+	if slot.ModelPanel then
+		slot.ModelPanel:Hide()
 	end
+	local ent = self
 
-	local poses, tW = vgui.Position(slotPad, unpack(sIns))
-	invIn:SetSize(tW + slotPad * 2, slotSize + slotPad * 2)
-	invIn:CenterHorizontal()
+	slot:On("InventoryUpdated", "HideModel", function()
+		local amt = slot:GetItem() and slot:GetItem():GetAmount() or 0
+		local t = amt < slot.amt and 0.3 or 1.8
 
-	for k,v in pairs(poses) do
-		k:SetPos(slotPad + v, k.Y)
-		k:CenterVertical()
-	end
+		slot:To("amt", amt, t, 0, 0.5)
 
-	poses, tW = vgui.Position(slotPad, unpack(sOuts))
-	invOut:SetSize(tW + slotPad * 2, slotSize + slotPad * 2)
-	invOut:CenterHorizontal()
-	invOut.Y = canv:GetTall() - invOut:GetTall()
-
-	for k,v in pairs(poses) do
-		k:SetPos(slotPad + v, k.Y)
-		k:CenterVertical()
-	end
-
-	local arr = Icons.Arrow:Copy()
-	arr:SetAlignment(1)
-	arr:SetColor(nil)
-
-	local emptyCol = Color(20, 20, 20)
-
-	canv:On("Paint", "Arrows", function()
-		local iSz = 36
-		local arrOff = math.ceil(6 / 36 * iSz) -- the arrow png has blank space at the end
-
-		local y = invIn.Y + invIn:GetTall()
-		local w, h = 8, invOut.Y - y + arrOff
-
-		local hx = invIn.X
-		local sx, sy = canv:LocalToScreen(0, 0)
-
-		for k,v in ipairs(sIns) do
-			local x = v:GetPos()
-			x = x + v:GetWide() / 2 - w / 2 + hx
-
-			local fr = self:GetProgress(k)
-
-			Colors.DarkGray:SetDraw()
-			surface.DrawRect(x, y, w, h - iSz / 2)
-			arr:Paint(x + w / 2, y + h - iSz / 2, iSz, iSz, -90)
-
-			render.PushScissorRect(sx, sy + y, sx + ScrW(), sy + y + (h - arrOff) * fr)
-				White()
-				surface.DrawRect(x, y, w, h - iSz / 2)
-				arr:Paint(x + w / 2, y + h - iSz / 2, iSz, iSz, -90)
-			render.PopScissorRect()
+		slot.amtfr = 1
+		slot:RemoveLerp("amtfr")
+		slot:To("amtfr", 0, t, 0.2, 1)
+		
+		if slot.ModelPanel then
+			slot.ModelPanel:Hide()
 		end
 	end)
+
+	local progCol = Color(230, 230, 200)
+
+	slot:On("PostDrawBorder", "DrawProc", function(_, w, h, col)
+		local fr = ent:GetFrac()
+		draw.RoundedBox(slot.Rounding, 0, 0, w * fr, h, progCol)
+	end)
+
+	local fall = thxSource()
+	local colUnpr, colPr = Color(250, 250, 200), Color(255, 255, 255)
+	local tcol = Color(0, 0, 0)
+	local why_source = Vector()
+
+	function slot:PostPaint(w, h)
+		local itm = self:GetItem()
+		--if not itm then return end
+
+		local amt = self.amt
+		local amtTo = self:GetTo("amt") and self:GetTo("amt").ToVal or amt
+
+		if amtTo > amt then
+			local fallA = self.amtfr
+			do
+				render.PushRenderTarget( tex )
+				cam.Start2D()
+					render.Clear( 0, 0, 0, 0, true, true )
+
+					local nH = (h - 4) * fallA
+					local nY = Lerp(fallA, h - 4, 2)
+					surface.SetDrawColor(tcol)
+					surface.SetMaterial(fall)
+					local t = 128
+					surface.DrawTexturedRectUV(2, 2, w, h, 0, 0, w / t, h / t)
+					t = 160
+					surface.DrawTexturedRectUV(2, 2, w, h, 0, 0, w / t, h / t)
+					t = 64
+					surface.DrawTexturedRectUV(2, 2, w, h, 0, 0, w / t, h / t)
+					surface.DrawTexturedRectUV(2, 2, w, h, 0, -.2, w / t - 0.2, h / t)
+					doRTMask(fallA, w, h)
+				cam.End2D()
+				render.PopRenderTarget()
+			end
+
+			surface.SetDrawColor(255, 255, 255)
+			surface.SetMaterial( rtMat )
+			surface.DrawTexturedRectUV( 0, 0, w, h, 0, 0, w / 512, h / 256 )
+		end
+
+		local amtFr = amt / Inventory.Util.GetBase("cocaine"):GetMaxStack()
+
+		tcol:Lerp(ent:GetFrac(), colUnpr, colPr)
+		why_source:SetUnpacked(tcol.r / 255, tcol.g / 255, tcol.b / 255)
+
+		cocaine:SetVector("$color", why_source)
+
+		surface.SetMaterial(cocaine)
+		surface.SetDrawColor(tcol)
+		local sH = amtFr * h * 0.6
+		local y = h - sH
+		surface.DrawTexturedRectUV(2, h - sH, w - 4, sH, 0, (y / 128), 3, h / 128)
+	end
+
+	local switch = vgui.Create("FButton", canv)
+	switch:SetSize(36, 36)
+	switch:SetPos(iPnl.X + iPnl:GetWide() - switch:GetWide() - 4,
+		iPnl.Y - 4 - switch:GetTall())
+
+	switch:SetIcon(
+		Icon("https://i.imgur.com/YNRPO5z.png", "powerbtn.png")
+			:SetSize(26, 26)
+	)
+
+
+	local dt = DeltaText()
+		:SetFont("EX24")
+
+	dt.AlignX = 2
+	dt.AlignY = -1.125
+
+	local doit = dt:AddText("")
+	local id, frag = doit:AddFragment(ent:GetLightsOn() and "Stop" or "Start")
+	doit:AddFragment(" Drying")
+
+	dt:ActivateElement(doit)
+
+	function switch:DoClick()
+		net.Start("cocdrier")
+			net.WriteEntity(ent)
+			net.WriteBool(not ent:GetLightsOn())
+		net.SendToServer()
+	end
+
+	local lightCol = Color(220, 240, 250)
+	local lmat = Material("models/craphead_scripts/the_cocaine_factory/drying_rack/vol")
+
+	nav.a = ent:GetLightsOn() and 1 or 0
+
+	function canv:PostPaint(w, h)
+		local li = ent:GetLightsOn()
+		doit:ReplaceText(id, li and "Stop" or "Start")
+		dt:Paint(switch.X - 8, switch.Y + switch:GetTall() / 2)
+
+		nav:LerpColor(nav.HeaderColor, li and lightCol or Colors.Header, 0.2, 0, 0.3)
+		nav:To("a", li and 1 or 0, 0.7, 0, 1)
+
+		switch:SetColor(not li and Colors.Sky or Colors.Button)
+	end
+
+	function nav:PostPaint(w, h)
+		surface.SetMaterial(lmat)
+		surface.SetDrawColor(255, 255, 255)
+
+		if self.a > 0 then
+			local amt = 3
+			for i=0, amt do
+				local ch = math.RemapClamp(self.a, 0, 1 / amt * i, 0, 1)
+				if math.random() > ch then continue end
+
+				surface.DrawTexturedRect(i * (w + (-w / 3 + w / amt)) / amt,
+					self.HeaderSize,
+					w / 3, h * 2)
+			end
+		end
+	end
 end
 
 function ENT:Used()
@@ -210,18 +321,83 @@ function ENT:Used()
 
 	inv:MakePopup()
 
-	--[[local bpTab = menu:AddTab("Grow", function(_, _, pnl)
-		self:DoGrowMenu(true, menu, inv)
-	end, function()
-		self:DoGrowMenu(false, menu, inv)
-	end)
-
-	bpTab:Select(true)]]
-
-	self:DoGrowMenu(true, menu, inv)
+	self:DoDryMenu(true, menu, inv)
 end
 
-net.Receive("growything", function()
+net.Receive("cocdrier", function()
 	local e = net.ReadEntity()
 	e:Used()
 end)
+
+local funnyVMT = [[
+"UnlitGeneric"
+{
+    "$basetexture" "models/craphead_scripts/the_cocaine_factory/extractor/pixels"
+    "$vertexcolor" 1
+    "$vertexalpha" 1
+    "$nocull" 1
+
+    "$angle" 180
+    "$translate" "[0 0]"
+    "$center" "[.5 .5]"
+    "$scale" "[1 1]"
+    "$num" ".1"
+    "$num2" "0"
+
+    "Proxies"
+    {
+        "LinearRamp"
+        {
+            "rate" 0.8
+            "initialValue" 0
+            "resultVar" "$num2"
+        }
+
+        "LinearRamp"
+        {
+            "rate" .03
+            "initialValue" 0
+            "resultVar" "$translate[0]"
+        }
+
+        "Add"
+        {
+        srcVar1 $num
+        srcVar2 $num2
+        resultvar "$translate[1]"
+        }
+
+        "TextureTransform"
+        {
+            "translateVar" "$translate"
+            "rotateVar" "$angle"
+            "centerVar" "$center"
+            "scaleVar"     "$scale"
+            "resultVar" "$basetexturetransform"
+        }
+    }
+}]]
+
+local sha = util.SHA1(funnyVMT)
+local yea
+
+function thxSource()
+	if yea then return yea end
+
+	if file.Exists("hdl/thx_source.vmt", "DATA") then
+		local dat = file.Read("hdl/thx_source.vmt", "DATA")
+
+		if util.SHA1(dat) == sha and #dat == #funnyVMT then
+			-- has to be ../ SPECIFICALLY for vmts
+			-- pngs work fine; thx gmod
+			yea = Material("../data/hdl/thx_source.vmt")
+			return yea
+		end
+	end
+
+	-- whats that you want proxies in CreateMaterial? more like go fuck yourself
+	file.Write("hdl/thx_source.vmt", funnyVMT)
+
+	yea = Material("../data/hdl/thx_source")
+	return yea
+end

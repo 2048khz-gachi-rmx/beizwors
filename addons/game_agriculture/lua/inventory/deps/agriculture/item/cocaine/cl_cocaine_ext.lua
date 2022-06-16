@@ -7,7 +7,7 @@ function cock:GenerateText(cloud, mup)
 	if not efs or table.IsEmpty(efs) then return end
 
 	cloud.MinW = 250
-
+	--printf("gen text %p", mup)
 	for id, str in pairs(efs) do
 		local ef = Agriculture.CocaineTypes[id]
 
@@ -33,6 +33,27 @@ function cock:GenerateText(cloud, mup)
 
 	mup:SetWide(cloud.MinW)
 	mup:Recalculate()
+end
 
-	mup:Timer(1, 0, 1, function() print(mup:GetTall()) end)
+function cock:GenerateOptions(mn)
+	local inv = self:GetInventory()
+	if inv ~= Inventory.GetTemporaryInventory(CachedLocalPlayer()) then return end
+
+	local proc = self:GetProcessed()
+	if not proc then return end
+
+	local opt = mn:AddOption("Use")
+	opt.HovMult = 1.15
+	opt.Color = Colors.Sky:Copy()
+	opt.DeleteFrac = 0
+	opt.Description = "Use 1 charge to gain the listed effects"
+
+	local item = self
+
+	function opt:DoClick()
+		local ns = Inventory.Networking.Netstack()
+			ns:WriteInventory(inv)
+			ns:WriteItem(item, true)
+		Inventory.Networking.PerformAction(INV_ACTION_USE, ns)
+	end
 end

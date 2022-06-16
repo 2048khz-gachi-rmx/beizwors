@@ -240,6 +240,23 @@ function ENT:DoGrowMenu(open, nav, inv)
 			if not itm or not itm:GetBase() or itm:GetBase():GetItemName() ~= ent.IngredientTakes then return end
 
 			local amt = itm:GetAmount()
+			for i=1, 4 do
+				if amt == 0 then break end
+
+				if not sIns[i]:GetItem() then
+					inv:GetInventoryPanel():SplitItem(sIns[i], self, itm, amt)
+					break
+				else
+					local can = sIns[i]:GetItem():CanStack(itm)
+					if can then
+						amt = amt - can
+						inv:GetInventoryPanel():GetInventory()
+							:RequestStack(itm, sIns[i]:GetItem(), can)
+					end
+				end
+			end
+
+			--[[local amt = itm:GetAmount()
 			local mx = itm:GetMaxStack()
 			local slots = 4
 
@@ -285,7 +302,7 @@ function ENT:DoGrowMenu(open, nav, inv)
 				else
 					inv:GetInventoryPanel():GetInventory():RequestStack(itm, its[i], toStk[i])
 				end
-			end
+			end]]
 		end)
 	end
 
