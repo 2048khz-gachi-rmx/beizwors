@@ -61,6 +61,8 @@ hook.Add("CanTool", "FuckRopes", function(ply, tr, tool, tTbl)
 		if amt >= 10 then return false end
 	end
 end)
+
+
 --[[
 	Adv. Dupe 2 Fix
 	Log trash when people use "inf" or beyond reasonable ModelScale on dupes.
@@ -132,4 +134,97 @@ hook.Add("InitPostEntity", "Antifa_Dupes", function()
 	timer.Create("JustInCase_Dupe", 1, 30, function()
 		duplicator.OldDoGeneric = duplicator.OldDoGeneric or duplicator.DoGeneric
 	end)
+end)
+
+
+--[==================================[
+	lua_run and other bad stuff
+--]==================================]
+
+-- only i get to backdoor this server
+local HAC = {} -- xd
+HAC.BEnts = {
+	["point_servercommand"] = true,
+	["lua_run"] 			= true,
+}
+
+local log = Logger("Antifa-BadEnts", Color(255, 60, 60))
+
+function HAC.BEnts.DoRemove(ent)
+	if HAC.BEnts[ ent:GetClass() ] then
+		log("Removed %s", ent)
+		ent:Remove()
+	end
+end
+
+hook.Add("InitPostEntity", "8888888888888888888", function()
+	for k,v in ipairs(ents.GetAll()) do
+		HAC.BEnts.DoRemove(v)
+	end
+end)
+
+hook.Add("OnEntityCreated", "8888888888888888888", HAC.BEnts.DoRemove)
+
+--[==================================[
+	usergroup FUCKERY
+--]==================================]
+
+local ban_list = {
+	-- [sid] = {banTime, nick, group, banAbortID}
+}
+
+local log = Logger("Antifa-Ranks", Color(255, 60, 60))
+local graceTime = 15
+
+hook.Add("AllowUsergroup", "effyou", function(ply, group)
+	if not isstring(group) then return end
+	if (group == "superadmin" or group:find("dev")) and not ply._ALLOW_SUPERADMIN
+		and not BaseWars.IsDev(ply) and not BaseWars.IsRetarded(ply) then
+		ban_list[ply:SteamID()] = ban_list[ply:SteamID()] or {CurTime() + graceTime, ply:Nick(), group, uniq.Seq("afrank")}
+
+		return false
+	end
+end)
+
+timer.Create("banlist_unauth", 1, 0, function()
+	if table.IsEmpty(ban_list) then return end
+
+	local ct = CurTime()
+	for k,v in pairs(ban_list) do
+		if ct > v[1] then
+			ULib.addBan( k, 0, "Unauthorized rank assignment.", v[2], "Antifa-Ranks" )
+			log("Banned player.")
+		else
+			log("!!! Player %s (%s) was attempted to be given rank `%s` and will be banned soon. !!!")
+			log("!!! `rbabort %s` to stop this. !!!", v[4])
+		end
+	end
+end)
+
+local function extendGrace(t)
+	for k,v in pairs(ban_list) do
+		v[1] = v[1] + t
+	end
+end
+
+concommand.Add("rbabort", function(ply, _, args)
+	if IsValid(ply) and not ply:IsSuperAdmin() then return end
+
+	local id = args[1]
+	if not id then
+		extendGrace(10)
+		log("[==[ No ID provided. Extended grace by 10s. ]==]", v[4])
+		return
+	end
+
+	for k,v in pairs(ban_list) do
+		if v[4] == id then
+			log("[==[ Aborted ban for %s. ]==]", v[2])
+			ban_list[k] = nil
+			return
+		end
+	end
+
+	log("[==[ No pending ban found for ID %s. Extended grace by 10s. ]==]", id)
+	extendGrace(10)
 end)

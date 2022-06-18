@@ -37,8 +37,6 @@ end
 
 local ct = CurTime()
 
--- Do not sell your things; you will be automatically refunded 100% of the value.
-
 hook.Add("Think", "CountDownWarn", function()
 	ct = CurTime()
 	doMarkerLogic()

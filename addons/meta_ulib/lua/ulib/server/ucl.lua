@@ -1194,6 +1194,11 @@ if not meta then return end
 
 local oldSetUserGroup = meta.SetUserGroup
 function meta:SetUserGroup( group, dontCall )
+	local ok = hook.Run("AllowUsergroup", self, group)
+	if ok == false then
+		return
+	end
+
 	if not ucl.groups[ group ] then ULib.ucl.addGroup( group ) end
 
 	local oldGroup = self:GetUserGroup()
