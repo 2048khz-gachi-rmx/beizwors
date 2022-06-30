@@ -43,6 +43,8 @@ coc[5] = {
 
 for k,v in ipairs(coc) do
 	coc[v.Name] = v
+	coc[v.Result] = v
+	v.ID = k
 end
 
 
@@ -174,6 +176,21 @@ do
 	end
 end
 
+function Agriculture.CocaineIDToName(id)
+	return coc[id] and coc[id].Result
+end
+
+function Agriculture.CocaineIDToLeaf(id)
+	return coc[id] and coc[id].Name
+end
+
+function Agriculture.CocaineNameToID(name)
+	return coc[name] and coc[name].ID
+end
+
+function Agriculture.GetDrug(by)
+	return coc[by]
+end
 
 do return end
 

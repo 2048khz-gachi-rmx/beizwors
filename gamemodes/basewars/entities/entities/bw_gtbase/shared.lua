@@ -37,6 +37,8 @@ end
 function ENT:SetTime(st, et, ...)
 	if st then self:SetTimeStart(st, ...) end
 	if et then self:SetTimeEnd(et, ...) end
+
+	self:StateChanged()
 end
 
 function ENT:GetFrac(...)

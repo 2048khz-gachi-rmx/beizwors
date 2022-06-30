@@ -45,6 +45,10 @@ function ENT:GetBaseConsumption()
 	return ent_base.PowerRequired or self.PowerRequired
 end
 
+function ENT:GetConsumption()
+	return self.PowerRequired
+end
+
 function ENT:SetConsumption(pw)
 	self.PowerRequired = math.floor(pw)
 

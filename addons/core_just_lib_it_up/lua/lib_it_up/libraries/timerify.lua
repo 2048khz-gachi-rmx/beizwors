@@ -51,19 +51,25 @@ function META:RemoveTimer(name)
 	return ex
 end
 
+function META:TimerExists(name)
+	return timer.Exists("__Timerified:" .. hex(self) .. ":" .. tostring(name))
+end
+
 local metas = {
 	FindMetaTable("Entity"),
 	FindMetaTable("Panel"),
 }
 
 for k,v in pairs(metas) do
-	v.Timer = META.Timer
-	v.RemoveTimer = META.RemoveTimer
+	for name, fn in pairs(META) do
+		v[name] = fn
+	end
 end
 
 function Timerify(what)
-	what.Timer = META.Timer
-	what.RemoveTimer = META.RemoveTimer
+	for name, fn in pairs(META) do
+		what[name] = fn
+	end
 end
 
 local PLAYER = FindMetaTable("Player")

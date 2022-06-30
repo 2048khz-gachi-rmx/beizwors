@@ -4,67 +4,68 @@ AddCSLuaFile("shared.lua")
 local thxSource
 
 function ENT:CLInit()
+
 end
 
-ENT.DrawInitialized = false -- for autorefresh
-local an
-
+ENT.DrawInitialized = false
 function ENT:DrawInit()
 	if self.DrawInitialized then return end
-	an = an or Animatable("drier")
+
+	self.powerTri = TriWave:new()
+		:SetSpeeds(-1 / 1.8, 1 / 1.8)
+
+	self.switchTri = TriWave:new()
+		:SetSpeeds(-1 / 0.2, 1 / 0.2)
 
 	self.DrawInitialized = true
+	self._lightChange = CurTime()
 end
 
-local scale3d = 0.03
+local log = math.log
+local l2 = log(2)
+-- man
+local inRev = function(x) return x == 0 and 0 or 1 + log(x) / 10 / l2 end
+local outRev = function(x) return x == 1 and 1 or -log(1 - x) / 10 / l2 end
+local ez = math.ease
 
-function ENT:GetDisplaySize()
-	return math.floor(286 * (0.05 / scale3d)), math.floor(323 * (0.05 / scale3d))
+function ENT:DoPowerArrow()
+	local tri = self.powerTri
+	local dir = tri:GetDirection()
+	local fn = dir and ez.OutExpo or ez.InExpo
+
+	local fr = fn(tri:Get())
+
+	self:SetPoseParameter("power", fr * 100)
+	self:SetPoseParameter("switch", math.ease.InOutCirc(self.switchTri:Get()) * 100)
 end
 
-
-function ENT:DrawDisplay(a, dist)
-	local w, h = self:GetDisplaySize()
-
-	surface.SetDrawColor(0, 0, 0, 255)
-	surface.DrawRect(0, 0, w, h)
-
-	surface.SetDrawColor(30, 30, 30, 150)
-	surface.DrawRect(2, 2, w - 4, h - 4)
-
-	if a == 0 then return end
-
-end
-
-local pt = Vector(19.82, -7.100080, 51.3)
-local ptFuck = Vector(pt)
-local ptAng = Angle("0.000 90.000 59.310")
-
-local axis = Vector()
-
-function ENT:Draw()
-	self:DrawModel()
+function ENT:LightsChanged(_, old, new)
 	self:DrawInit()
 
-	if halo.RenderedEntity() == self then return end
+	self.switchTri:SetDirection(new)
 
-	local pos, ang = self:LocalToWorld(pt), self:LocalToWorldAngles(ptAng)
-	local dist = EyePos():DistToSqr(pos)
-	local a = self._a or 1
+	self:Timer("switchanim", 0.07, 1, function()
+		self.powerTri:SetDirection(new)
+		local ofn = old and ez.OutExpo or ez.InExpo
+		local pre = ofn(self.powerTri:Get())
 
-	if dist > 0x5000 then
-		an:MemberLerp(self, "_a", 0, 0.3, 0, 3)
-	else
-		an:MemberLerp(self, "_a", 1, 0.2, 0, 0.5)
+		local nt = new and outRev(pre) or inRev(pre)
+		self.powerTri:Set(nt)
+	end)
+end
+
+function ENT:Draw()
+	if halo.RenderedEntity() ~= self then
+		self:DrawInit()
+
+		local therFr = math.ease.InOutSine(self:GetFrac()) * 100
+		self:SetPoseParameter("thermometer", therFr)
+		self:DoPowerArrow()
+
+		self:InvalidateBoneCache()
 	end
 
-	if dist > 0x1000 then
-		pos:Add(ang:ToUp(axis):CMul(0.2))
-	end
-
-	cam.Start3D2D(pos, ang, scale3d)
-		xpcall(self.DrawDisplay, GenerateErrorer("AgricultureGrower"), self, a, dist)
-	cam.End3D2D()
+	self:DrawModel()
 end
 
 

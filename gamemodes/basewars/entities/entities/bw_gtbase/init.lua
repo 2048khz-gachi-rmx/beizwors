@@ -16,14 +16,26 @@ function ENT:OnCompleted()
 	self:UpdateTime(true)
 end
 
+function ENT:ResetCompletion()
+	self._completed = nil
+end
+
 function ENT:CompletionThink()
 	local st, et = self:GetTime()
-	if st == 0 or et == 0 then return 2 end
+	if st == 0 or et == 0 then
+		return 2
+	end
 
 	local nt = math.Clamp(et - CurTime(), 0, 2)
 
 	if et < CurTime() then
-		nt = self:OnCompleted() or nt
+		if not self._completed then
+			nt = self:OnCompleted() or nt
+			self._completed = nt
+			self:StateChanged()
+		end
+	else
+		self:ResetCompletion()
 	end
 
 	return nt
@@ -48,18 +60,18 @@ function ENT:UpdateTime(restart, ...)
 	if isIdle or restart then
 		-- idling or requested explicit restart; time anew
 		self:SetProgHalt(0, ...)
-
 		if halt then
 			self:SetTime(0, 0, ...)
 			return
 		end
 
+		self:ResetCompletion()
 		self:SetTime(CurTime(), CurTime() + exTime, ...)
 		return
 	end
 
 	if not halt then
-		-- just powered... restore progress from fixed to time-remapping scheme
+		-- just unhalted... restore progress from fixed to time-remapping scheme
 		local prog = self:GetProgHalt(...)
 		self:SetProgHalt(0, ...)
 
@@ -72,6 +84,9 @@ function ENT:UpdateTime(restart, ...)
 		local sT, eT = self:GetTime(...)
 		self:SetProgHalt(math.RemapClamp(CurTime(), sT, eT, 0, 1), ...)
 		self:SetTime(0, 0, ...)
+	else
+		-- neither of the settime's hit; we have to update state manually
+		self:StateChanged()
 	end
 end
 

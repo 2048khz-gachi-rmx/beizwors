@@ -88,3 +88,5 @@ local cocainer = Inventory.BaseItemObjects.Cocaine("cocaine")
 
 
 Agriculture.Cocaine = cocainer
+
+IncludeCS("sh_cocaine_fx_ext.lua")

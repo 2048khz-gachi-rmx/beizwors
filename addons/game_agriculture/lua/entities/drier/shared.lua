@@ -28,6 +28,10 @@ ENT.Levels = {
 function ENT:DerivedDataTables()
 	self:BaseRecurseCall("DerivedDataTables")
 	self:NetworkVar("Bool", 3, "LightsOn")
+
+	if CLIENT then
+		self:NetworkVarNotify("LightsOn", function(self, ...) self:LightsChanged(...) end)
+	end
 end
 
 function ENT:CanFrom(ply, itm, toInv)
@@ -91,7 +95,7 @@ function ENT:SHInit()
 end
 
 function ENT:GetWorkTime()
-	return 5
+	return 15
 end
 
 function ENT:ShouldHalt()
@@ -101,4 +105,33 @@ function ENT:ShouldHalt()
 	if self.Buf:GetItemInSlot(1):GetProcessed() then return true end
 
 	return false
+end
+
+function ENT:LightSkin(on)
+	self:SetSkin(on and 1 or 0)
+	self:SetBodygroup(1, on and 1 or 0)
+end
+
+function ENT:StateChanged()
+	if not self:IsPowered() then
+		self:SetLightsOn(false)
+	end
+
+	local on = self:GetLightsOn()
+
+	if not self:TimerExists("Lights") or self._tl ~= on or not self:IsPowered() then
+		self._tl = on
+		if self:IsPowered() then
+			self:Timer("Lights", 0.1, 1, function()
+				self:LightSkin(on)
+			end)
+		else
+			self:LightSkin(on)
+			self:RemoveTimer("Lights")
+		end
+	end
+
+	local has = self.Buf:GetItemInSlot(1)
+
+	self:SetBodygroup(3, has and 1 or 0)
 end
