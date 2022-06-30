@@ -17,7 +17,7 @@ if SERVER then util.AddNetworkString("ManualGen") end
 
 local powerGen = 12
 
-function ENT:Init(...)
+function ENT:SHInit(...)
 	self.BaseClass.Init(self, ...)
 
 	--[[self.PowerGenerated2 = math.floor(

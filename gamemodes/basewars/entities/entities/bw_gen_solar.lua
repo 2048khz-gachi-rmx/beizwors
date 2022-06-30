@@ -18,7 +18,7 @@ BaseWars.Solar.SkyPower = 10
 local skylessPower = BaseWars.Solar.SkylessPower
 local skyPower = BaseWars.Solar.SkyPower
 
-function ENT:Init()
+function ENT:SHInit()
 	if CLIENT then return end
 	BaseWars.Solar.Initialize(self)
 	self.PowerGenerated = 0

@@ -139,7 +139,7 @@ local lines
 
 local curTipY = 0
 
-function ENT:Init()
+function ENT:SHInit()
 	self:SetBoughtPrice(100)
 	self.BreakingDown = 0
 

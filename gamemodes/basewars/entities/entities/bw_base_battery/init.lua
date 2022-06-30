@@ -2,7 +2,7 @@ include("shared.lua")
 
 util.AddNetworkString("ConnectGenerator")
 
-function ENT:Init()
+function ENT:SHInit()
 	self:AddEFlags(EFL_FORCE_CHECK_TRANSMIT)
 end
 

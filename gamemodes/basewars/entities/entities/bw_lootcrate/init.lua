@@ -6,7 +6,7 @@ AddCSLuaFile("cl_init.lua")
 
 CrateRespawnTime = 20
 
-function ENT:Init(me)
+function ENT:SVInit(me)
 	ActiveLootCrates[#ActiveLootCrates + 1] = self
 	self.TimesUsed = 0
 	self.LastUse = 0

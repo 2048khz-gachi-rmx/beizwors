@@ -28,7 +28,7 @@ if SERVER then
 
 	local ForceAngle = Angle(-90, 0, 0)
 
-	function ENT:Init()
+	function ENT:SHInit()
 		self:SetAngles(ForceAngle)
 		self:SetCollisionGroup(COLLISION_GROUP_WORLD)
 		--self:EnableCustomCollisions(true)
