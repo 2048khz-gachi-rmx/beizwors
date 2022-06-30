@@ -159,20 +159,19 @@ local function UpdateNotice( pnl, total_h )
 end
 
 local function Update()
-
 	if ( !Notices ) then return end
-
-	local h = 0
-
-	for key, pnl in pairs( Notices ) do
-		h = UpdateNotice( pnl, h )
-	end
 
 	for i=#Notices, 1, -1 do
 		local pnl = Notices[i]
 		if ( not pnl:IsValid() or pnl:KillSelf() ) then
 			table.remove(Notices, i)
 		end
+	end
+
+	local h = 0
+
+	for key, pnl in pairs( Notices ) do
+		h = UpdateNotice( pnl, h )
 	end
 
 	for i=#Notices, 1, -1 do

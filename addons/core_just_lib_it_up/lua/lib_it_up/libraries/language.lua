@@ -18,7 +18,7 @@ Language.__call = Language.eval
 
 setmetatable(Language, Language)
 
-LocalString = Object:callable()
+LocalString = LocalString or Object:callable()
 LocalString.All = LocalString.All or {}
 
 function LocalString:Initialize(str, id)
@@ -64,7 +64,7 @@ end
 
 function net.ReadLocalString()
 	local id = net.ReadUInt(32)
-	return LocalString.All[id]
+	return LocalString.All[id] or Language.epicnetfail
 end
 
 function IsLanguage(what)
@@ -76,3 +76,5 @@ IsLocalString = IsLanguage
 function MakeLanguage(k, v)
 	Language[k] = LocalString(v, k)
 end
+
+MakeLanguage("epicnetfail", "Failed to receive a net message.")

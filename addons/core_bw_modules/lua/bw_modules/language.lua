@@ -45,8 +45,15 @@ Strings.PowerStored = "%spw"
 
 Strings.PayOutOwner 	= function(s, c)
 	if isnumber(s) then s = BaseWars.NumberFormat(s) end
-	return string.format("You got %s%s for the destruction of your %s",
-		Strings.Currency, s, c or "Something")
+	
+	local clr = Language.Colorful
+	if not clr then
+		return string.format("You got %s%s for the destruction of your %s",
+			Strings.Currency, s, c or "Something")
+	else
+		return string.format("You got [col=110,230,110]%s%s[col=255,255,255] for the destruction of your [col=250,250,80]%s",
+			Strings.Currency, s, c or "Something")
+	end
 end
 
 Strings.PayOut 		= function(s, c)

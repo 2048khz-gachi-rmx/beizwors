@@ -469,6 +469,16 @@ function string.Comma2( number )
 
 end
 
+function string.Concat(sep, ...)
+	local s = ""
+	local n = select("#", ...)
+	for i=1, n do
+		s = s .. tostring(select(i, ...)) .. (i ~= n and sep or "")
+	end
+
+	return s
+end
+
 function string.MaxFits(str, w, font)
 	if font then surface.SetFont(font) end
 	local curw = 0

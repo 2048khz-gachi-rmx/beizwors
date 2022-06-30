@@ -13,19 +13,37 @@ NOTIFY_CONSOLE = 0
 NOTIFY_CHAT = 1
 NOTIFY_POPUP = 2
 
+local lg = Logger("*"):SetColor(Color(120, 230, 120))
+
+local function clrLog(s, ...)
+	local str
+
+	if IsLocalString(s) then
+		Language.Colorful = true
+		lg("%s", s(...))
+		Language.Colorful = false
+
+		str = s(...)
+	else
+		lg("%s", s)
+		str = s
+	end
+
+	return str
+end
+
 local actions = {
-	[NOTIFY_CONSOLE] = function(_, ...)
-		MsgC(color_white, ...)
-		MsgC("\n")
+	[NOTIFY_CONSOLE] = function(_, a1, ...)
+		clrLog(what, a1, ...)
 	end,
 
 	[NOTIFY_CHAT] = function(_, ...)
 		chat.AddText(...)
 	end,
 
-	[NOTIFY_POPUP] = function(typ, str, dur, ...)
-		notification.AddTimed(str, typ, dur or 5)
-		MsgC(str)
+	[NOTIFY_POPUP] = function(typ, what, ...)
+		local str = clrLog(what, ...)
+		notification.AddTimed(str, typ, 5)
 	end
 }
 
@@ -112,7 +130,7 @@ if CLIENT then
 			-- received local string
 			local fmt, args = MODULE._ReadLang()
 
-			MODULE._Add(notif_typ, popup_typ, fmt(unpack(args)))
+			MODULE._Add(notif_typ, popup_typ, fmt, unpack(args))
 
 		elseif data_typ == 1 then
 			-- received string
