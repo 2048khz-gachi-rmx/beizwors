@@ -27,8 +27,11 @@ function fuckyou()
 
 	--RunConsoleCommand("sv_downloadurl", "https://vaati.net/Gachi/garrysmod")
 	--RunConsoleCommand("sv_downloadurl", "http://9840cbe192b59391.daemon.panel.gg/25017be5/")
-	RunConsoleCommand("sv_loadingurl", Settings.GetStored("LoadingURL",
-		"https://vaati.net/Gachi/loading.html"))
+
+	if Settings.GetStored("LoadingURL", false) then
+		RunConsoleCommand("sv_loadingurl", Settings.GetStored("LoadingURL",
+			"https://ldstar.net/loading?sid=%s"))
+	end
 end
 
 timer.Create("fuckyou", 30, 0, fuckyou)
