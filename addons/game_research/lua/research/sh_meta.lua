@@ -46,7 +46,7 @@ PInfoAlias("HasPerkLevel")
 PInfoAlias("Research")
 
 function Research.ResearchLevel(what, lv)
-	assert(Research.IsPerkLevel(lv))
+	assert(Research.IsPerkLevel(lv), "lv not a perk level")
 	local pin = GetPlayerInfoGuarantee(what)
 
 	local perk = lv:GetPerk():GetID()
