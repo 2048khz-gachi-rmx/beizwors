@@ -149,7 +149,7 @@ function benchmark:SubOpen(name)
 	return name
 end
 
-function benchmark:SubClose(name)
+function benchmark:SubClose(name, min)
 	local st = ST()
 
 	if not self.OpenSubs[name] then
@@ -158,7 +158,11 @@ function benchmark:SubClose(name)
 	end
 
 	local diff = st - self.OpenSubs[name]
-	self.Subs[name] = diff
+	if min and InMS(diff) >= min then
+		self.Subs[name] = diff
+	end
+
+	self.OpenSubs[name] = nil
 end
 
 local function longprint(...)

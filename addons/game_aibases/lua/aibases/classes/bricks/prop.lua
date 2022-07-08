@@ -59,6 +59,18 @@ function AIBases.PropBrick:Spawn()
 	end
 end
 
+function AIBases.PropBrick:Preload(ent)
+	local mdl = self.Data.model
+
+	local st1 = SysTime()
+	if mdl then Model(mdl) end
+	local st2 = SysTime()
+
+	if st2 - st1 > 50 / 1000 then
+		printf("	caching %s took %.1f ms!!!", mdl, (st2 - st1) * 1000)
+	end
+end
+
 function AIBases.PropBrick:Remove()
 	if IsValid(self.Ent) then self.Ent:Remove() end
 end

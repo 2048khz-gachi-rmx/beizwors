@@ -42,10 +42,10 @@ end
 
 function layout:ReadFrom(fn, layFn)
 	local dat = file.Read("aibases/layouts/" .. fn .. ".dat", "DATA")
-	local lay = file.Read("aibases/layouts/" .. (layFn or fn) .. "_nav.dat", "DATA")
+	local lay = layFn ~= false and file.Read("aibases/layouts/" .. (layFn or fn) .. "_nav.dat", "DATA")
 
 	if not dat then print("no data @ ", "aibases/layouts/" .. fn .. ".dat") return end
-	if not lay then print("no nav data @ ", "aibases/layouts/" .. (layFn or fn) .. "_nav.dat") end
+	if not lay and layFn ~= false then print("no nav data @ ", "aibases/layouts/" .. (layFn or fn) .. "_nav.dat") end
 
 	self:Deserialize(dat, lay)
 

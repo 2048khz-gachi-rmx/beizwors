@@ -49,13 +49,13 @@ function AIBases.LootBrick:Spawn()
 	end
 end
 
-function AIBases.LootBrick:Remove()
-	if IsValid(self.Ent) then self.Ent:Remove() end
+function AIBases.LootBrick:Preload()
+	local mdl = self.Data.model
+	if mdl then Model(mdl) end
 end
 
-local function bgToChar(n)
-	if n < 10 then return string.char(48 + n) end -- '0'
-	return string.char(97 - 10 + n) -- 'a' - 10 + n
+function AIBases.LootBrick:Remove()
+	if IsValid(self.Ent) then self.Ent:Remove() end
 end
 
 function AIBases.LootBrick:Build(ent)

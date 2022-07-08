@@ -37,6 +37,10 @@ function AIBases.LayoutBrick:PostBuild()
 
 end
 
+function AIBases.LayoutBrick:Preload()
+
+end
+
 function AIBases.LayoutBrick:Serialize()
 	local json = util.TableToJSON(self.Data)
 	json = json:gsub("^[%[%{]", ""):gsub("[%]%}]$", "")

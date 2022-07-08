@@ -43,12 +43,41 @@ LibItUp.OnInitEntity(function()
 
 				local n = b:SubOpen(("% -20s"):format(cl))
 				Model(wep.WorldModel)
-				b:SubClose(n)
+				b:SubClose(n, 2)
 			end
 		end
 	end
 
 	b:Close():print(10)
+
+	b = bench(("AIBaseModels - mod_forcedata = %s, mod_forcetouchdata = %s")
+		:format(GetConVar("mod_forcedata"):GetInt(), GetConVar("mod_forcetouchdata"):GetInt())
+	)
+
+	local path = "aibases/layouts/"
+
+	local pre = GetConVar("mod_forcetouchdata"):GetInt()
+	RunConsoleCommand("mod_forcetouchdata", "0")
+
+	b:Open()
+	for k,v in pairs(file.Find(path .. "*", "DATA")) do
+		if v:match("_nav%.dat$") then continue end
+
+		local layName = v:gsub("%.dat$", "")
+		local lay = AIBases.BaseLayout:new("CachedLayout")
+		lay:ReadFrom(layName, false)
+
+		local n = b:SubOpen( ("% -12s"):format(layName) )
+
+			for uid, brick in pairs(lay.UIDBricks) do
+				brick:Preload()
+			end
+
+		b:SubClose(n, 3)
+	end
+	b:Close():print(100)
+
+	RunConsoleCommand("mod_forcetouchdata", tostring(pre))
 end)
 
 function AIBases.RollWeapon(type, tier)

@@ -266,6 +266,8 @@ else
 
 		inst:SetSize(slCanv:GetWide(), 28)
 		inst:SetPos(0, slot.Y - 8 - inst:GetTall())
+		inst:SetText("Install")
+		inst:SetFont("EX24")
 
 		function inst:DoClick()
 			ent:Mod_RequestInstall(true, slot:GetSlot())
