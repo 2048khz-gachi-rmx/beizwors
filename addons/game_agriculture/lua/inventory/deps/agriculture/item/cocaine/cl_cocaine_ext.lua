@@ -6,16 +6,19 @@ function cock:GenerateText(cloud, mup)
 	local efs = self:GetEffects()
 	if not efs or table.IsEmpty(efs) then return end
 
-	cloud.MinW = 250
+	cloud.MinW = 230
+
+	local w = 0
 	--printf("gen text %p", mup)
 	for id, str in pairs(efs) do
 		local ef = Agriculture.CocaineTypes[id]
 
 		local pc = mup:AddPiece()
 			pc:SetAlignment(1)
-			pc:SetFont("BSSB24")
-			pc:AddText(([[%s]]):format(ef.Result))
+			pc:SetFont("BSSB22")
+			pc:AddText(("%s"):format(ef.Result))
 			pc:SetColor(ef.TextColor or ef.Color)
+			pc:SetTall(20)
 
 		if ef.Markup or ef.Description then
 			local dpc = mup:AddPiece()

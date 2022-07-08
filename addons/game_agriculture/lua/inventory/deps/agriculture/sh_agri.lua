@@ -83,18 +83,29 @@ end
 do
 	local key = "Remedial"
 	local DRUG = coc[key]
-	DRUG.Description = "regens hp (add desc later)"
 
-	function DRUG.GetStrength()
-
+	function DRUG.GetStrength(str)
+		return 0.02 * str
 	end
 
-	--[[function DRUG.Markup(mup, desc, str)
+	function DRUG.Markup(mup, desc, str)
+		local numCol, notNumCol, textCol = unpack(Inventory.Modifiers.DescColors)
 
-	end]]
+		desc.Font = "OS18"
+		desc:SetColor(textCol)
+
+		local tx = desc:AddText("Restores ")
+
+		local tx2 = desc:AddText(math.Round(DRUG.GetStrength(str) * 100, 1))
+		tx2.color = DRUG.TextColor or DRUG.Color
+		desc.pt = tx2
+
+		desc:AddText(" health every second.")
+	end
 
 	function DRUG.UpdateMarkup(mup, desc, str)
-
+		desc.pt.text = tostring(math.Round(DRUG.GetStrength(str) * 100, 1))
+		desc:Recalculate()
 	end
 end
 
