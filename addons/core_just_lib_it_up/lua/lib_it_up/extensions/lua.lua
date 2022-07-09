@@ -86,6 +86,10 @@ function GenerateErrorer(err)
 	return errorers[err]
 end
 
+function gpcall(name, fn, ...)
+	return xpcall(fn, GenerateErrorer(name), ...)
+end
+
 local cur = {}
 local buf = {}
 

@@ -798,5 +798,9 @@ function assertNHf(cond, err, ...)
 	if not cond then
 		if not err then err = "assertion failed!" end
 		errorNHf(err, ...)
+
+		return false
 	end
+
+	return true
 end
