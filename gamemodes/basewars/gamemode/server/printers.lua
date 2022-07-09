@@ -18,11 +18,14 @@ function BaseWars.Printers.GetPrintRate(ent)
 	return t.rate * t.mult * (ent.Level ^ 1.3) * mult
 end
 
+function BaseWars.Printers.GetData(printer)
+	return mt[printer]
+end
+
 BaseWars.Printers.Update = BaseWars.Printers.Add
 BaseWars.Printers.PrintDelay = 1
 
 timer.Create("BW_Printers", BaseWars.Printers.PrintDelay, 0, function()
-
 	for k,v in pairs(mt) do
 		if not IsValid(k) then mt[k] = nil continue end
 		if k.IsPowered and not k:IsPowered() then continue end
@@ -32,7 +35,6 @@ timer.Create("BW_Printers", BaseWars.Printers.PrintDelay, 0, function()
 
 		if k.NetworkVars then k:NetworkVars() end
 	end
-
 end)
 
 for ent, dat in pairs(BaseWars.Printers.MasterTable) do

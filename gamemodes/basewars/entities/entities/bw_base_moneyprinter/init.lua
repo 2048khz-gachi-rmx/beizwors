@@ -18,8 +18,8 @@ function ENT:Initialize()
 	self.Level = 1
 	self:SetLevel(1)
 
-	self.Overclockable = true
-	self.Overclocker = false
+	self.OverclockMult = 1
+
 	self.Mods = {}
 
 	if self.TTR then
@@ -37,14 +37,19 @@ function ENT:Initialize()
 end
 
 
-function ENT:Overclock(lv, mult)
-	if not self.Overclockable or self.Overclocker then return false end
-	self.Overclockable = false
-	self.Overclocker = lv
-	self:SetMultiplier(self.Multiplier * mult)
-	self.Multiplier = self.Multiplier * mult
+function ENT:Overclock(mult)
+	if not assertNHf(isnumber(mult), "`mult` should be a number (got %s)", type(mult)) then
+		return
+	end
 
-	BaseWars.Printers.MasterTable[self].mult = self.Multiplier
+	local cur = self.OverclockMult
+	self.OverclockMult = mult
+
+	self:SetMultiplier(self.Multiplier / cur * mult)
+	self.Multiplier = self.Multiplier / cur * mult
+
+	BaseWars.Printers.GetData(self).mult = self.Multiplier
+	self:SetPrintAmount(BaseWars.Printers.GetPrintRate(self))
 
 	return true
 end

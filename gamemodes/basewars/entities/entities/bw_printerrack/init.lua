@@ -38,11 +38,9 @@ end
 
 
 function ENT:NetworkPrinters()
-
 	for k,v in pairs(self.Printers.Entities) do
 		self.Printers:Set(k, v:EntIndex())
 	end
-
 end
 
 function ENT:AddPrinter(slot, ent)
@@ -67,6 +65,7 @@ function ENT:AddPrinter(slot, ent)
 	ent:SetPrinterRack(self)
 	ent.IsInRack = true
 
+	self:OverclockPrinters()
 	self:NetworkPrinters()
 end
 
@@ -93,29 +92,66 @@ function ENT:ThinkFunc()
 	self:NetworkPrinters()
 end
 
+function ENT:OverclockPrinters()
+	local ovk
+	for k,v in pairs(self.Modules:GetItems()) do
+		if v:GetItemName() == "overclocker" and v:GetInstalled() then
+			ovk = v
+			break
+		end
+	end
+
+	if not ovk then
+		print("no overclocker; clocking to 1")
+		for k,v in pairs(self.Printers.Entities) do
+			if not IsValid(v) then continue end
+
+			v:Overclock(1)
+		end
+
+		return
+	end
+
+	local mult = ovk:GetBase().GetStrength(ovk)
+
+	for k,v in pairs(self.Printers.Entities) do
+		if not IsValid(v) then continue end
+
+		v:Overclock(mult)
+	end
+	print("mult:", mult)
+end
+
+function ENT:OnInstalledModule(slot, itm)
+	self:OverclockPrinters()
+end
+
+function ENT:OnUninstalledModule(slot, itm)
+	self:OverclockPrinters()
+end
+
 function ENT:OnRemove()
 	local zones = {}
 
 	for k,v in pairs(self.Printers.Entities) do
-		if IsValid(v) then
-			v.IsInRack = false
-			v:SetPrinterRack(NULL)
-			v:SetParent()
-			local phys = v:GetPhysicsObject()
+		if not IsValid(v) then continue end
 
-			if IsValid(phys) then
-				phys:EnableGravity(true)
-			end
+		v.IsInRack = false
+		v:SetPrinterRack(NULL)
+		v:SetParent()
+		local phys = v:GetPhysicsObject()
 
-			v:SetMoveType(MOVETYPE_VPHYSICS)
-			v:SetLocalAngularVelocity(Angle())
-			v:SetAbsVelocity(Vector())
-			v:SetPos(v:GetPos())
+		if IsValid(phys) then
+			phys:EnableGravity(true)
+		end
 
-			print(v:BW_GetZone())
-			if v:BW_GetZone() then
-				zones[v:BW_GetZone()] = true
-			end
+		v:SetMoveType(MOVETYPE_VPHYSICS)
+		v:SetLocalAngularVelocity(Angle())
+		v:SetAbsVelocity(Vector())
+		v:SetPos(v:GetPos())
+
+		if v:BW_GetZone() then
+			zones[v:BW_GetZone()] = true
 		end
 	end
 
@@ -172,6 +208,7 @@ function ENT:Eject(num)
 		ent:SetPrinterRack(NULL)
 		ent:SetMoveType(MOVETYPE_VPHYSICS)
 		ent:SetPos(ent:GetPos() + ang:Forward() * 40)
+		ent:Overclock(1)
 
 		ent:SetGravity(1)
 

@@ -33,7 +33,7 @@ function ENT:ForceUpdate()
 end
 
 function ENT:GetMaxLevel()
-	return math.max( (self.Levels and #self.Levels or 0), self.MaxLevel or 0 )
+	return math.max(self.Levels and #self.Levels or 0, self.MaxLevel or 0)
 end
 
 function ENT:UpdateTransmitState()
@@ -265,22 +265,32 @@ else
 		local slot = slCanv.Slot
 
 		inst:SetSize(slCanv:GetWide(), 28)
-		inst:SetPos(0, slot.Y - 8 - inst:GetTall())
 		inst:SetText("Install")
 		inst:SetFont("EX24")
 
 		function inst:DoClick()
-			ent:Mod_RequestInstall(true, slot:GetSlot())
+			local itm = slot:GetItem(true)
+
+			ent:Mod_RequestInstall(not itm:GetInstalled(), slot:GetSlot())
 		end
 
 		function inst:Think()
-			if not slot:GetItem(true) then
+			local itm = slot:GetItem(true)
+
+			if not itm then
 				self:SetEnabled(false)
 				return
 			end
 
 			self:SetEnabled(true)
-			self:SetColor(Colors.Sky)
+
+			if itm.IsModule and itm:GetInstalled() then
+				self:SetText("Uninstall")
+				self:SetColor(Colors.Golden)
+			else
+				self:SetText("Install")
+				self:SetColor(Colors.Sky)
+			end
 		end
 
 		return inst
@@ -306,41 +316,44 @@ else
 
 		for i=1, self.ModuleSlots do
 			local canv = vgui.Create("InvisPanel", ipnl)
-			canv:SetSize(96, 160)
+			canv:SetSize(96, 120)
 
 			local slot = vgui.Create("ItemFrame", canv, "ItemFrame: ModuleSlot")
 			slot:SetPos(canv:GetWide() / 2 - slot:GetWide() / 2, canv:GetTall() - slot:GetTall())
 			canv.Slot = slot
 
 			canv.Install = self:Mod_CreateInstallButton(ipnl, canv)
+			slot.Y = IsValid(canv.Install) and (canv.Install.Y + canv.Install:GetTall() + 8) or 0
 
+			local totalH = slot.Y + slot:GetTall()
+
+			canv:SetTall(totalH)
 			ipnl:TrackItemSlot(slot, i)
 
 			slots[i] = slot
 			slotCanvs[i] = canv
-			slotH = slot:GetTall()
+			slotH = canv:GetTall()
+
+			ipnl.SlotTop = ipnl:GetTall() - slotH - (canv:GetTall() - canv.Slot.Y)
+			ipnl.SlotBottom = ipnl:GetTall() - slotH
+			canv.Y = ipnl.SlotTop
 		end
 
 		f.ModuleSlots = slots
 		f.ModuleSlotCanvs = slotCanvs
 
-		ipnl.SlotBottom = ipnl:GetTall() - slotH
-		ipnl.SlotTop = ipnl:GetTall() - slotH - 32
-
 		local pos, tW = vgui.Position(scaleW(24), unpack(slotCanvs))
 
 		for canv, x in pairs(pos) do
-			canv:SetPos(
-				ipnl:GetWide() / 2 - tW / 2 + x,
-				ipnl.SlotTop - (canv:GetTall() - canv.Slot.Y))
+			canv.X = ipnl:GetWide() / 2 - tW / 2 + x
 		end
 
 		local cat = self:Mod_ShowCompatible(f, ipnl)
 		cat:On("ExpandChanged", "MoveSlots", function(_, ex)
 			local y = ex and ipnl.SlotBottom or ipnl.SlotTop
 
-			for _, slot in pairs(slotCanvs) do
-				slot:MoveTo(slot.X, y, 0.2, 0, 0.3)
+			for _, canv in pairs(slotCanvs) do
+				canv:MoveTo(canv.X, y, 0.2, 0, 0.3)
 			end
 		end)
 		return f
@@ -424,7 +437,7 @@ end
 
 function ENT:Mod_CanFrom(ply, itm, toInv)
 	if not toInv.IsBackpack then return false end
-	if self.InstalledModules[itm] then return false end
+	if itm.IsModule and itm:GetInstalled() then return false end
 
 	return true
 end
@@ -442,17 +455,15 @@ if SERVER then
 	function ENT:OnUninstalledModule(slot, itm) end
 
 	function ENT:Mod_Install(slot, itm)
-		self.InstalledModules[itm] = slot
-		self.InstalledModules[slot] = itm
+		itm:SetTempData("Installed", true)
 
-		self:OnInstalledModule(slot, itm)
+		gpcall(self:GetClass() .. ":OnInstalledModule()", self.OnInstalledModule, self, slot, itm)
 	end
 
 	function ENT:Mod_Uninstall(slot, itm)
-		self.InstalledModules[itm] = nil
-		self.InstalledModules[slot] = nil
+		itm:SetTempData("Installed", false)
 
-		self:OnUninstalledModule(slot, itm)
+		gpcall(self:GetClass() .. ":OnUninstalledModule()", self.OnUninstalledModule, self, slot, itm)
 	end
 
 	function ENT:Mod_RequestInstall(install, ply, slot)
@@ -461,7 +472,7 @@ if SERVER then
 		local itm = self.Modules:GetItemInSlot(slot)
 		if not itm then print("no itm?", slot, itm) return end
 
-		local installed = self.InstalledModules[itm]
+		local installed = itm:GetInstalled()
 
 		if install == (not not installed) then
 			print("mismatched states; ignoring")
@@ -473,6 +484,8 @@ if SERVER then
 		else
 			self:Mod_Uninstall(slot, itm)
 		end
+
+		Inventory.Networking.UpdateInventory(ply, self.Modules)
 	end
 
 	util.AddNetworkString("bw_base_module")

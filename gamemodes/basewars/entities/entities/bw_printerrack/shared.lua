@@ -31,6 +31,12 @@ ENT.CompatibleModules = {
 
 function ENT:Mod_Compatible(ply, itm)
 	if self.CompatibleModules[itm:GetItemName()] then
+		for k,v in pairs(self.Modules:GetItems()) do
+			if v:GetItemName() == itm:GetItemName() then
+				return false -- can't install more than 2
+			end
+		end
+
 		return true
 	end
 
