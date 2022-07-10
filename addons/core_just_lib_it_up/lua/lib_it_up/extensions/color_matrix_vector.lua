@@ -177,18 +177,18 @@ end
 
 MATRIX.Reset = MATRIX.Identity -- bruh
 
-local vec = Vector()
-local ang = Angle()
+local tVec = Vector()
+local tAng = Angle()
 
 local mtrx_methods = {
-	"Translate", 		vec,
-	"Scale", 			vec,
+	"Translate", 		tVec,
+	"Scale", 			tVec,
 
-	"SetTranslation", 	vec,
-	"SetScale", 		vec,
+	"SetTranslation", 	tVec,
+	"SetScale", 		tVec,
 
-	"Rotate", 			ang,
-	"SetAngles", 		ang
+	"Rotate", 			tAng,
+	"SetAngles", 		tAng
 }
 
 for i=1, #mtrx_methods, 2 do
@@ -258,8 +258,8 @@ local randVec = Vector()
 function VECTOR:AngleSpread(radx, rady)
 	self:Normalize()
 
-	local ang = math.random() * math.pi * 2
-	local x, y = math.cos(ang), math.sin(ang)
+	local theta = math.random() * math.pi * 2
+	local x, y = math.cos(theta), math.sin(theta)
 
 	local rad = math.sqrt(math.random())
 
@@ -275,7 +275,7 @@ function VECTOR:AngleSpread(radx, rady)
 end
 
 local toChain = {
-	"Add", "Sub", "Mul", "Div"
+	"Add", "Sub", "Mul", "Div", "Set"
 }
 
 for k,v in pairs(toChain) do
@@ -288,15 +288,30 @@ end
 local lerp = Lerp
 
 function LerpSource(dlt, from, to)
-	from[1] = Lerp(dlt, from[1], to[1])
-	from[2] = Lerp(dlt, from[2], to[2])
-	from[3] = Lerp(dlt, from[3], to[3])
+	from[1] = lerp(dlt, from[1], to[1])
+	from[2] = lerp(dlt, from[2], to[2])
+	from[3] = lerp(dlt, from[3], to[3])
 end
 
 function LerpInto(dlt, from, to, into)
-	into[1] = Lerp(dlt, from[1], to[1])
-	into[2] = Lerp(dlt, from[2], to[2])
-	into[3] = Lerp(dlt, from[3], to[3])
+	into[1] = lerp(dlt, from[1], to[1])
+	into[2] = lerp(dlt, from[2], to[2])
+	into[3] = lerp(dlt, from[3], to[3])
 
 	return into
+end
+
+function GetClosestVec(vec, points)
+	local dist, cur, key = math.huge
+
+	for k,v in ipairs(points) do
+		local cd = vec:DistToSqr(v)
+		if cd < dist then
+			cur = v
+			dist = cd
+			key = k
+		end
+	end
+
+	return cur, dist, key
 end
