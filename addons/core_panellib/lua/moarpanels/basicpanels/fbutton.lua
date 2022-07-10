@@ -126,6 +126,13 @@ function button:SetTextColor(col, g, b, a)
 	self.DisabledLabelColor.a = 150
 end
 
+function button:PickFont(max)
+	local fnt, sz, tw = Fonts.PickFont(Fonts.GetPrefix(self:GetFont()), self:GetText(), self:GetWide() - 16, max or self:GetTall(), 64)
+	self:SetFont(fnt)
+
+	return sz, tw
+end
+
 local b = bench("wtf", 2000)
 
 function button:HoverLogic(dis, w, h)

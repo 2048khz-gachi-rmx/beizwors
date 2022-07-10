@@ -73,7 +73,6 @@ local rendering = 0
 local function queueNext(spic)
 	local mdl, cur = next(queue)
 	if not cur then
-		print("empty!")
 		hook.Remove("SpawniconGenerated", "IconRenderQueue")
 		spic:Remove()
 		return
@@ -103,7 +102,6 @@ function draw.ForceRenderSpawnicon(mdl, sz)
 
 	queue[mdl] = queue[mdl] or {}
 	table.insert(queue[mdl], sz)
-	print("added", mdl, sz)
 
 	if kickstart then
 		local spic = GetSpawnIcon()

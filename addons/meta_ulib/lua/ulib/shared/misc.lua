@@ -1008,6 +1008,8 @@ function isClass( obj )
 end
 
 
+do return end -- fuck off ulib
+
 -- This wonderful bit of following code will make sure that no rogue coder can screw us up by changing the value of '_'
 _ = nil -- Make sure we're starting out right.
 local meta = getmetatable( _G ) or {}
