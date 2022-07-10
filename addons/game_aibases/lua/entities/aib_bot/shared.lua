@@ -8,7 +8,9 @@ ENT.Skin = 0
 ENT.Spawnable = true
 ENT.IsAIBaseBot = true
 
-ENT.MoveSpeed = 160
+ENT.EngageSpeed = 160
+ENT.PatrolSpeed = 70
+ENT.MoveSpeed = ENT.PatrolSpeed
 
 function ENT:SetupDataTables()
 	self:NetworkVar("Entity", 0, "CurrentWeapon")

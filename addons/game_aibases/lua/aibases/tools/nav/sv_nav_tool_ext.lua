@@ -12,11 +12,15 @@ function TOOL:StartNetwork()
 			for i=s, e do
 				local cn = navs[i]
 				net.WriteUInt(cn:GetID(), 18)
+				if cn:GetID() > bit.lshift(1, 18) then
+					printf("%s is more than 2^18!!!!!!")
+				end
+
 				local dat = cn:GetExtentInfo()
 				net.WriteVector(dat.lo)
 				net.WriteVector(dat.hi)
 
-				local bybits = navHideSpots(cn)
+				local bybits = bld.NavHideSpots(cn)
 
 				local hasSpots = not table.IsEmpty(bybits)
 				net.WriteBool(hasSpots)
@@ -78,3 +82,28 @@ local PLAYER = FindMetaTable("Player")
 function PLAYER:GetWIPNavs()
 	return bld.Navs[self] --bld.NWNav:GetNetworked()[self]
 end
+
+util.AddNetworkString("patrol-aib")
+net.Receive("patrol-aib", function(_, ply)
+	if not bld.Allowed(ply) then return end
+
+	local typ = net.ReadUInt(4)
+
+	if typ == 1 then
+		local bot = net.ReadEntity()
+		local points = net.ReadUInt(8)
+
+		local out = {}
+
+		for i=1, points do
+			local pt = net.ReadVector()
+			out[i] = pt
+		end
+
+		bld.PNW:SetTable(bot, out)
+		bot.PatrolRoute = out
+	elseif typ == 0 then
+		local bot = net.ReadEntity()
+		bld.PNW:SetTable(bot, bot.PatrolRoute or {})
+	end
+end)

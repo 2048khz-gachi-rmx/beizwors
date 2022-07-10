@@ -178,7 +178,9 @@ local vis = {}
 local lastGrab, lastAim = CurTime(), nil
 local tps = 1 / 10
 
-hook.Add("PostDrawTranslucentRenderables", "NavTool", function()
+hook.Add("PostDrawTranslucentRenderables", "NavTool", function(a, b)
+	if a or b then return end
+
 	local lp = CachedLocalPlayer()
 	local tool = lp:GetTool()
 	if not tool or not tool.AINavTool then return end
@@ -199,10 +201,12 @@ hook.Add("PostDrawTranslucentRenderables", "NavTool", function()
 		if bld.NWNav:GetNetworked()[i] then continue end
 		if v.force then vis[v] = i continue end
 
+
 		local inter = util.IntersectRayWithPlane(mp, vec, v.max, vector_up)
 		local dist = math.min(v.min:DistToSqr(mp), v.center:DistToSqr(mp), v.max:DistToSqr(mp))
 
 		local int = inter and v.center:DistToSqr(inter) < v.rad + 32 and tr.HitPos:DistToSqr(inter) < v.rad
+
 		vis[v] = (dist < renderDist or int) and i or nil
 	end
 
@@ -225,7 +229,10 @@ hook.Add("PostDrawTranslucentRenderables", "NavTool", function()
 	end
 
 	for v, _ in pairs(vis) do
-		if not AIBases.Navs[_] then vis[v] = nil continue end
+		if not AIBases.Navs[_] then
+			vis[v] = nil
+			continue
+		end
 
 		render.DrawWireframeBox(vector_origin, angle_zero, v.min, v.max, v.onceCol or v.col, true)
 		debugoverlay.Text(v.center, v.id, 0.1, true)
@@ -287,8 +294,9 @@ if CLIENT then
 
 	local modes = {
 		{"Mark", "New NavArea"},
-		{"Claim", "Claim & Connect NavAreas"},
+		{"Claim", "Claim & Connect"},
 		{"Spot", "New Spot"},
+		{"Patrol", "New Patrol"},
 	}
 
 	function TOOL:Opt_ClaimLeftClick(tr)
@@ -569,7 +577,8 @@ if CLIENT then
 			btn:SetSize(modeW, 32)
 			btn:SetPos(x, 0)
 			btn:SetText(v[2])
-			btn:SetFont("OSB20")
+			btn:SetFont("OS20")
+			btn:PickFont(22)
 
 			x = x + modeW + 8
 
@@ -644,5 +653,7 @@ if CLIENT then
 		curTool[2]:HideOptions(curTool)
 	end)
 end
+
+IncludeCS("sh_patrol_tool_ext.lua")
 
 EndTool()

@@ -6,7 +6,8 @@ AIBases.EnemyBrick.DataClass = brick.DataClass:callable({
 	ang = TYPE_ANGLE,
 	wep = {TYPE_STRING, "random"},
 	tier = {TYPE_NUMBER, 1},
-	model = {TYPE_STRING, ""}
+	model = {TYPE_STRING, ""},
+	patrol = {TYPE_TABLE, {}},
 })
 
 AIBases.EnemyBrick.type = AIBases.BRICK_ENEMY
@@ -29,6 +30,11 @@ function AIBases.EnemyBrick:Build(ent)
 	if wep then new.Data.wep = wep end
 	if ent.Tier ~= 1 then new.Data.tier = ent.Tier end
 	if ent.ModelOverride then new.Data.model = ent.ModelOverride end
+
+	local tempPatrol = bld.PNW:Get(ent) or ent.PatrolRoute
+	if tempPatrol then
+		new.Data.patrol = tempPatrol
+	end
 
 	return new
 end
@@ -54,6 +60,7 @@ function AIBases.EnemyBrick:Spawn()
 	bot.ForceWeapon = self.Data.wep
 	bot.Tier = self.Data.tier
 	bot.Brick = self
+	bot.PatrolRoute = self.Data.patrol
 	bot:Spawn()
 end
 

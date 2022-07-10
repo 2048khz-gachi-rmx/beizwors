@@ -103,9 +103,11 @@ function ENT:DoQueuedMove()
 	self:MoveToPos(p)
 	self:StartActivity(self:GetDesiredActivity())
 
-	if self._movePr then
-		self._movePr:Resolve()
+	local pr = self._movePr
+
+	if pr then
 		self._movePr = nil
+		pr:Resolve()
 	end
 	--self:DoQueuedMove(pos)
 end
@@ -172,6 +174,7 @@ function ENT:TryChase(sightOf)
 			print("somehow chasing with no target awareness")
 		end
 
+		self.MoveSpeed = self.EngageSpeed
 		self:C_MoveNow(sightOf)
 
 		chasing = false
@@ -203,6 +206,28 @@ function ENT:ShouldChase(time, sightOf)
 	return true
 end
 
+function ENT:PickNextPatrol()
+	local en = self:GetEnemy()
+	local mood = self:GetMood()
+
+	if en or mood ~= "passive" then return end
+
+	local patr = self.PatrolRoute
+
+	-- TODO: closures
+	self.MoveSpeed = self.PatrolSpeed
+
+	local nxt = (self.CurrentPatrolPoint % #patr) + 1
+	self._patrolPr = self:MoveWhenCan(self.PatrolRoute[nxt])
+		:Then(function()
+			self:Timer("wait_patrol", math.Rand(0.5, 0.8), 1, function()
+				self:PickNextPatrol()
+			end)
+		end)
+
+	self.CurrentPatrolPoint = nxt
+end
+
 function ENT:DecideMovement()
 	if self.TargetAligned or self.TrackingEnemy then
 		-- we have an enemy,
@@ -228,6 +253,26 @@ function ENT:DecideMovement()
 		end
 	end
 
+	local mood = self:GetMood()
+
+	if not en and mood == "passive" then
+		local patr = self.PatrolRoute
+		if not patr or #patr == 0 then return end
+
+		local curPatr = self.CurrentPatrolPoint
+		if not curPatr then
+			-- find the closest patrol point to start from
+			local cl, _, key = GetClosestVec(self:GetPos(), patr)
+			if not cl then return end
+
+			self.CurrentPatrolPoint = key
+
+			self.MoveSpeed = self.PatrolSpeed
+			self._patrolPr = self:MoveWhenCan(cl):Then(function()
+				self:PickNextPatrol()
+			end)
+		end
+	end
 end
 
 function ENT:MoveToPos( pos, options )
