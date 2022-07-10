@@ -109,7 +109,13 @@ hook.Add("BW_CanDealEntityDamage", "ResidenceCheck", function(atk, ent, imfl, dm
 			return true
 		end
 
-		dmg:ScaleDamage(0.5)
-		return true
+		-- the prop is not in a base the attacker owns...
+
+		if base:IsAI() then
+			return base:AI_ShouldEntTakeDamage(ent, atk) -- just delegate it there
+		else
+			dmg:ScaleDamage(0.5)
+			return true
+		end
 	end
 end)

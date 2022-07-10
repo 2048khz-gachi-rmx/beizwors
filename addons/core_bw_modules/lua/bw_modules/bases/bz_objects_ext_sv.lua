@@ -49,9 +49,12 @@ function bw.Base:SaveData()
 	end
 end
 
-function bw.Base:AddData(k, v)
+function bw.Base:AddData(k, v, defer)
 	self.Data[k] = v
-	self:SaveData()
+
+	if not defer then
+		self:SaveData()
+	end
 end
 
 function bw.Base:Claim(by)
@@ -233,6 +236,12 @@ bw.Zone.ForceScanEnts = bw.Zone.RescanEnts
 ChainAccessor(bw.Zone, "Brush", "Brush")
 
 hook.Add("BWBasesLoaded", "BrushRescan", function()
+	for k,v in pairs(bw.Zones) do
+		v:RescanEnts()
+	end
+end)
+
+hook.Add("PermaPropsReloaded", "prop_dynamic fucks up with brushes", function(newEnts)
 	for k,v in pairs(bw.Zones) do
 		v:RescanEnts()
 	end

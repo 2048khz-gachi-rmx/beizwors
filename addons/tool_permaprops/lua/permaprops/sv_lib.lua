@@ -82,6 +82,8 @@ function PermaProps.PPGetEntTable( ent )
 		content.Class = "prop_physics"
 	end
 
+	content.PersistentData = ent.PersistentData
+
 	--content.Table = PermaProps.UselessContent( ent:GetTable() )
 
 	return content
@@ -180,6 +182,10 @@ function PermaProps.PPEntityFromTable( data, id )
 
 	end
 
+	if data.PersistentData then
+		ent.PersistentData = data.PersistentData
+	end
+
 	/*if data.Table then
 
 		table.Merge(ent:GetTable(), data.Table)
@@ -226,6 +232,8 @@ function PermaProps.ReloadPermaProps()
 
 	if not content or content == nil then return end
 	
+	local newEnts = {}
+
 	for k, v in pairs( content ) do
 
 		local data = util.JSONToTable(v.content)
@@ -233,8 +241,10 @@ function PermaProps.ReloadPermaProps()
 		local e = PermaProps.PPEntityFromTable(data, tonumber(v.id))
 		if !e or !e:IsValid() then continue end
 
+		newEnts[#newEnts + 1] = e
 	end
 
+	hook.Run("PermaPropsReloaded", newEnts)
 end
 hook.Add("InitPostEntity", "InitializePermaProps", PermaProps.ReloadPermaProps)
 hook.Add("PostCleanupMap", "WhenCleanUpPermaProps", PermaProps.ReloadPermaProps) -- #MOMO
