@@ -929,3 +929,72 @@ else
 	hook.Remove("InitPostEntity", "BaseWars.SpawnMenu.RemoveTabs")
 	RunConsoleCommand("spawnmenu_reload")
 end
+
+local log = Logger("Basewars", RealmColor())
+
+concommand.Add("spawnmenu_rerender", function(_, _, args, argStr)
+	if #args == 0 then
+		log("Which part to rerender?")
+		log("Available:")
+		log("\t> `All` - slow, but re-renders everything.")
+
+		for k,v in SortedPairs(BaseWars.SpawnList) do
+			log("\t`" .. v.Name .. "`")
+		end
+		return
+	end
+
+	local selCat = argStr:lower()
+
+	if selCat == "all" then
+		log("Re-rendering **ALL** models! This'll lag for a while...")
+		local ren = {}
+
+		for k,v in pairs(BaseWars.Catalogue) do
+			if ren[v.Model] then continue end
+			if not v.Model then continue end
+
+			draw.ForceRenderSpawnicon(v.Model, 64)
+			draw.ForceRenderSpawnicon(v.Model, 128)
+
+			ren[v.Model] = true
+		end
+	else
+		local got
+		for k,v in pairs(BaseWars.SpawnList) do
+			if v.Name:lower() == selCat then
+				got = v
+			end
+		end
+
+		if got then
+			log("Re-rendering everything in the `%s` category...", got.Name)
+
+			local ren = {}
+
+			for k,v in pairs(got.Items) do
+				if ren[v.Model] then continue end
+				if not v.Model then continue end
+
+				draw.ForceRenderSpawnicon(v.Model, 64)
+				draw.ForceRenderSpawnicon(v.Model, 128)
+
+				ren[v.Model] = true
+			end
+
+		else
+			log("Unknown category: `%s`. Try running without any arguments to see usage.", selCat)
+		end
+	end
+end, function(cmd, args)
+	args = args:Trim() -- wtf
+	local out = {cmd .. " All"}
+
+	for k,v in pairs(BaseWars.SpawnList) do
+		if v.Name:lower():find(args:lower(), 1, true) then
+			out[#out + 1] = cmd .. " " .. v.Name
+		end
+	end
+
+	return out
+end)
