@@ -39,6 +39,14 @@ function Promise:Reset()
 	self:Rewind()
 end
 
+function Promise:IsFinished()
+	return self._Resolved or self._Rejected
+end
+
+function Promise:IsResolved()
+	return self._Resolved
+end
+
 function Promise:Then(full, rej)
 	self._curFillStep = self._curFillStep + 1
 	local key = self._curFillStep
