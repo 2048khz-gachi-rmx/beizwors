@@ -3,16 +3,45 @@ local path = "bw_modules/"
 function IncludeBasewarsModules()
 	local modules = 0
 
-	local function incrementModule(fn)
+	local function endModule(fn, forced)
 		modules = modules + 1
 
-		if MODULE.Name then
-			hook.Run("BasewarsModuleLoaded", MODULE.Name)
+		MODULE.LoadPath = fn
+
+		if not MODULE.DeferredEnd or forced then
+			if MODULE.Name then
+				hook.Run("BasewarsModuleLoaded", MODULE.Name, MODULE)
+			end
+			LibItUp.MarkLoaded(fn)
 		end
-		LibItUp.MarkLoaded(fn)
 	end
 
-	local function moduleLoaded(p)
+	function BaseWars.GetModuleLoader(nm)
+		local md = MODULE
+		if not md then
+			errorNHf("Can't get a module loader outside of a module!")
+			return BlankFunc
+		end
+
+		if not md.Name and not nm then
+			errorNHf("Can't get a module loader of an unnamed module!")
+			return
+		end
+
+		md.Name = nm or md.Name
+		md.DeferredEnd = true
+
+		local gee = _G
+
+		return function()
+			local pre = gee.MODULE
+			gee.MODULE = md
+				endModule(md.LoadPath, true)
+			gee.MODULE = pre
+		end
+	end
+
+	local function beginModule(p)
 		if p:match("_ext$") or p:match("_ext_") then
 			return false, false
 		end
@@ -30,10 +59,10 @@ function IncludeBasewarsModules()
 
 	local s = SysTime()
 
-		FInc.Recursive(path .. "*.lua", FInc.SHARED, moduleLoaded, incrementModule)
-		FInc.Recursive(path .. "server/*.lua", FInc.SERVER, moduleLoaded, incrementModule)
-		FInc.Recursive(path .. "map_edits/*.lua", FInc.SERVER, moduleLoaded, incrementModule)
-		FInc.Recursive(path .. "client/*.lua", FInc.CLIENT, moduleLoaded, incrementModule)
+		FInc.Recursive(path .. "*.lua", FInc.SHARED, beginModule, endModule)
+		FInc.Recursive(path .. "server/*.lua", FInc.SERVER, beginModule, endModule)
+		FInc.Recursive(path .. "map_edits/*.lua", FInc.SERVER, beginModule, endModule)
+		FInc.Recursive(path .. "client/*.lua", FInc.CLIENT, beginModule, endModule)
 
 	s = SysTime() - s
 
