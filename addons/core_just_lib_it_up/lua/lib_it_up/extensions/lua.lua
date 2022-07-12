@@ -40,9 +40,26 @@ function RotateArgs(...)
 	return unpack(args, 1, len)
 end
 
+LibItUp.TypeCheckers = LibItUp.TypeCheckers or {}
+
+LibItUp.TypeCheckers[isangle] 		= "Angle"
+LibItUp.TypeCheckers[ismatrix] 		= "VMatrix"
+LibItUp.TypeCheckers[ispanel] 		= "Panel"
+LibItUp.TypeCheckers[isentity] 		= "Entity"
+LibItUp.TypeCheckers[isvector] 		= "Vector"
+
+LibItUp.TypeCheckers[isnumber] 		= "number"
+LibItUp.TypeCheckers[isstring] 		= "string"
+LibItUp.TypeCheckers[istable] 		= "table"
+LibItUp.TypeCheckers[isfunction] 	= "function"
+LibItUp.TypeCheckers[isbool] 		= "boolean"
+
+
 function CheckArg(num, arg, check, expected_type)
 	if isfunction(check) then
 		if not check(arg) then
+			expected_type = expected_type or LibItUp.TypeCheckers[check]
+			
 			local err = (expected_type and
 							"expected '" .. expected_type .. "', got '" .. type(arg) .. "' instead")
 						or
@@ -55,6 +72,13 @@ function CheckArg(num, arg, check, expected_type)
 			errorf("bad argument #%d (%s)", num, err)
 		end
 	end
+end
+
+function RegisterTypeCheck(fn, name)
+	CheckArg(1, fn, isfunction) -- heh
+	CheckArg(2, name, isstring)
+
+	LibItUp.TypeCheckers[fn] = name
 end
 
 function ComplainArg(num, wanted, got)
