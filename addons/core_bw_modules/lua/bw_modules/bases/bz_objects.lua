@@ -523,7 +523,7 @@ include("areamark/_init.lua")
 include("bz_ownership_ext.lua")
 
 -- not deprecated, fuck you.
-IncludeCS("baseview/_init.lua")
+-- IncludeCS("baseview/_init.lua")
 IncludeCS("powergrid/_init.lua")
 
 -- subfolders in client/ aren't autoincluded
