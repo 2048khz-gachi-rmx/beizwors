@@ -173,13 +173,18 @@ end
 
 function ENT:OnTakeDamage(dmg)
 	local atk = dmg:GetAttacker()
-	if not IsValid(atk) or not self:CanTarget(atk) then return end
+	if not IsValid(atk) or not self:CanTarget(atk) then
+		self:Emit("OnTakeDamage", dmg)
+		return
+	end
 
 	if not self:GetEnemy() then
 		self:SetEnemy(atk)
 		self:MakeAwareOf(atk)
 		self:SetAimingAt(atk:EyePos())
 	end
+
+	self:Emit("OnTakeDamage", dmg)
 end
 
 local b = bench("targetacq", 600)
@@ -201,9 +206,9 @@ function ENT:FindEnemy(noWriteLoss)
 		end
 
 		self:SetEnemy(tgt)
-		self:SetMood("engaging")
-		self:Emit("EnemyFound", tgt)
+		self:MakeAwareOf(tgt)
 		self:_changeLOS(true)
+
 		self.headEmpty = false
 		--b:Close():print()
 		return true

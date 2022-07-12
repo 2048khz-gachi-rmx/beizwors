@@ -7,11 +7,19 @@ AddCSLuaFile()
 ENT.Base 			= "base_nextbot"
 ENT.Spawnable		= true
 
-AccessorFunc(ENT, "Enemy", "Enemy")
-
 function ENT:GetEnemy()
 	return self.Enemy and self.Enemy:IsValid() and self.Enemy
 end
+
+function ENT:SetEnemy(ent)
+	if IsValid(ent) then
+		self:SetMood("engaging")
+		self:Emit("EnemyFound", ent)
+	end
+
+	self.Enemy = ent
+end
+
 
 ENT.Mood = "passive"
 
