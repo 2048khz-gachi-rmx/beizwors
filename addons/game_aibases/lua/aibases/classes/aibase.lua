@@ -40,55 +40,19 @@ function base:Finish()
 end
 
 
-local bwbase = BaseWars.Bases.Base
+if not BaseWars or not BaseWars.Bases then
+	hook.Add("BasewarsModuleLoaded", "AIBase_ExtendBWBase", function(name)
+		print("bw module loaded", name, Realm())
+		if name ~= "Basezones" then return end
+		include(file.Here() .. "basezone_ext.lua") -- thx gmod
 
-function bwbase:IsAI()
-	return self:GetData().AIBase
-end
-
-function bwbase:MakeAI(entr, layouts)
-	if entr == nil and self:GetData().AIEntrance == nil then
-		errorf("`bwbase:MakeAI(entrance_name, layouts)`: missing entrance name. Give `false` to not have any.")
-		return
-	elseif entr then
-		assertf(isstring(entr), "Entrance must be a string.")
-	end
-
-	if layouts == nil and entr ~= false and self:GetData().AILayouts == nil then
-		errorf("`bwbase:MakeAI(entrance_name, layouts)`: missing layouts. Either no entrance or give both.")
-		return
-	elseif layouts then
-		assertf(istable(layouts), "Entrance must be a table.")
-		assertf(layouts[1] and layouts[2] and layouts[3], "Incorrect layouts table layout.")
-	end
-
-	self:AddData("AIBase", true, true)
-
-	if entr ~= false then
-		self:AddData("AIEntrance", entr, true)
-		self:AddData("AILayouts", layouts, true)
-	end
-
-	self:SaveData()
-end
-
-function bwbase:AI_ShouldEntTakeDamage(ent, atk)
-	if ent.Brick and ent.Brick.type == AIBases.BRICK_PROP then
-		return ent.Brick.Breakable -- prop brick ent
-	end
-
-	if ent.PermaProps then
-		local dat = ent.PersistentData
-
-		if dat and dat.BaseBreakable then
-			dmg:ScaleDamage(0.5)
-			print("aibase says take")
-			return true
+		if SERVER then
+			include(file.Here() .. "basezone_sv_ext.lua")
 		end
-
-		-- permaprops in AI bases dont take dmg unless explicitly set to
-		return false
+	end)
+else
+	include("basezone_ext.lua")
+	if SERVER then
+		include("basezone_sv_ext.lua")
 	end
-
-	return true
 end

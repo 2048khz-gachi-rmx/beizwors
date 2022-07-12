@@ -21,6 +21,11 @@ function AIBases.SelectLayout(base)
 	local dat = base:GetData()
 	local pool = dat.AILayouts
 
+	if not pool then
+		return false
+	end
+
+
 	local sel, seltier
 
 	for tier, lays in RandomPairs(pool) do
@@ -47,15 +52,48 @@ function AIBases.BaseRequireTier(base, t)
 	end
 end
 
-function AIBases.SpawnBase(base)
-	local dat = base:GetData()
-	local entranceName = dat.AIEntrance
-	local pool = dat.AILayouts
+function AIBases.GetBaseType(base, entr)
+	local dbricks = entr:GetBricksOfType(AIBases.BRICK_SIGNAL)
 
-	if not pool then
-		errorNHf("no layouts pool for base %s", base:GetName())
+	-- no signal bricks, probably free entrance
+	if not dbricks then
+		return AIBases.BaseTypes.FREE
+	end
+
+	for k,v in pairs(dbricks) do
+		-- entrance has a keyreader; probably keycard entrance
+		if IsValid(v.Ent) and v.Ent.IsAIKeyReader then
+			return AIBases.BaseTypes.KEYCARD
+		end
+	end
+
+	return AIBases.BaseTypes.FREE
+end
+
+function AIBases.HookGeneration(base, entr)
+	local typ = AIBases.GetBaseType(base, entr)
+
+	if not typ then
+		errorNHf("Failed to recognize base type: %s", base)
 		return
 	end
+
+	if not isfunction(AIBases.Regeneration[typ]) then
+		errorNHf("No regeneration method for typ %s", typ)
+		return
+	end
+
+	AIBases.Regeneration[typ] (base, entr)
+end
+
+function AIBases.SpawnBase(base)
+	if base.ActiveLayout then
+		errorNHf("Attempted to create multiple layouts for base? %s", base)
+		return
+	end
+
+	local dat = base:GetData()
+	local entranceName = dat.AIEntrance
 
 	base.EntranceLayout = AIBases.BaseLayout:new()
 	local ok = base.EntranceLayout:ReadFrom(entranceName)
@@ -66,41 +104,7 @@ function AIBases.SpawnBase(base)
 
 	ok:Spawn()
 
-	local layName, layTier = AIBases.SelectLayout(base)
-	AIBases.BaseRequireTier(base, layTier)
-
-	local dbricks = ok:GetBricksOfType(AIBases.BRICK_SIGNAL)
-	if not dbricks then
-		errorNHf("entrance layout `%s` has no keyreaders; not hooking generation", entranceName)
-		return
-	end
-
-	base.ActiveLayout = nil
-
-	local genned
-
-	for k,v in pairs(dbricks) do
-		if not IsValid(v.Ent) or not v.Ent.IsAIKeyReader then
-			errorNHf("brick %s has invalid ent!? %s", v, v.Ent)
-			return
-		end
-
-		v.Ent:On("StartUsingValidCard", "GenerateOnOpen", function()
-			if genned then return end -- already generated
-
-			genned = true
-
-			base.ActiveLayout = AIBases.BaseLayout:new(layName)
-			base.ActiveLayout:ReadFrom(layName)
-			base.ActiveLayout:SlowSpawn(1)
-			base.ActiveLayout:BindToBase(base)
-
-			base.ActiveLayout:On("Despawn", "Base", function()
-				base.ActiveLayout = nil
-				genned = false
-			end)
-		end)
-	end
+	AIBases.HookGeneration(base, ok)
 end
 
 function AIBases.DespawnBase(base, layout)

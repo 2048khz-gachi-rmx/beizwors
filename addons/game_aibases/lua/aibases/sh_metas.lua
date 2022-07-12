@@ -39,10 +39,34 @@ LibItUp.OnInitEntity(function()
 			for _, cl in pairs(weps) do
 				if not isstring(cl) then continue end
 				local wep = weapons.GetStored(cl)
-				if not wep or not wep.WorldModel then print("missing weapon:", cl, wep, wep and wep.WorldModel) continue end
+				if not wep or not wep.WorldModel then
+					print("missing weapon:", cl, wep, wep and wep.WorldModel)
+					continue
+				end
 
 				local n = b:SubOpen(("% -20s"):format(cl))
 				Model(wep.WorldModel)
+				Model(wep.ViewModel)
+				b:SubClose(n, 2)
+			end
+		end
+	end
+
+	b:Close():print(10)
+
+	local b = bench("CachingAIModels")
+
+	b:Open()
+
+	if SERVER then
+		local tiers = scripted_ents.GetStored("aib_bot").t.TierData
+
+		for tier, dat in pairs(tiers) do
+			for _, mdl in pairs(dat.models) do
+				if not isstring(mdl) then continue end
+
+				local n = b:SubOpen(("% -20s"):format(mdl))
+				Model(mdl)
 				b:SubClose(n, 2)
 			end
 		end
