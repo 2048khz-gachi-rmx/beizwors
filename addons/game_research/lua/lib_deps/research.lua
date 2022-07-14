@@ -7,6 +7,5 @@ FInc.Recursive("research/client/*.lua", FInc.CLIENT, FInc.RealmResolver())
 
 FInc.Recursive("research/perks/*", FInc.SHARED,
 	FInc.RealmResolver()
-		:SetVerbose(true)
 		:SetDefault(true)
 )

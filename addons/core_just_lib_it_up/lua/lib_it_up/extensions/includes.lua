@@ -170,7 +170,7 @@ local function logInclusion(path, cl, sv, why, default)
 	local reason = (why == -1 and "default-less extension-less") or
 					(why == 0 and "extension") or
 					(why == 1 and "default") or
-					(why == 2 and "extension using default (addcslua? -> " .. tostring(not not default) .. ")") or
+					(why == 2 and "extension using default (addcslua'd: " .. tostring(not not default) .. ")") or
 					(why == 3 and "resolved as '" .. tostring(not not default) .. "'")
 
 									-- we can't differentiate between a cl-only extension and
@@ -236,23 +236,27 @@ local function Resolve(res, path)
 			end
 			return false, false
 		else
-
+			local out_cl, out_sv = default, default
 			if isfunction(default) then
-				default = default(path)
+				out_cl, out_sv = default(path)
+
+				if out_sv == nil then
+					out_sv = out_cl
+				end
 			end
 
 			if is_ext then
 				if verb then
-					logInclusion( path, default and 1, false, 2, default )
+					logInclusion( path, out_cl and 1, false, 2, out_cl )
 				end
 
-				return default and 1, false
+				return out_cl and 1, false
 			end
 
 			if verb then
-				logInclusion( path, default, default, 1, default )
+				logInclusion( path, out_cl, out_sv, 1, out_cl )
 			end
-			return default, default
+			return out_cl, out_sv
 		end
 	end
 
