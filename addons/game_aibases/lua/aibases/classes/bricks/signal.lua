@@ -98,8 +98,6 @@ function AIBases.SignalBrick:PostSpawn(lay)
 			local bk = lay:GetBrick(uid)
 			WireLib.Link_Start(0, bk.Ent, bk.Ent:GetPos(), inp, "", color_trans, 0)
 			WireLib.Link_End(0, self.Ent, self.Ent:GetPos(), out, NULL)
-
-			printf("connecting %s -> [%s]%s", out, uid, inp)
 		end
 	end
 

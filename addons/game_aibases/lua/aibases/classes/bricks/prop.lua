@@ -67,7 +67,7 @@ function AIBases.PropBrick:Preload(ent)
 	local st2 = SysTime()
 
 	if st2 - st1 > 50 / 1000 then
-		printf("	caching %s took %.1f ms!!!", mdl, (st2 - st1) * 1000)
+		-- printf("	caching %s took %.1f ms!!!", mdl, (st2 - st1) * 1000)
 	end
 end
 

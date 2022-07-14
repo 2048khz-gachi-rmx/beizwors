@@ -96,7 +96,7 @@ function AIBases.SpawnBase(base)
 	local entranceName = dat.AIEntrance
 
 	base.EntranceLayout = AIBases.BaseLayout:new()
-	local ok = base.EntranceLayout:ReadFrom(entranceName)
+	local ok = base.EntranceLayout:ReadFrom(entranceName, true)
 	if not ok then
 		errorNHf("failed to read entrance layout with the name `%s`.", entranceName)
 		return

@@ -42,16 +42,16 @@ end
 
 if not BaseWars or not BaseWars.Bases then
 	hook.Add("BasewarsModuleLoaded", "AIBase_ExtendBWBase", function(name)
-		print("bw module loaded", name, Realm())
 		if name ~= "Basezones" then return end
-		include(file.Here() .. "basezone_ext.lua") -- thx gmod
+
+		include(file.Here() .. "basezone_sh_ext.lua") -- thx gmod
 
 		if SERVER then
 			include(file.Here() .. "basezone_sv_ext.lua")
 		end
 	end)
 else
-	include("basezone_ext.lua")
+	include("basezone_sh_ext.lua")
 	if SERVER then
 		include("basezone_sv_ext.lua")
 	end

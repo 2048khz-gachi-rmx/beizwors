@@ -3,7 +3,6 @@ AIBases.Regeneration = AIBases.Regeneration or {}
 local regen = AIBases.Regeneration
 
 regen[AIBases.BaseTypes.FREE] = function(base, entr)
-	print("Regeneration: free", base, entr)
 	local pr = entr:InteractionTimer(base, 15, 60)
 
 	pr:Then(function(_, why)
@@ -18,8 +17,6 @@ end
 
 
 regen[AIBases.BaseTypes.KEYCARD] = function(base, entr)
-	print("Regeneration: keycard", base, entr)
-
 	-- what layout will we generate once the keyreader opens up?
 	local layName, layTier = AIBases.SelectLayout(base)
 	if layName then
@@ -69,8 +66,8 @@ end
 
 local layout = AIBases.BaseLayout
 
-function layout:InteractionTimer(base, time, timeout, immediateInteract)
-	CheckArg(2, time, isnumber)
+function layout:InteractionTimer(base, interactTimeout, hardTimeout, immediateInteract)
+	CheckArg(2, interactTimeout, isnumber)
 
 	local interacted = false
 	local first, last = CurTime(), CurTime()
@@ -88,15 +85,18 @@ function layout:InteractionTimer(base, time, timeout, immediateInteract)
 
 		print("Timer created")
 		self:Timer("Regen", 1, "0", function()
-			if CurTime() - last > time then
+			if CurTime() - last > interactTimeout then
 				-- some time passed since last interaction... is there anyone left?
+				prom:Emit("InteractTimeout")
 				if table.IsEmpty(base:GetPlayers()) then
 					-- some time passed since last interaction and noone is in
 					print("No interaction and empty base...")
 					emptyTime = emptyTime + 1
+					prom:Emit("EmptyTick")
 				else
 					-- someone's inside...?
 					emptyTime = 0
+					prom:Emit("FullReset")
 				end
 
 				if emptyTime >= 15 then
@@ -106,7 +106,7 @@ function layout:InteractionTimer(base, time, timeout, immediateInteract)
 				end
 			end
 
-			if timeout and CurTime() - first > timeout then
+			if hardTimeout and CurTime() - first > hardTimeout then
 				-- hard timeout reached
 				finish("timeout")
 			end
@@ -115,14 +115,12 @@ function layout:InteractionTimer(base, time, timeout, immediateInteract)
 
 	local function interact()
 		if not interacted then
-			print("First interaction")
 			interacted = true
 			first = CurTime()
 			createTimer()
 		end
 
 		last = CurTime()
-		print("More interacetion")
 	end
 
 	if immediateInteract then
@@ -131,10 +129,6 @@ function layout:InteractionTimer(base, time, timeout, immediateInteract)
 
 	local enemies = self:GetBricksOfType(AIBases.BRICK_ENEMY)
 
-	local function onEnemyFound(bot, enemy)
-		interact()
-	end
-
 	for k,v in pairs(enemies) do
 		if not IsValid(v.Ent) then
 			errorNHf("brick %s has invalid ent!? %s", v, v.Ent)
@@ -142,7 +136,8 @@ function layout:InteractionTimer(base, time, timeout, immediateInteract)
 		end
 
 		local bot = v.Ent
-		bot:On("EnemyFound", "TrackInteract", onEnemyFound)
+		bot:On("EnemyFound", "TrackInteract", interact)
+		bot:On("OnTakeDamage", "TrackInteract", interact)
 	end
 
 	return prom

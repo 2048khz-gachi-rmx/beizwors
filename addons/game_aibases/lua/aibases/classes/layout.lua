@@ -40,12 +40,18 @@ function layout:GetBricksOfType(id)
 	return self.TypeBricks[id]
 end
 
-function layout:ReadFrom(fn, layFn)
+-- readNav = false -> don't load nav at all
+-- readNav = true -> try loading nav but don't complain if it's not there
+-- readNav = "string" -> read nav file from this filename
+
+function layout:ReadFrom(fn, readNav)
+	local navFn = isstring(readNav) and readNav or fn
+
 	local dat = file.Read("aibases/layouts/" .. fn .. ".dat", "DATA")
-	local lay = layFn ~= false and file.Read("aibases/layouts/" .. (layFn or fn) .. "_nav.dat", "DATA")
+	local lay = readNav ~= false and file.Read("aibases/layouts/" .. navFn .. "_nav.dat", "DATA")
 
 	if not dat then print("no data @ ", "aibases/layouts/" .. fn .. ".dat") return end
-	if not lay and layFn ~= false then print("no nav data @ ", "aibases/layouts/" .. (layFn or fn) .. "_nav.dat") end
+	if not lay and not isbool(readNav) then print("no nav data @ ", "aibases/layouts/" .. navFn .. "_nav.dat") end
 
 	self:Deserialize(dat, lay)
 

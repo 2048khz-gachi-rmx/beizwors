@@ -161,22 +161,3 @@ function layout:MarkAll(ply)
 	end
 end
 
-function layout:BindToBase(base)
-	local missed = 0
-	local boundWhen = CurTime()
-
-	self:Timer("PresenceCheck", 1, "0", function()
-		if CurTime() - boundWhen < 15 then return end -- grace period
-
-		if table.IsEmpty(base:GetPlayers()) then
-			missed = missed + 1
-			if missed > 10 then
-				print("despawning base")
-				AIBases.DespawnBase(base, self)
-				self:RemoveTimer("PresenceCheck")
-			end
-		else
-			missed = 0
-		end
-	end)
-end
