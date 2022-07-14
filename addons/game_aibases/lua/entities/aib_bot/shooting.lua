@@ -6,7 +6,6 @@ function ENT:Give(class)
 	local wep = ents.Create(class)
 	if IsValid(wep) then
 		self:SetupWeapon(wep)
-		
 	end
 
 	return wep
@@ -50,9 +49,9 @@ hook.Add("PlayerCanPickupWeapon", "StopStealing", function(ply, wep)
 	end
 end)
 
-ENT.InaccuracyFrom = 10
-ENT.InaccuracyTo = 2
-ENT.InaccuracyTime = 3
+ENT.InaccuracyFrom = 6
+ENT.InaccuracyTo = 1
+ENT.InaccuracyTime = 2
 ENT.InaccuracyStartLosing = 2
 
 hook.Add("CW2_ConeModifiers", "AIInacc", function(wep, spr)
