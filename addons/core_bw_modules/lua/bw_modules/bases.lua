@@ -1,5 +1,7 @@
 MODULE.Name = "Basezones"
 
+local loader = BaseWars.GetModuleLoader(nm)
+
 local function init(force)
 	local b = BaseWars.Bases and BaseWars.Bases.NW
 	local reload = not not b
@@ -85,15 +87,14 @@ local function init(force)
 			v:SetBase(nil)
 		end
 	end
+
+	loader()
 end
 
 if CLIENT then
-	local loader = BaseWars.GetModuleLoader(nm)
-
 	LibItUp.OnLoaded("hud.lua", function()
 		init()
 		BaseWars.Bases.Reset = Curry(init, true)
-		loader()
 	end)
 else
 	init()

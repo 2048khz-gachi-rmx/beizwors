@@ -95,7 +95,7 @@ function AIBases.SpawnBase(base)
 	local dat = base:GetData()
 	local entranceName = dat.AIEntrance
 
-	base.EntranceLayout = AIBases.BaseLayout:new()
+	base.EntranceLayout = AIBases.BaseLayout:new(entranceName)
 	local ok = base.EntranceLayout:ReadFrom(entranceName, true)
 	if not ok then
 		errorNHf("failed to read entrance layout with the name `%s`.", entranceName)
@@ -125,3 +125,17 @@ function AIBases.DespawnBase(base, layout)
 	layout:Despawn()
 	base.ActiveLayout = nil
 end
+
+hook.Add("PreCleanupMap", "DespawnLayouts", function()
+	for k,v in pairs(BaseWars.Bases.Bases) do
+		if v.ActiveLayout then
+			AIBases.DespawnBase(v, v.ActiveLayout)
+		end
+
+		if v.EntranceLayout then
+			AIBases.DespawnBase(v, v.EntranceLayout)
+		end
+
+		v:Emit("Cleanup")
+	end
+end)

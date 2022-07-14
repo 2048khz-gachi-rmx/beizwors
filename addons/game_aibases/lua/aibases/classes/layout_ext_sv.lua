@@ -7,6 +7,7 @@ function layout:SpawnPrioritySort(bricks)
 end
 
 function layout:Spawn()
+	self:SetValid(true)
 	if self.LuaNavs then
 		AIBases.ConstructNavs(self.LuaNavs)
 	end
@@ -34,6 +35,7 @@ end
 Timerify(layout)
 
 function layout:SlowSpawn(msTimeout)
+	self:SetValid(true)
 	local bricksToSpawn = {}
 	local spawned = {}
 	msTimeout = tonumber(msTimeout) or 3
@@ -124,6 +126,8 @@ function layout:Despawn()
 			v:Remove()
 		end
 	end
+
+	self:SetValid(false)
 end
 
 function layout:Deserialize(str, nav)

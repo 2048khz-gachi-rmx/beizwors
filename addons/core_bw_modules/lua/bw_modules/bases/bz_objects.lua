@@ -16,6 +16,9 @@ ChainAccessor(bw.Zone, "ID", "ID")
 ChainAccessor(bw.Base, "Data", "Data")
 ChainAccessor(bw.Zone, "Data", "Data")
 
+Timerify(bw.Base)
+Timerify(bw.Zone)
+
 function bw.Zone:__tostring()
 	return ("BWZone [%d][%s]"):format(self:GetID(), self:GetName())
 end
@@ -508,15 +511,14 @@ hook.Add("PostCleanupMap", "RespawnBaseZone", function()
 	end
 
 	for k,v in pairs(bw.Bases) do
+		v:KillAllTimers()
 		v:Spawn()
 	end
-
 
 	for k,v in pairs(bw.Zones) do
 		v:GetBrush():ForceScanEnts()
 	end
 end)
-
 
 include("bz_objects_ext_" .. Rlm(true) .. ".lua")
 include("areamark/_init.lua")

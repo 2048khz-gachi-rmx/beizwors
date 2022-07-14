@@ -17,6 +17,8 @@ function layout:Initialize(name)
 	self.EnemySpots = {}
 	self.Enemies = {}
 	self.Navs = {}
+
+	self._Valid = true
 end
 
 function layout:AddBrick(brick)
@@ -39,6 +41,12 @@ end
 function layout:GetBricksOfType(id)
 	return self.TypeBricks[id]
 end
+
+function layout:IsValid()
+	return self._Valid
+end
+
+ChainAccessor(layout, "_Valid", "Valid")
 
 -- readNav = false -> don't load nav at all
 -- readNav = true -> try loading nav but don't complain if it's not there

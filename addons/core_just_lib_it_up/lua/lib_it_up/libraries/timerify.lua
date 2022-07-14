@@ -24,7 +24,7 @@ function META:Timer(name, sec, reps, func, ...)
 	if not func then error("Nice function") return end --ya idiot
 
 	name = name or uniq.Seq("__Timerified:" .. hex(self))
-	local id = (name and "__Timerified:" .. hex(self) .. ":" .. tostring(name))
+	local id = "__Timerified:" .. hex(self) .. ":" .. tostring(name)
 
 	if reps == 0 then
 		errorNHf("created a 0 rep timer (use a string '0' to stop this) @ %s", debug.traceback())
@@ -34,6 +34,9 @@ function META:Timer(name, sec, reps, func, ...)
 
 	sec = sec or 0
 	sec = sec --+ (CurTime() - UnPredictedCurTime()) -- brb finna kms
+
+	self.__timerifiedTimers = self.__timerifiedTimers or {}
+	self.__timerifiedTimers[name] = true
 
 	timer.Create(id, sec, reps or 1, function()
 		if self.IsValid and not self:IsValid() then return end
@@ -45,14 +48,26 @@ end
 
 function META:RemoveTimer(name)
 	if not name then error("Nice ID") return false end
-	local ex = timer.Exists("__Timerified:" .. hex(self) .. ":" .. tostring(name))
-	timer.Remove("__Timerified:" .. hex(self) .. ":" .. tostring(name))
+	local fullID = "__Timerified:" .. hex(self) .. ":" .. tostring(name)
+	local ex = timer.Exists(fullID)
+	timer.Remove(fullID)
+
+	if self.__timerifiedTimers then self.__timerifiedTimers[tostring(name)] = nil end
 
 	return ex
 end
 
 function META:TimerExists(name)
 	return timer.Exists("__Timerified:" .. hex(self) .. ":" .. tostring(name))
+end
+
+function META:KillAllTimers()
+	local tmr = self.__timerifiedTimers
+	if not tmr then return end
+
+	for k,v in pairs(tmr) do
+		timer.Remove(k)
+	end
 end
 
 local metas = {
