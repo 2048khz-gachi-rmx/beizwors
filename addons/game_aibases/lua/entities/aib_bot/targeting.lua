@@ -29,10 +29,10 @@ function ENT:HaveEnemy()
 	return true
 end
 
-function ENT:CanTarget(ply)
+function ENT:CanTarget(ply, ignorebase)
 	if ply.NoTarget or self.NoTarget then return false end
-	if not self:BW_GetBase() then return false end -- wtf
-	if ply:BW_GetBase() ~= self:BW_GetBase() then return false end
+	if not ignorebase and not self:BW_GetBase() then return false end -- wtf
+	if not ignorebase and ply:BW_GetBase() ~= self:BW_GetBase() then return false end
 	if ply.InDevMode then return false end
 
 	return true
@@ -173,7 +173,7 @@ end
 
 function ENT:OnTakeDamage(dmg)
 	local atk = dmg:GetAttacker()
-	if not IsValid(atk) or not self:CanTarget(atk) then
+	if not IsValid(atk) or not self:CanTarget(atk, true) then
 		self:Emit("OnTakeDamage", dmg)
 		return
 	end
