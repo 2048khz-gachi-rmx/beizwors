@@ -95,6 +95,10 @@ function ENT:DoQueuedMove()
 	local p = self.WantMoveWhere
 	if not p then return end
 
+	if self.debug then
+		print("next move found at", CurTime())
+	end
+
 	self:StartActivity(ACT_RUN)
 
 	self.loco:SetDesiredSpeed(self.MoveSpeed)
@@ -206,6 +210,10 @@ function ENT:ShouldChase(time, sightOf)
 	return true
 end
 
+local function incr(cur, total)
+	return (cur % total) + 1
+end
+
 function ENT:PickNextPatrol()
 	local en = self:GetEnemy()
 	local mood = self:GetMood()
@@ -217,15 +225,39 @@ function ENT:PickNextPatrol()
 	-- TODO: closures
 	self.MoveSpeed = self.PatrolSpeed
 
-	local nxt = (self.CurrentPatrolPoint % #patr) + 1
-	self._patrolPr = self:MoveWhenCan(self.PatrolRoute[nxt])
+	local cur = incr(self.CurrentPatrolPoint, #patr)
+	local curPt = self.PatrolRoute[cur]
+
+	self._patrolPr = self:MoveWhenCan(curPt)
 		:Then(function()
-			self:Timer("wait_patrol", math.Rand(0.5, 0.8), 1, function()
+			local nxt = incr(cur, #patr)
+			local nxtPt = self.PatrolRoute[nxt]
+
+			local min, max = 0, 0 -- min/max delays
+
+			if self:GetPos():Distance(nxtPt) < 32 then
+				cur = incr(cur, #patr) -- skip the next point but aim in its' direction
+				self.CurrentPatrolPoint = cur
+
+				local aimAt = curPt + (nxtPt - curPt):GetNormalized():CMul(128)
+				aimAt.z = self:GetShootPos().z
+
+				debugoverlay.Cross(aimAt, 8, 2, Colors.Yellowish, true)
+
+				self:RestartCoro("Movement")
+				self:SetAimingAt( aimAt )
+				self._patrolAim = aimAt
+
+				min = 0.9
+				max = 1.3
+			end
+
+			self:Timer("wait_patrol", math.Rand(min, max), 1, function()
 				self:PickNextPatrol()
 			end)
 		end)
 
-	self.CurrentPatrolPoint = nxt
+	self.CurrentPatrolPoint = cur
 end
 
 function ENT:DecideMovement()
@@ -287,12 +319,38 @@ function ENT:MoveToPos( pos, options )
 
 	self._continueMove = true
 
+	local curAim = Vector()
+	local already_aimed = nil --self._patrolAim -- this is kind of a huge hack lmao
+	self._patrolAim = nil
+
+	if self.debug then
+		print("New move started @", CurTime())
+	end
+
 	while ( path:IsValid() and self._continueMove ) do
 
 		path:Update( self )
 
+		local cur = not already_aimed and self:GetMood() == "passive" and path:GetCurrentGoal()
+
+		if cur and (not curAim or cur.pos ~= curAim) then
+			curAim:Set(cur.pos)
+
+			local dir = path:GetCursorData()
+
+			local ep = cur.pos
+			ep:Add(dir.forward:CMul(32))
+			ep.z = self:GetShootPos().z
+
+			debugoverlay.Sphere(ep, 4, 2, Colors.Reddish)
+			self:SetAimingAt(ep)
+			--[[local aimAt = Vector(cur.pos) + (cur.pos - self:EyePos()):GetNormalized() * 256
+			aimAt.z = self:EyePos().z
+			self:SetAimingAt(aimAt)
+			debugoverlay.Sphere(aimAt, 4, 0.5, Colors.Sky, true)]]
+		end
+
 		if self.debug then
-			local cur = path:GetCurrentGoal()
 			local seg = path:GetAllSegments()
 
 			if seg then
@@ -334,11 +392,13 @@ function ENT:MoveToPos( pos, options )
 		end
 
 		coroutine.yield()
+	end
 
+	if self.debug then
+		print("Move finished @", CurTime())
 	end
 
 	return "ok"
-
 end
 
 function ENT:GetPathGenerator()

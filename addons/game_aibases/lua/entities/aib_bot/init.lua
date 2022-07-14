@@ -53,6 +53,7 @@ function ENT:Initialize()
 	self.EnemyAwareness = {}
 	self._curActs = {}
 	self.DynCoros = {}
+	self.RestartCoros = {}
 	self.headEmpty = true
 	
 	--self:MatchActivity()
@@ -134,6 +135,12 @@ ENT.BehaviorOrder = {
 	"Activity"
 }
 
+ENT.BackBehavior = {}
+
+for k,v in pairs(ENT.BehaviorOrder) do
+	ENT.BackBehavior[v] = k
+end
+
 function ENT:BehaveStart()
 	self.Behaviors = {}
 	self.Warned = {}
@@ -148,23 +155,51 @@ function ENT:BehaveStart()
 	end
 end
 
+function ENT:ResumeCoro(coro, k)
+	local stat = coroutine.status(coro)
+
+	if stat == "dead" then
+		if not self.Warned[k] then
+			printf("!! coroutine BH_%s is dead !!", self.BehaviorOrder[k])
+			self.Warned[k] = true
+		end
+		return
+	end
+
+	if stat == "suspended" then
+
+		while true do
+			local ok, err = coroutine.resume(coro, self)
+
+			if not ok then
+				errorNHf("AIBaseBot `%s` error in BH_%s: %s.", self:GetClass(), self.BehaviorOrder[k], err)
+			else
+				if err then print("yield out:", err) end
+			end
+
+			local runAgain = self.RestartCoros and self.RestartCoros[coro]
+
+			if runAgain and runAgain > 0 then
+				self.RestartCoros[coro] = self.RestartCoros[coro] - 1
+			else
+				break
+			end
+		end
+
+	end
+
+	if stat == "normal" then
+		-- Requested to resume during execution => restart after we're done
+		self.RestartCoros = self.RestartCoros or {}
+		self.RestartCoros[coro] = (self.RestartCoros[coro] or 0) + 1
+	end
+end
+
 function ENT:BehaveUpdate(time)
 	self.BehaveTime = time
 
 	for k,v in pairs(self.Behaviors) do
-		if coroutine.status(v) == "dead" then
-			if not self.Warned[k] then
-				printf("!! coroutine BH_%s is dead !!", self.BehaviorOrder[k])
-				self.Warned[k] = true
-			end
-			continue
-		end
-
-		local ok, err = coroutine.resume(v, self)
-
-		if not ok then
-			errorNHf("AIBaseBot `%s` error in BH_%s: %s.", self:GetClass(), self.BehaviorOrder[k], err)
-		end
+		self:ResumeCoro(v, k)
 	end
 
 	for k,v in pairs(self.DynCoros) do
@@ -182,7 +217,7 @@ function ENT:BehaveUpdate(time)
 	self:DoGestures()
 
 	self.loco:SetMaxYawRate(99999)
-	local aang = self:GetAimAngle():Forward()
+
 	if self:GetAimingAt() then
 		self.loco:FaceTowards(self:GetShootPos() + self:GetAimAngle():Forward() * 32)
 	end
@@ -191,10 +226,21 @@ function ENT:BehaveUpdate(time)
 	--self:DoAimAdjustment(time)
 end
 
+function ENT:RestartCoro(name)
+	local num = self.BackBehavior[name]
+	if not num then
+		errorNHf("Unknown behavior name %s", name)
+		return
+	end
+
+	self:ResumeCoro(self.Behaviors[num], num)
+end
+
 function ENT:SlowThink()
 	self:UpdateTargetLOS()
 end
 
+-- very frequent think here
 function ENT:Think()
 	local period = CurTime() - (self._lastThink or CurTime() - engine.TickInterval())
 	self._lastThink = CurTime()
