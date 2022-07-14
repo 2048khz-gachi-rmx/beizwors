@@ -9,40 +9,15 @@
 
 if not PermaProps then PermaProps = {} end
 
-print("---------------------------------")
-print("| Loading ServerSide PermaProps |")
-print("---------------------------------")
-
 for k, v in pairs(file.Find("permaprops/sv_*.lua", "LUA")) do
-	
 	include("permaprops/".. v)
-	print("permaprops/".. v)
-
-
 end
-
-print("-----------------------------")
-print("| Loading Shared PermaProps |")
-print("-----------------------------")
 
 for k, v in pairs(file.Find("permaprops/sh_*.lua", "LUA")) do
-	
 	AddCSLuaFile("permaprops/".. v)
 	include("permaprops/".. v)
-	print("permaprops/".. v)
-
-
 end
-
-print("---------------------------------")
-print("| Loading ClientSide PermaProps |")
-print("---------------------------------")
 
 for k, v in pairs(file.Find("permaprops/cl_*.lua", "LUA")) do
-	
 	AddCSLuaFile("permaprops/".. v)
-	print("permaprops/".. v)
-
 end
-
-print("-------------------------------")

@@ -4,6 +4,13 @@ if not ulx then
 	-- Get data folder up to speed
 	include( "data.lua" )
 
+	Msg("	// Loading ULX //\n")
+
+	local s1 = SysTime()
+
+	local rMsg = Msg
+	local Msg = function() end -- you're annoying
+
 	local sv_modules = file.Find( "ulx/modules/*.lua", "LUA" )
 	local sh_modules = file.Find( "ulx/modules/sh/*.lua", "LUA" )
 	local cl_modules = file.Find( "ulx/modules/cl/*.lua", "LUA" )
@@ -52,4 +59,7 @@ if not ulx then
 	for _, file in ipairs( sh_modules ) do
 		AddCSLuaFile( "ulx/modules/sh/" .. file )
 	end
+
+	local s2 = SysTime()
+	rMsg( ("	// ULX load finished in %dms. //\n"):format((s2 - s1) * 1000) )
 end

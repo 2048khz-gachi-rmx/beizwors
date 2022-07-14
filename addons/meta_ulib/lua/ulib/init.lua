@@ -6,6 +6,13 @@ if not ULib then
 
 	file.CreateDir( "ulib" )
 
+	Msg("// Loading ULib //\n")
+
+	local s1 = SysTime()
+
+	local rMsg = Msg
+	local Msg = function() end -- you're annoying
+
 	Msg( "///////////////////////////////\n" )
 	Msg( "//      Ulysses Library      //\n" )
 	Msg( "///////////////////////////////\n" )
@@ -72,7 +79,6 @@ if not ULib then
 	local files = file.Find( "ulib/modules/*.lua", "LUA" )
 	if #files > 0 then
 		for _, file in ipairs( files ) do
-			Msg( "[ULIB] Loading SHARED module: " .. file .. "\n" )
 			include( "ulib/modules/" .. file )
 			AddCSLuaFile( "ulib/modules/" .. file )
 		end
@@ -82,7 +88,6 @@ if not ULib then
 	local files = file.Find( "ulib/modules/server/*.lua", "LUA" )
 	if #files > 0 then
 		for _, file in ipairs( files ) do
-			Msg( "[ULIB] Loading SERVER module: " .. file .. "\n" )
 			include( "ulib/modules/server/" .. file )
 		end
 	end
@@ -91,7 +96,6 @@ if not ULib then
 	local files = file.Find( "ulib/modules/client/*.lua", "LUA" )
 	if #files > 0 then
 		for _, file in ipairs( files ) do
-			Msg( "[ULIB] Loading CLIENT module: " .. file .. "\n" )
 			AddCSLuaFile( "ulib/modules/client/" .. file )
 		end
 	end
@@ -101,4 +105,7 @@ if not ULib then
 		hook.Call( ULib.HOOK_LOCALPLAYERREADY, _, ply )
 	end
 	concommand.Add( "ulib_cl_ready", clReady ) -- Called when the c-side player object is ready
+
+	local s2 = SysTime()
+	rMsg( ("// ULib Load finished in %dms. //\n"):format((s2 - s1) * 1000) )
 end

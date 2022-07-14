@@ -25,6 +25,9 @@ function xgui.addSVModule( name, initFunc, postinitFunc )
 	end
 end
 
+local rMsg = Msg
+local Msg = function() end -- you're annoying
+
 Msg( "///////////////////////////////\n" )
 Msg( "// ULX GUI -- by Stickly Man //\n" )
 Msg( "///////////////////////////////\n" )
@@ -333,3 +336,5 @@ function xgui.postInit()
 	end
 end
 hook.Add( ulx.HOOK_ULXDONELOADING, "XGUI_PostInitServer", xgui.postInit, HOOK_MONITOR_LOW )
+
+rMsg("	// ULX GUI loaded... //\n")
