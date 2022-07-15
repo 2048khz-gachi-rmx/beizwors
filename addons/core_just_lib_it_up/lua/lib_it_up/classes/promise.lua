@@ -47,6 +47,19 @@ function Promise:IsResolved()
 	return self._Resolved
 end
 
+--[==================================[
+	reminder: if u wanna chain async shit
+	u have to return a promise from then which'll be resolved when your async shit is finished
+	ie:
+		:Then(function()
+			local out = Promise()
+			timer.Simple(1, out:Resolver())
+			return out
+		end):Then(function()
+			print("action 2...")
+		end)
+--]==================================]
+
 function Promise:Then(full, rej)
 	self._curFillStep = self._curFillStep + 1
 	local key = self._curFillStep
@@ -110,11 +123,26 @@ function Promise:_run(...)
 	self:Emit(self._Rejected and "Rejected" or "Resolved", ...)
 end
 
+function Promise:__tostring()
+	return ("Promise/%s(%d, %p)"):format(
+		self._running and "running" or
+			self._Rejected and "rejected" or
+			self._Resolved and "resolved" or
+			"suspended",
+		#self._branches, self)
+end
+
 -- passed into the callbacks, intended to be ran for async
 function Promise:Resolve(x, ...)
 	if x == self then error("fuck you a+ [you passed self into resolve]") return end
 	if self._Rejected then
 		errorf("Can't resolve a rejected promise %s!", self)
+		return
+	end
+
+	if self._Resolved then
+		-- i added this late; i'm not sure if it'll break anything so this is NH for now
+		errorNHf("Can't resolve a promise twice %s", self)
 		return
 	end
 
