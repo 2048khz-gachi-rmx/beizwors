@@ -88,7 +88,7 @@ function ENT:GetDesiredActivity()
 
 	local pfx = ""
 
-	if self:HasActivity("Reload") then
+	if self:HasActivity("Reload") and not self:IsMoving() then
 		return self:_getAc("reload", pfx, sfx, acts)
 	end
 
