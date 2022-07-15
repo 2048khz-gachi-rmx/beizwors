@@ -170,20 +170,25 @@ function ENT:GetAimDir()
 	if self.AimOverride then
 		local dir = (self.AimOverride - self:GetShootPos())
 		dir:Normalize()
+		--debugoverlay.Line(self:GetShootPos(), self:GetShootPos() + dir * 192, 2, Colors.Red, true)
 		return dir
 	end
 
 	local p, y, r = self:GetAimAngles()
 	aimAng:SetUnpacked(p, y, r)
-
+	--debugoverlay.Line(self:GetShootPos(), self:GetShootPos() + aimAng:Forward() * 192, 2, Colors.Red, true)
 	return aimAng:Forward()
 end
 
 function ENT:GetShootPos()
-	local ind = self:BoneToIndex("ValveBiped.Bip01_Head1")
-	if not ind then return self:GetPos() + self:OBBCenter() end
+	local ind = false --self:BoneToIndex("ValveBiped.Bip01_Head1")
+	if not ind then
+		local p = self:GetPos()
+		p.z = p.z + 64
+		return p
+	end
 
-	return self:GetBonePosition(ind)
+	--return self:GetBonePosition(ind)
 end
 
 hook.Add("CW_GetAimDirection", "AIB_AimDir", function(wep, ow)

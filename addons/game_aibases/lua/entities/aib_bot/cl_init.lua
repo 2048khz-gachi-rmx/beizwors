@@ -10,7 +10,6 @@ function ENT:Draw()
 end
 
 hook.Add("CreateClientsideRagdoll", "AIB_Cleanup", function(ent, rag)
-	print("cl ragdoll:", ent, rag, ent.IsAIBaseBot)
 	if not ent.IsAIBaseBot then return end
 
 	timer.Simple(30, function()
