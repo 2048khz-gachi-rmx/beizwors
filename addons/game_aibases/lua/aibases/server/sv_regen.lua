@@ -10,6 +10,7 @@ regen[AIBases.BaseTypes.FREE] = function(base, entr)
 	local cleanup = Once(function()
 		base:RemoveListener("EntityEntered", ename)
 		base:RemoveListener("EntityExited", ename)
+		base:RemoveTimer("Forced" .. ename)
 		done = true
 	end)
 
@@ -180,15 +181,32 @@ function layout:InteractionTimer(base, interactTimeout, hardTimeout, immediateIn
 
 	local enemies = self:GetBricksOfType(AIBases.BRICK_ENEMY)
 
-	for k,v in pairs(enemies) do
-		if not IsValid(v.Ent) then
-			errorNHf("brick %s has invalid ent!? %s", v, v.Ent)
-			continue
-		end
+	if enemies then
+		for k,v in pairs(enemies) do
+			if not IsValid(v.Ent) then
+				errorNHf("brick %s has invalid ent!? %s", v, v.Ent)
+				continue
+			end
 
-		local bot = v.Ent
-		bot:On("EnemyFound", "TrackInteract", interact)
-		bot:On("OnTakeDamage", "TrackInteract", interact)
+			local bot = v.Ent
+			bot:On("EnemyFound", "TrackInteract", interact)
+			bot:On("OnTakeDamage", "TrackInteract", interact)
+		end
+	end
+
+	local loot = self:GetBricksOfType(AIBases.BRICK_LOOT)
+
+	if loot then
+		for k,v in pairs(loot) do
+			if not IsValid(v.Ent) then
+				errorNHf("brick %s has invalid ent!? %s", v, v.Ent)
+				continue
+			end
+
+			local box = v.Ent
+			box:On("InventoryChanged", "TrackInteract", interact)
+			box:On("PlayerSubscribed", "TrackInteract", interact)
+		end
 	end
 
 	return prom
