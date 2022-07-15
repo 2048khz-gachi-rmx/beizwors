@@ -1,6 +1,4 @@
 --
-local trIn, trOut = {}, {}
-trIn.output = trOut
 
 function ENT:HaveEnemy()
 	local enemy = self:GetEnemy()
@@ -34,6 +32,7 @@ function ENT:CanTarget(ply, ignorebase)
 	if not ignorebase and not self:BW_GetBase() then return false end -- wtf
 	if not ignorebase and ply:BW_GetBase() ~= self:BW_GetBase() then return false end
 	if ply.InDevMode then return false end
+	if not ply:Alive() then return false end
 
 	return true
 end
@@ -132,6 +131,9 @@ for k,v in pairs(traceBones) do
 	end
 end
 
+local trIn, trOut = {}, {}
+trIn.output = trOut
+trIn.mask = MASK_BLOCKLOS
 
 -- this is souper expensive
 function ENT:InView(ply, reuse)
@@ -171,20 +173,55 @@ function ENT:InView(ply, reuse)
 	return false
 end
 
+function ENT:AggroOn(ply)
+	if not self:GetEnemy() then
+		self:SetEnemy(ply)
+		self:MakeAwareOf(ply)
+		self:SetAimingAt(ply:EyePos())
+	end
+end
+
 function ENT:OnTakeDamage(dmg)
 	local atk = dmg:GetAttacker()
-	if not IsValid(atk) or not self:CanTarget(atk, true) then
+	if not IsPlayer(atk) or not self:CanTarget(atk, true) then
 		self:Emit("OnTakeDamage", dmg)
 		return
 	end
 
-	if not self:GetEnemy() then
-		self:SetEnemy(atk)
-		self:MakeAwareOf(atk)
-		self:SetAimingAt(atk:EyePos())
+	if not self:GetEnemy() and IsPlayer(atk) then
+		self:AggroOn(atk)
 	end
 
 	self:Emit("OnTakeDamage", dmg)
+
+	if not IsPlayer(atk) then return end
+
+	local base = self:BW_GetBase()
+	if not base then print("no base") return end
+
+	local others = base:GetEntities()
+	for ent in pairs(others) do
+		if not ent.IsAIBaseBot then continue end
+		local _, vis = ent:InView(self)
+
+		if vis then
+			ent:AggroOn(atk)
+		end
+	end
+end
+
+function ENT:OnOtherKilled(ent, dmg)
+	if IsPlayer(ent) then
+		if self:GetEnemy() == ent then
+			local new = self:HaveEnemy()
+			print("new enemy", new)
+			if not new then
+				-- no new enemy
+				print("none; add act")
+				self:AddActivity("PostKillReload", true)
+			end
+		end
+	end
 end
 
 local b = bench("targetacq", 600)
