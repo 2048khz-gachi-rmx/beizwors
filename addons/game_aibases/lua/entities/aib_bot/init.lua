@@ -15,6 +15,7 @@ function ENT:SetEnemy(ent)
 	if IsValid(ent) then
 		self:SetMood("engaging")
 		self:Emit("EnemyFound", ent)
+		self:AbortPatrol()
 	end
 
 	self.Enemy = ent
@@ -259,6 +260,7 @@ list.Set( "NPC", "aib_bot", {
 	Category = "NextBot Demos - NextBot Functions"
 } )
 
+include("spots.lua")
 include("shooting.lua")
 include("targeting.lua")
 include("movement.lua")

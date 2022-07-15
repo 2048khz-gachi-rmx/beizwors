@@ -110,23 +110,46 @@ function ENT:DoReload()
 		return
 	end
 
+	local pr = Promise()
+
 	self:AddActivity("Reload", "Reloading")
+
 	self:AddCoro("Reload", function()
-		self:AddActivity("Reload", "Reloading")
 		self:WaitForReload()
 
 		self:AddActivity("Reload", nil)
+		pr:Resolve()
 	end)
+
+	return pr
 end
 
 function ENT:RequestReload(now)
-	if self:HasActivity("Reload") then return end
+	if self:HasActivity("Reload") or self:HasActivity("Covering") == "Reload" then
+		return self._reloadPromise
+	end
 
-	if not now and not self:HasActivity("Reload") then
+	self._reloadPromise = Promise()
+
+	if not now then
 		local pr = self:TakeCover()
-		if not pr then return end
+		if not pr then
+			-- can't take cover; reload now
+			self:DoReload()
+				:Then(self._reloadPromise:Resolver())
+
+			return self._reloadPromise
+		end
+
+		print("Taking cover", debug.traceback())
 
 		self:AddActivity("Covering", "Reload")
+
+		self._reloadPromise:Then(function()
+			self:FinishActivity("Covering")
+		end, function()
+			self:FinishActivity("Covering")
+		end)
 
 		-- if we dont see the target in cover for 2s, do reload
 		local can, time = self:CanSeeTarget()
@@ -136,13 +159,21 @@ function ENT:RequestReload(now)
 		end
 
 		pr:Then(function()
+			print("Takecover succeeded... adding Then")
+			self:FinishActivity("Covering")
 			if not self:HasActivity("Reload") then
 				self:DoReload()
+					:Then(self._reloadPromise:Resolver())
 			end
 		end, function()
-			self:AddActivity("Reload", nil)
+			self:FinishActivity("Reload")
+			self:FinishActivity("Covering")
+			self:DoReload()
+					:Then(self._reloadPromise:Resolver())
+			print("Takecover aborted... adding Then")
 		end)
-		return
+
+		return self._reloadPromise
 	end
 
 	--for _, spot in pairs(spots) do
@@ -150,6 +181,9 @@ function ENT:RequestReload(now)
 	--end
 
 	self:DoReload()
+		:Then(self._reloadPromise:Resolver())
+
+	return self._reloadPromise
 end
 
 function ENT:WaitForReload()
@@ -165,6 +199,8 @@ function ENT:WaitForReload()
 
 		coroutine.yield()
 	end
+
+	self:Emit("Reloaded")
 end
 
 ENT.LockedShootTime = 0.3

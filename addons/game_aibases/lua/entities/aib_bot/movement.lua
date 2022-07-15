@@ -3,7 +3,7 @@
 	https://insurgencysandstorm.mod.io/improvedai
 
 	TODO:
-		- when running low on mag, start moving & shooting towards nearest cover
+		- when running low on mag, start WantMoveWhere & shooting towards nearest cover
 			when completely out, run towards it instead while reloading
 
 ]]
@@ -47,7 +47,9 @@ function ENT:AbortMove()
 		self._movePr = nil
 	end
 
-	self._continueMove = nil
+	if self._continueMove then
+		self._continueMove:Invalidate()
+	end
 end
 
 function ENT:C_MoveNow(pos)
@@ -55,10 +57,7 @@ function ENT:C_MoveNow(pos)
 	self.WantMoveWhere = pos
 	local coro = coroutine.running()
 
-	if self._movePr then
-		self._movePr:Reject()
-		self._movePr = nil
-	end
+	self:AbortMove()
 
 	self._mvNowCoro = coro
 	self._movePr = Promise()
@@ -82,11 +81,12 @@ function ENT:MoveWhenCan(pos)
 	-- non-coroutine request to move somewhere
 	self.WantMoveWhere = pos
 
-	if self._movePr then
-		self._movePr:Reject()
-	end
-
+	self:AbortMove()
 	self._movePr = Promise()
+	return self._movePr
+end
+
+function ENT:GetMovePromise()
 	return self._movePr
 end
 
@@ -104,22 +104,22 @@ function ENT:DoQueuedMove()
 	self.loco:SetDesiredSpeed(self.MoveSpeed)
 
 	self.WantMoveWhere = nil
+	local pr = self._movePr
+
 	self:MoveToPos(p)
 	self:StartActivity(self:GetDesiredActivity())
 
-	local pr = self._movePr
-
-	if pr then
+	if not pr:IsFinished() then
 		self._movePr = nil
 		pr:Resolve()
 	end
 	--self:DoQueuedMove(pos)
 end
 
-function ENT:WantReload(tac)
+function ENT:WantReload(tac, top)
 	local wep = self:GetCurrentWeapon()
 
-	if wep:Clip1() < wep:GetMaxClip1() * (tac and 0.75 or 0.3) then
+	if wep:Clip1() < wep:GetMaxClip1() * ((top and 1) or (tac and 0.75) or 0.3) then
 		return true
 	end
 
@@ -128,7 +128,7 @@ end
 
 function ENT:TakeCover()
 	local spot = self:FindSpot("near")
-	if not spot then return false end
+	if not spot then return Promise():Reject() end
 
 	local pr = self:MoveWhenCan(spot)
 	return pr
@@ -167,11 +167,8 @@ function ENT:TryChase(sightOf)
 
 		local aws = self:GetTargetAwareness()
 
-		print("chasing")
-	
 		if aws then
 			self:AimAt(aws.pos + (aws.vel or vector_origin) * 0.3)
-			print("reading ahead")
 			debugoverlay.Sphere(aws.pos, 3, 2, Colors.Sky, true)
 			debugoverlay.Line(aws.pos, aws.pos + (aws.vel or vector_origin) * 0.3, 2, Colors.Green, true)
 		else
@@ -214,37 +211,76 @@ local function incr(cur, total)
 	return (cur % total) + 1
 end
 
-function ENT:PickNextPatrol()
-	local en = self:GetEnemy()
-	local mood = self:GetMood()
+local function decr(cur, total)
+	return (cur - 2) % total + 1
+end
 
-	if en or mood ~= "passive" then return end
+function ENT:ShouldPatrol()
+	if self:GetEnemy() then return false end
+	if self:GetMood() ~= "passive" then return false end
+
+	if self:HasActivity("Reload") or self:HasActivity("Covering") then
+		return false
+	end
+
+	return true
+end
+
+function ENT:AbortPatrol()
+	if self._patrolPr and not self._patrolPr:IsFinished() then
+		self._patrolPr:Reject()
+	end
+end
+
+function ENT:PickNextPatrol()
+	if not self:ShouldPatrol() then return end
 
 	local patr = self.PatrolRoute
 
 	-- TODO: closures
 	self.MoveSpeed = self.PatrolSpeed
 
-	local cur = incr(self.CurrentPatrolPoint, #patr)
+	local cur = self.CurrentPatrolPoint
 	local curPt = self.PatrolRoute[cur]
 
-	self._patrolPr = self:MoveWhenCan(curPt)
+	local new = incr(self.CurrentPatrolPoint, #patr)
+	local newPt = self.PatrolRoute[new]
+
+	local aimAt = newPt - (curPt - newPt):GetNormalized():CMul(128)
+	aimAt.z = self:GetShootPos().z
+
+	debugoverlay.Cross(aimAt, 8, 2, Colors.Yellowish, true)
+	self:SetAimingAt( aimAt )
+	self._patrolAim = aimAt
+
+	self._patrolPr = self:MoveWhenCan(newPt)
 		:Then(function()
-			local nxt = incr(cur, #patr)
-			local nxtPt = self.PatrolRoute[nxt]
+			if not self:ShouldPatrol() then
+				self.CurrentPatrolPoint = nil
+				return
+			end
 
 			local min, max = 0, 0 -- min/max delays
 
-			if self:GetPos():Distance(nxtPt) < 32 then
-				cur = incr(cur, #patr) -- skip the next point but aim in its' direction
-				self.CurrentPatrolPoint = cur
+			-- after we moved to this new point, shift 1 up
+			cur = new
+			curPt = newPt
 
-				local aimAt = curPt + (nxtPt - curPt):GetNormalized():CMul(128)
+			new = incr(cur, #patr)
+			newPt = self.PatrolRoute[new]
+
+			-- if after we moved to what is now our current point, the next point is hella close
+			-- we turn, pull a driver ... for a bit then skip that point and go to the next one
+
+			if self:GetPos():Distance(newPt) < 32 then
+				new = incr(cur, #patr) -- skip the next point but aim in its' direction
+				self.CurrentPatrolPoint = new
+
+				-- re-aim while the timer's ticking
+				aimAt = newPt - (curPt - newPt):GetNormalized():CMul(128)
 				aimAt.z = self:GetShootPos().z
 
 				debugoverlay.Cross(aimAt, 8, 2, Colors.Yellowish, true)
-
-				self:RestartCoro("Movement")
 				self:SetAimingAt( aimAt )
 				self._patrolAim = aimAt
 
@@ -252,27 +288,42 @@ function ENT:PickNextPatrol()
 				max = 1.3
 			end
 
+			self:RestartCoro("Movement")
+
 			self:Timer("wait_patrol", math.Rand(min, max), 1, function()
 				self:PickNextPatrol()
 			end)
+		end, function()
+			self.CurrentPatrolPoint = nil -- aborted patrol?
 		end)
 
-	self.CurrentPatrolPoint = cur
+	self._patrolPr.IsPatrol = true
+	self.CurrentPatrolPoint = new
 end
 
 function ENT:DecideMovement()
-	if self.TargetAligned or self.TrackingEnemy then
+	local en = self:GetEnemy()
+	local postKill = self:HasActivity("PostKillReload")
+
+	if ((self.TargetAligned or self.TrackingEnemy) and en) or postKill then
 		-- we have an enemy,
 
 		-- but we cant see them right now; piss off to cover and reload if needed
 		local can, time = self:CanSeeTarget()
-		if self:WantReload(true) and not can and time > 0.6 + math.random() then
-			self:RequestReload(false)
+		if self:WantReload(true, postKill) and not can and time > 0.6 + math.random() then
+			self:RequestReload(postKill):Then(function()
+				self.CurrentPatrolPoint = nil
+			end)
+
+			self:FinishActivity("PostKillReload")
+
+			if postKill then
+				self:SetMood("passive")
+			end
 			return
 		end
 	end
 
-	local en = self:GetEnemy()
 	local can, time, lastPos = self:CanSeeTarget()
 
 	if en and not can then
@@ -285,9 +336,7 @@ function ENT:DecideMovement()
 		end
 	end
 
-	local mood = self:GetMood()
-
-	if not en and mood == "passive" then
+	if self:ShouldPatrol() then
 		local patr = self.PatrolRoute
 		if not patr or #patr == 0 then return end
 
@@ -300,6 +349,7 @@ function ENT:DecideMovement()
 			self.CurrentPatrolPoint = key
 
 			self.MoveSpeed = self.PatrolSpeed
+
 			self._patrolPr = self:MoveWhenCan(cl):Then(function()
 				self:PickNextPatrol()
 			end)
@@ -307,8 +357,12 @@ function ENT:DecideMovement()
 	end
 end
 
+function ENT:IsMoving()
+	return self._continueMove
+end
+
 function ENT:MoveToPos( pos, options )
-	options = options or {}
+	options = options or {repath = 1}
 
 	local path = Path( "Follow" )
 	path:SetMinLookAheadDistance( options.lookahead or 300 )
@@ -317,22 +371,23 @@ function ENT:MoveToPos( pos, options )
 
 	if ( !path:IsValid() ) then return "failed" end
 
-	self._continueMove = true
+	self._continueMove = path
 
 	local curAim = Vector()
-	local already_aimed = nil --self._patrolAim -- this is kind of a huge hack lmao
+	local already_aimed = self._patrolAim -- this is kind of a huge hack lmao
 	self._patrolAim = nil
 
 	if self.debug then
-		print("New move started @", CurTime())
+		print("New move started @", CurTime(), self.loco:GetVelocity())
 	end
 
-	while ( path:IsValid() and self._continueMove ) do
+	while ( path:IsValid() ) do
 
 		path:Update( self )
 
 		local cur = not already_aimed and self:GetMood() == "passive" and path:GetCurrentGoal()
 
+		--[=[
 		if cur and (not curAim or cur.pos ~= curAim) then
 			curAim:Set(cur.pos)
 
@@ -348,7 +403,7 @@ function ENT:MoveToPos( pos, options )
 			aimAt.z = self:EyePos().z
 			self:SetAimingAt(aimAt)
 			debugoverlay.Sphere(aimAt, 4, 0.5, Colors.Sky, true)]]
-		end
+		end]=]
 
 		if self.debug then
 			local seg = path:GetAllSegments()
@@ -388,11 +443,13 @@ function ENT:MoveToPos( pos, options )
 		-- If they set repath then rebuild the path every x seconds
 		--
 		if ( options.repath ) then
-			if ( path:GetAge() > options.repath ) then path:Compute( self, pos ) end
+			if ( path:GetAge() > options.repath ) then path:Compute( self, pos, self:GetPathGenerator() ) end
 		end
 
 		coroutine.yield()
 	end
+
+	self._continueMove = nil
 
 	if self.debug then
 		print("Move finished @", CurTime())
