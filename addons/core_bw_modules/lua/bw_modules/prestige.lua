@@ -3,6 +3,7 @@ local PLAYER = debug.getregistry().Player
 local PInfo = LibItUp.PlayerInfo
 BaseWars.Prestige = BaseWars.Prestige or {}
 BaseWars.Prestige.NWKey = "Prestige"
+BaseWars.Prestige.TokenNWKey = "PrestigeToks"
 
 local MODULE = BaseWars.Prestige
 
@@ -17,6 +18,14 @@ function PInfo:GetPrestige()
 	end
 end
 
-function PLAYER:GetPrestige()
-	return GetPlayerInfoGuarantee(self):GetPrestige()
+function PInfo:GetPrestigeTokens()
+	if SERVER then
+		return self._prestigeToks
+	else
+		return self:GetPublicNW():Get(BaseWars.Prestige.TokenNWKey, 0)
+	end
 end
+
+PInfo.GetPToks = PInfo.GetPrestigeTokens
+PInfoAccessor("PToks")
+PInfoAccessor("Prestige")
