@@ -20,7 +20,7 @@ local function IsMediaPlayer( self, ent, ply )
 end
 
 local function IsPrivilegedMediaPlayer( self, ent, ply )
-	if not IsMediaPlayer( self, ent, ply ) then print("not MediaPlayer") return end
+	if not IsMediaPlayer( self, ent, ply ) then return end
 
 	--if ply:IsAdmin() then return true end
 
@@ -28,7 +28,7 @@ local function IsPrivilegedMediaPlayer( self, ent, ply )
 	if not ow then return true end
 
 	local pin = GetPlayerInfo(ply)
-	if not pin then print("no pin") return end
+	if not pin then return end
 
 	local fac = pin:GetFaction()
 	if fac and fac:IsMember(ply) then return true end

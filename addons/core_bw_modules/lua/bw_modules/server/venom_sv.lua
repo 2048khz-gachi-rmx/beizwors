@@ -5,7 +5,7 @@ Venom.Tracker = Venom.Tracker or {}
 
 function PLAYER:AddVenom(add, atk, infl)
 	if not atk or not infl then
-		print("pls add atk/infl to AddVenom")
+		errorNHf("pls add atk/infl to AddVenom")
 	end
 
 	local dv = self:GetDeathVar("Venom", 0)

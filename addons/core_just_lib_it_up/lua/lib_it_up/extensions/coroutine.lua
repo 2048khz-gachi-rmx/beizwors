@@ -1,7 +1,13 @@
 LibItUp.SetIncluded()
 function coroutine.Resumer()
 	local cor = coroutine.running()
-	return function(...) coroutine.resume(cor, ...) end
+
+	return function(...)
+		local ok, err = coroutine.resume(cor, ...)
+		if not ok then
+			errorNHf("coroutine.Resumer error: %s", err)
+		end
+	end
 end
 
 function coroutine.ResumeIn(s, ...)
