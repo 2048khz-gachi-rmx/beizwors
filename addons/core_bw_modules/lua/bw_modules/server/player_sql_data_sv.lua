@@ -70,7 +70,7 @@ end
 
 pd.QueueChange = queueChange
 
-local autoSync = {"money", "xp", "level", "playtime", "prestige"}
+local autoSync = {"money", "xp", "level", "playtime", "prestige", "ptokens"}
 autoSync = table.KeysToValues(autoSync)
 
 function pd.SyncBWIntoSQL()
@@ -193,6 +193,11 @@ PInfo.SubBWData = PLAYER.SubBWData
 
 local function onDB(masterdb)
 
+	local retrospect = {
+		"`prestige` BIGINT UNSIGNED NOT NULL DEFAULT 0",
+		"`ptokens` BIGINT UNSIGNED NOT NULL DEFAULT 0",
+	}
+
 	local q = masterdb:query([[
 	CREATE TABLE IF NOT EXISTS `bw_plyData` (
 	  `puid` BIGINT UNSIGNED NOT NULL,
@@ -209,6 +214,27 @@ local function onDB(masterdb)
 
 	MySQLQuery(q, true)
 		:Catch(mysqloo.CatchError)
+		:Then(function()
+			-- christ almighty
+			local after = "playtime"
+			for k,v in pairs(retrospect) do
+				local qry = ("ALTER TABLE `bw_plyData` ADD COLUMN %s AFTER `%s`;"):format(v, after)
+				after = v:match("`([^`]+)`")
+
+				if not after then
+					errorf("failed parsing after column in %s", v)
+				end
+
+				MySQLQuery(masterdb:query(qry), true)
+					:Then(coroutine.Resumer(), coroutine.Resumer())
+
+				local _, _, why = coroutine.yield()
+
+				if isstring(why) and not why:find("^Duplicate column name") then
+					errorf("unhandled MySQL error: %s", why)
+				end
+			end
+		end)
 
 	db = masterdb
 end
