@@ -424,3 +424,36 @@ end
 
 include("entity_dt.lua")
 AddCSLuaFile("entity_dt.lua")
+
+
+
+
+function ENTITY:ClientUse()
+
+end
+
+function ENTITY:SharedUse()
+
+end
+
+if SERVER then
+	util.AddNetworkString("SharedUse")
+
+	hook.Add("PlayerUse", "ThisWasLongOverdue", function(ply, ent)
+		if not ent.NetworkedUse then return end
+
+		ent:SharedUse()
+
+		net.Start("SharedUse")
+			net.WriteEntity(ent)
+		net.Send(ply)
+	end)
+else
+	net.Receive("SharedUse", function()
+		local e = net.ReadEntity()
+		if not IsValid(e) then error("WHY NOT YOU STUPID BASTARD") return end
+
+		e:SharedUse()
+		e:ClientUse()
+	end)
+end

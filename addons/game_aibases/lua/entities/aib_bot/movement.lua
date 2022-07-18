@@ -305,12 +305,15 @@ function ENT:DecideMovement()
 	local en = self:GetEnemy()
 	local postKill = self:HasActivity("PostKillReload")
 
+	-- man im TERRIBLE at AI
+	-- there's probably a proper way to branch behavior like this but ????????????
+
 	if ((self.TargetAligned or self.TrackingEnemy) and en) or postKill then
 		-- we have an enemy,
 
-		-- but we cant see them right now; piss off to cover and reload if needed
 		local can, time = self:CanSeeTarget()
 		if self:WantReload(true, postKill) and not can and time > 0.6 + math.random() then
+			-- but we cant see them right now; piss off to cover and reload if needed
 			self:RequestReload(postKill):Then(function()
 				self.CurrentPatrolPoint = nil
 			end)

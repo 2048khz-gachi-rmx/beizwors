@@ -660,8 +660,7 @@ end)
 
 
 local sidToDiscord = {
-	["STEAM_0:1:504566785"] = "244148600110579712",
-	["STEAM_0:0:40277849"] = "276279540056195074"
+
 }
 
 function doRaidNotify(rd)

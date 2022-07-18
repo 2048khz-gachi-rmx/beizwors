@@ -178,6 +178,7 @@ function ENT:AggroOn(ply)
 		self:SetEnemy(ply)
 		self:MakeAwareOf(ply)
 		self:SetAimingAt(ply:EyePos())
+		self:AbortPatrol()
 	end
 end
 
