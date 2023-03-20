@@ -1,3 +1,20 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:6395a23d13e71b4a59c67d7678fbe4f97c9b8012eea0c9f0e1bd2c8a3753abfe
-size 514
+"VertexlitGeneric"
+{
+	"$baseTexture" "grp/ingots/ingot_bw"
+	"$surfaceprop"	"metal"
+
+	"$phong" "1"
+	"$phongexponent" "12"
+//	"$phongexponenttexture"	"asdf"
+	"$phongboost" "1"
+
+    "$basemapalphaenvmapmask" "1"
+
+	"$phongfresnelranges"	"[.5 1 .5]"
+	"$basemapalphaphongmask" ".1"
+
+	"$rimlight" "1"				// To enable rim lighting (requires phong)
+	"$rimlightexponent" "1"			// Exponent for phong component of rim lighting
+	"$rimlightboost" "2"			// Boost for ambient cube component of rim lighting
+
+}

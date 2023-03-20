@@ -1,3 +1,8 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ad72d0a9dac8d8f0d8852ef3e71721b41cd2913b5a8c4ed5f7e19eb4587cb159
-size 109
+"VertexLitGeneric"
+{
+	"$basetexture" "grp/printers/printer"
+
+	"$surfaceprop" "metal"
+	"$model" 1
+	
+}

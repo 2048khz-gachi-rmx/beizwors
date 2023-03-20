@@ -1,3 +1,12 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:4b5e9f16d88db282ca7f5f4cfdb98387459fdab21988e8e927a2f7221fc70070
-size 386
+"vertexlitgeneric"
+{
+	"$basetexture"               "grp/stim/health_shot"
+	"$bumpmap"                   "effects/flat_normal"
+	"$phongboost"                "1"
+	"$phongexponent"             "10"
+	"$phongfresnelranges"        "[1 4 30]"
+	"$basemapluminancephongmask" "1"
+	"$halflambert"               "1"
+	"$phong"                     "0"
+	"gpu>=2?$phong"              "1"
+}

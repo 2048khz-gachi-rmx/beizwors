@@ -1,3 +1,8 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:40cbe8b3a20bbbe1bdc726e5f0f69e53fecdcbf897287513d9bceff382804d2c
-size 112
+"VertexLitGeneric"
+{
+	"$basetexture" "grp/powerpole/powerpole"
+
+	"$surfaceprop" "metal"
+	"$model" 1
+	
+}

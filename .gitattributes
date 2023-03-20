@@ -1,5 +1,0 @@
-materials/grp/** filter=lfs diff=lfs merge=lfs -text
-materials/zerochain/** filter=lfs diff=lfs merge=lfs -text
-models/grp/** filter=lfs diff=lfs merge=lfs -text
-materials/models/props/** filter=lfs diff=lfs merge=lfs -text
-sound/vgui/grp/* filter=lfs diff=lfs merge=lfs -text

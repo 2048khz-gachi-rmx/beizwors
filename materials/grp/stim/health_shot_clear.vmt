@@ -1,3 +1,13 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:3778d68bcd9997e33f6a5e320fe78f6c220d97a791d1a3bdebafa8a117ece23e
-size 442
+"vertexlitgeneric"
+{
+	"$basetexture"            "models/weapons/v_models/eq_healthshot/health_shot_clear"
+	"$translucent"            "1"
+	"$bumpmap"                "dev/dev_normal"
+	"$phong"                  "1"
+	"$phongboost"             "50"
+	"$phongexponent"          "200"
+	"$phongfresnelranges"     "[.1 0.5 2]"
+	"$envmap"                 "env_cubemap"
+	"$envmapfresnel"          "1"
+	"$envmapfresnelminmaxexp" "[2 5 .4]"
+}
